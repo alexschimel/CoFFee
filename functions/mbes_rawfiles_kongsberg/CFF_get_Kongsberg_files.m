@@ -1,6 +1,7 @@
-%% CFF_invpercentile.m
+%% CFF_get_Kongsberg_files.m
 %
-% Calculates inverse percentile
+% From a filename root (without extension), returns it with extensions .all
+% and .wcd
 %
 %% Help
 %
@@ -24,8 +25,9 @@
 % value if there is one (e.g. Default: '10'). Example below to replace.
 % Delete these lines XXX._
 % 
-% * |X|: Required. Description (Information). XXX
-% * |P|: Required. Description (Information). XXX
+% * |input_variable_1|: Description (Information). XXX
+% * |input_variable_2|: Description (Information). XXX
+% * |input_variable_3|: Description (Information). XXX
 %
 % *OUTPUT VARIABLES*
 %
@@ -33,7 +35,8 @@
 % and information. See input variables for template. Example below to
 % replace. Delete these lines XXX._
 %
-% * |V|: Description (Information). XXX
+% * |output_variable_1|: Description (Information). XXX
+% * |output_variable_2|: Description (Information). XXX
 %
 % *DEVELOPMENT NOTES*
 %
@@ -49,7 +52,7 @@
 % _This section contains dates and descriptions of major updates. Example
 % below to replace. Delete these lines XXX._
 %
-% * 2018-10-11: header
+% * YYYY-MM-DD: second version. Describes the update. XXX
 % * YYYY-MM-DD: first version. XXX
 %
 % *EXAMPLE*
@@ -64,18 +67,27 @@
 %
 % *AUTHOR, AFFILIATION & COPYRIGHT*
 %
-% Alexandre Schimel, Deakin University, NIWA. 
+% _This last section contains at least author name and affiliation. Delete
+% these lines XXX._ 
+%
+% Alexandre Schimel, NIWA. XXX
 
 %% Function
-function [V] = CFF_invpercentile(X,P)
+function [Kongs_files,fileroot_reshaped] = CFF_get_Kongsberg_files(fileroot)
 
-if all(isnan(X))
-    V = NaN;
-    return
+if ischar(fileroot)
+    fileroot = {fileroot};
 end
 
-X = X(:);
-X = X(~isnan(X));
-X = sort(X);
-iP = round(P.*numel(X)./100);
-V = X(iP);
+fileroot_reshaped = reshape(fileroot,[numel(fileroot),1]);
+    
+Kongs_files = cell(length(fileroot_reshaped),2);
+
+for ii = 1:length(fileroot_reshaped)
+    
+    Kongs_files{ii,1} = strcat(fileroot_reshaped{ii}, '.all');
+    Kongs_files{ii,2} = strcat(fileroot_reshaped{ii}, '.wcd');
+
+end
+
+        

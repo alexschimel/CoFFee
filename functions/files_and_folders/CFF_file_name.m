@@ -1,6 +1,6 @@
-%% CFF_file_extension.m
+%% CFF_file_name.m
 %
-% Get extension of file
+% Get name of file (without path or extension
 %
 %% Help
 %
@@ -32,6 +32,6 @@
 % Alexandre Schimel, Waikato University, Deakin University, NIWA.
 
 %% Function
-function ext = CFF_file_extension(filename)
+function name = CFF_file_name(filename)
 
-[~,~,ext] = fileparts(filename);
+[~,name,~] = fileparts(filename);

@@ -184,7 +184,7 @@ while 1
         NumberOfBytesInDatagram = fread(fid,1,'uint32','b');
         STX = fread(fid,1,'uint8','b');
         TypeOfDatagram = fread(fid,1,'uint8','b');
-        if ( STX == 2 & TypeOfDatagram == 68 )
+        if STX == 2 && TypeOfDatagram == 68 
             % ok this is a DEPTH datagram
             EMModelNumber = fread(fid,1,'uint16','b');
             LastDepthDate = fread(fid,1,'uint32','b');

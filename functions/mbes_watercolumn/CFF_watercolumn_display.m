@@ -1,91 +1,99 @@
-function [h,F] = CFF_watercolumn_display(fData, varargin)
-% [h,F] = CFF_watercolumn_display(fData, varargin)
-%
-% DESCRIPTION
+%% CFF_watercolumn_display.m
 %
 % Displays Multibeam watercolumn data in various ways.
 %
-% REQUIRED INPUT ARGUMENTS
+%% Help
 %
-% - 'fData': the multibeam data structure
+% *USE*
 %
-% OPTIONAL INPUT ARGUMENTS
 %
-% - 'data': string indicating which data in fData to grab: 'original'
-% (default) or 'L1'. Can be overwritten by inputting "otherData". 
 %
-% - 'displayType': string indicating type of display: 'flat' (default),
-% 'wedge', 'projected' or 'gridded' (this last one need the data to have
-% been gridded.) 
+% *INPUT VARIABLES*
 %
-% - 'movieFile': string indicating filename for movie creation. By default
-% an empty string to mean no movie is to be made.
+% * |fData|: the multibeam data structure
 %
-% - 'otherData': array of numbers to be displayed instead of the original
-% or L1 data. Used in case of tests for new types of corrections.
+% * |data|: string indicating which data in fData to grab: 'original'
+% (default) or 'processed'. Can be overwritten by inputting "otherData". 
 %
-% - 'pings': vector of numbers indicating which pings to be displayed. If
+% * |displayType|: string indicating type of display: 'flat' (default),
+% 'wedge', 'projected', 'gridded' or 'grid_average' (the two last ones
+% require the data to have been gridded.) 
+%
+% * |movieFile|: string indicating filename for movie creation (no
+% extension). By default an empty string to mean no movie is to be made.
+%
+% * |otherData|: array of numbers to be displayed instead of the original
+% or processed data. Used in case of tests for new types of corrections.
+%
+% * |pings|: vector of numbers indicating which pings to be displayed. If
 % more than one, the result will be an animation.
 %
-% - 'bottomDetectDisplay': string indicating whether to display the bottom
+% * |bottomDetectDisplay|: string indicating whether to display the bottom
 % detect in the data or not: 'no' (default) or 'yes'.  
 %
-% - 'waterColumnTargets': array of points to be displayed ontop of
+% * |waterColumnTargets|: array of points to be displayed ontop of
 % watercolumn data. Must be a table with columns Easting, Northing, Height,
 % ping, beam, range. 
 %
-% OUTPUT VARIABLES
+% *OUTPUT VARIABLES*
 %
-% - 'h': figure handle
+% * |h|: figure handle
 %
-% - 'F': movie frames
+% * |F|: movie frames
 %
-% RESEARCH NOTES
+% *DEVELOPMENT NOTES*
 %
-% - display contents of the input parser?
+% * Not tested after update: water column targets. XXX
+% * bottom is not gridded in new coffee and thus display of gridded bottom
+% can't work here anymore. to be fixed  XXX
+% * display contents of the input parser?
 %
-% NEW FEATURES
+% *NEW FEATURES*
 %
-% - 2016-12-01: now grabbing 'X_PB_bottomSample' field for bottom in flat
+% * 2018-11-01: updated to work with new Coffee v3
+% * 2016-12-01: now grabbing 'X_BP_bottomSample' field for bottom in flat
 % display instead of original field, after changes on how bottom is
 % processed. Also, adding bottom detect display option to gridded data.
-% - 2015-09-29: updating description after changing varargin management to
+% * 2015-09-29: updating description after changing varargin management to
 % inputparser
-% - 2014-04-25: first version
+% * 2014-04-25: first version
 %
-% EXAMPLES
+% *EXAMPLE*
 %
 % % The following are ALL equivalent: display original data, all pings, flat, no bottom detect, no movie
 % CFF_watercolumn_display(fData); 
 % CFF_watercolumn_display(fData,'original');
 % CFF_watercolumn_display(fData,'data','original'); 
-% CFF_watercolumn_display(fData,'pings',NaN);
-% CFF_watercolumn_display(fData,'data','original','pings',NaN);
-% CFF_watercolumn_display(fData,'data','original','pings',NaN,'displayType','flat');
+% CFF_watercolumn_display(fData,'pings',[]);
+% CFF_watercolumn_display(fData,'data','original','pings',[]);
+% CFF_watercolumn_display(fData,'data','original','pings',[],'displayType','flat');
 %
-% % All 3 display types with bottom detect ON
-% CFF_watercolumn_display(fData,'data','L1','displayType','flat','bottomDetectDisplay','yes');
-% CFF_watercolumn_display(fData,'data','L1','displayType','wedge','bottomDetectDisplay','yes');
-% CFF_watercolumn_display(fData,'data','L1','displayType','projected','bottomDetectDisplay','yes');
+% % All 3 main display types with bottom detect ON
+% CFF_watercolumn_display(fData,'data','processed','displayType','flat','bottomDetectDisplay','yes');
+% CFF_watercolumn_display(fData,'data','processed','displayType','wedge','bottomDetectDisplay','yes');
+% CFF_watercolumn_display(fData,'data','processed','displayType','projected','bottomDetectDisplay','yes');
 %
 % % Movie creation in flat mode
-% CFF_watercolumn_display(fData,'data','L1','displayType','flat','bottomDetectDisplay','yes','movieFile','testmovie');
+% CFF_watercolumn_display(fData,'data','processed','displayType','flat','bottomDetectDisplay','yes','movieFile','testmovie');
 %
 % % USe of 'otherData'
-% otherM = fData.WC_PBS_SampleAmplitudes + 50;
+% otherM = fData.WC_SBP_SampleAmplitudes.Data.val + 50;
 % CFF_watercolumn_display(fData,'otherData',otherM);
 %
 % % Old varargin management should still work.
 % [h,F] = CFF_watercolumn_display(fData, 'original','flat','testmovie')
 %
 % % Finally, testing water column targets
-% CFF_watercolumn_display(fData,'data','L1','displayType','flat','bottomDetectDisplay','yes','waterColumnTargets',kelp);
-% CFF_watercolumn_display(fData,'data','L1','displayType','wedge','bottomDetectDisplay','yes','waterColumnTargets',kelp);
-% CFF_watercolumn_display(fData,'data','L1','displayType','projected','bottomDetectDisplay','yes','waterColumnTargets',kelp);
+% CFF_watercolumn_display(fData,'data','processed','displayType','flat','bottomDetectDisplay','yes','waterColumnTargets',kelp);
+% CFF_watercolumn_display(fData,'data','processed','displayType','wedge','bottomDetectDisplay','yes','waterColumnTargets',kelp);
+% CFF_watercolumn_display(fData,'data','processed','displayType','projected','bottomDetectDisplay','yes','waterColumnTargets',kelp);
 %
-%%%
-% Alex Schimel, Deakin University
-%%%
+% *AUTHOR, AFFILIATION & COPYRIGHT*
+%
+% Alexandre Schimel, Deakin University, NIWA.
+
+%% Function
+function [h,F] = CFF_watercolumn_display(fData, varargin)
 
 
 %% INPUT PARSER
@@ -96,17 +104,17 @@ p = inputParser;
 addRequired(p,'fData',@isstruct);
 
 % 'data' is an optional string indicating which data in
-% fData to grab: 'original' (default) or 'L1'. Can be overwritten by
+% fData to grab: 'original' (default) or 'processed'. Can be overwritten by
 % inputting "otherData". 
 arg = 'data';
 defaultArg = 'original';
-checkArg = @(x) any(validatestring(x,{'original','masked original','L1','masked L1','test'})); % valid arguments for optional check
+checkArg = @(x) any(validatestring(x,{'original','processed'})); % valid arguments for optional check
 addOptional(p,arg,defaultArg,checkArg);
 
 % 'displayType' is an optional string indicating type of display: 'flat' (default), 'wedge' or 'projected'
 arg = 'displayType';
 defaultArg = 'flat';
-checkArg = @(x) any(validatestring(x,{'flat', 'wedge','projected','gridded'})); % valid arguments for optional check
+checkArg = @(x) any(validatestring(x,{'flat', 'wedge','projected','gridded','grid_average'})); % valid arguments for optional check
 addOptional(p,arg,defaultArg,checkArg);
 
 % 'movieFile' is an optional string indicating filename for
@@ -118,17 +126,17 @@ checkArg = @(x) ischar(x); % valid arguments for optional check
 addOptional(p,arg,defaultArg,checkArg);
 
 % 'otherData' is an optional array of numbers to be displayed instead of
-% the original or L1 data. Used in case of tests for new types of
+% the original or processed data. Used in case of tests for new types of
 % corrections
 arg = 'otherData';
 defaultArg = [];
-checkArg = @(x) isnumeric(x) && all(size(x)==size(fData.WC_PBS_SampleAmplitudes)); % valid arguments for optional check
+checkArg = @(x) isnumeric(x) && all(size(x)==size(fData.WC_SBP_SampleAmplitudes.Data.val)); % valid arguments for optional check
 addOptional(p,arg,defaultArg,checkArg);
 
 % 'pings' is an optional vector of numbers indicating which pings to be
 % displayed. If more than one, the result will be an animation. 
 arg = 'pings';
-defaultArg = NaN;
+defaultArg = [];
 checkArg = @(x) isnumeric(x); % valid arguments for optional check
 addOptional(p,arg,defaultArg,checkArg);
 
@@ -150,104 +158,129 @@ addOptional(p,arg,defaultArg,checkArg);
 % now parse actual inputs
 parse(p,fData, varargin{:});
 
+% extracting parser results
+fData = p.Results.fData;
+data = p.Results.data;
+displayType = p.Results.displayType;
+movieFile = p.Results.movieFile;
+otherData = p.Results.otherData;
+pings = p.Results.pings;
+bottomDetectDisplay = p.Results.bottomDetectDisplay;
+waterColumnTargets = p.Results.waterColumnTargets;
+
+% clear parser
+clear p
+
+
 % display contents of the input parser?
 ...
+
+%% main data info
+[~, name, ext]= fileparts(fData.ALLfilename{1});
+fileName = [name ext];
+pingCounter = fData.WC_1P_PingCounter;
+nPings = size(fData.WC_SBP_SampleAmplitudes.Data.val,3);
+
+%% pings to display
+if isempty(pings)
+    pings = [1:nPings];
+end 
+
+%% grab data
+switch data
+    case 'original'
+        M = CFF_get_WC_data(fData,'WC_SBP_SampleAmplitudes',pings,1,1,'true');
+    case 'processed'
+        M = CFF_get_WC_data(fData,'X_SBP_WaterColumnProcessed',pings,1,1,'true');
+end
+if ~isempty(otherData)
+    % overwrite with other data
+    M = otherData;
+end
+switch displayType
+    case 'gridded'
+        M = fData.X_NEH_gridLevel;
+    case 'grid_average'
+        M = fData.X_NEH_gridLevel;
+end
 
 %% initalize figure
 h = gcf;
 
 % set figure to full screen if movie requested
-if ~isempty(p.Results.movieFile)
+if ~isempty(movieFile)
     set(h,'Position',get(0,'ScreenSize'))
 end
 
 
-%% grab data
-switch p.Results.data
-    case 'original'
-        M = fData.WC_PBS_SampleAmplitudes./2;% original level divided by 2 (see kongsberg datagrams document)
-    case 'masked original'
-        M = fData.X_PBS_Mask .* fData.WC_PBS_SampleAmplitudes./2;% original level divided by 2 (see kongsberg datagrams document)
-    case 'L1'
-        M = fData.X_PBS_L1;
-    case 'masked L1'
-        M = fData.X_PBS_Mask .* fData.X_PBS_L1;
-    case 'test'
-        M= fData.X_PBS_TESTAMPFILT;
-end
-if ~isempty(p.Results.otherData)
-    % overwrite with other data
-    M = p.Results.otherData;
-end
-if strcmp(p.Results.displayType,'gridded')
-    % overwrite with gridded data if displayType is "gridded"
-    M = fData.X_NEH_gridLevel;
-end
-
-
-%% main data info
-[pathstr, name, ext]= fileparts(fData.MET_MATfilename{1});
-fileName = [name ext];
-pingCounter = fData.WC_P1_PingCounter;
-nPings = size(fData.WC_PBS_SampleAmplitudes,1);
-
-%% pings to display
-if isnan(p.Results.pings)
-    dispPings = 1:nPings;
-else
-    dispPings = p.Results.pings;
-end 
-
 %% display data
-switch p.Results.displayType
+switch displayType
     
     case 'flat'
         
-        if strcmp(p.Results.bottomDetectDisplay,'yes')
+        if strcmp(bottomDetectDisplay,'yes')
             % bottom detect
-            b = fData.X_PB_bottomSample;
+            b = fData.X_BP_bottomSample(:,pings);
         end
         
         % data bounds
         maxM = max(max(max(M)));
         minM = min(min(min(M)));
         
-        for ii = dispPings
+        for iP = 1:numel(pings)
             cla
-            imagesc(squeeze(M(ii,:,:))')
+            imagesc(M(:,:,iP));
+            colormap jet
             colorbar
             hold on
-            if strcmp(p.Results.bottomDetectDisplay,'yes')
-                plot(b(ii,:),'k.')
+            if strcmp(bottomDetectDisplay,'yes')
+                plot(b(:,iP),'k.');
             end
-            if ~isempty(p.Results.waterColumnTargets)
-                ind = find( p.Results.waterColumnTargets(:,4) == ii);
+            if ~isempty(waterColumnTargets)
+                ind = find( waterColumnTargets(:,4) == iP);
                 if ~isempty(ind)
-                    temp = p.Results.waterColumnTargets(ind,5:6);
+                    temp = waterColumnTargets(ind,5:6);
                     plot(temp(:,1),temp(:,2),'ko')
                 end
             end
             caxis([minM maxM])
             grid on
-            title(sprintf('File: %s. Ping %i/%i (#%i)',fileName,ii,nPings,pingCounter(ii)),'FontWeight','normal','Interpreter','none')
+            title(sprintf('File: %s. Ping %i/%i (#%i)',fileName,pings(iP),nPings,pingCounter(iP)),'FontWeight','normal','Interpreter','none')
             xlabel('beam #')
             ylabel('sample #')
+            set(findall(gcf,'-property','FontSize'),'FontSize',8)
             drawnow
-            if ~isempty(p.Results.movieFile)
-                F(ii) = getframe(gcf);
+            if ~isempty(movieFile)
+                F(iP) = getframe(gcf);
             end
         end
         
     case 'wedge'
         
-        % grab data
-        X = fData.X_PBS_sampleAcrossDist;
-        Y = fData.X_PBS_sampleUpDist;
+        % inter-sample distance
+        soundSpeed           = fData.WC_1P_SoundSpeed(1,pings).*0.1; %m/s
+        samplingFrequencyHz  = fData.WC_1P_SamplingFrequencyHz(1,pings); %Hz
+        interSamplesDistance = soundSpeed./(samplingFrequencyHz.*2); % in m
         
-        if strcmp(p.Results.bottomDetectDisplay,'yes')
+        % samples
+        nSamples = size(fData.WC_SBP_SampleAmplitudes.Data.val,1);
+        idxSamples = [1:nSamples]';
+        startRangeSampleNumber = fData.WC_BP_StartRangeSampleNumber(:,pings);
+        
+        % beam pointing angle
+        beamPointingAngle = deg2rad(fData.WC_BP_BeamPointingAngle(:,pings)/100);
+    
+        % Get across and upwards distance
+        sampleRange = CFF_get_samples_range(idxSamples,startRangeSampleNumber,interSamplesDistance);
+        [sampleAcrossDistance,sampleUpwardsDistance] = CFF_get_samples_dist(sampleRange,beamPointingAngle);
+        
+        X = sampleAcrossDistance;
+        Y = sampleUpwardsDistance;
+        
+        if strcmp(bottomDetectDisplay,'yes')
             % bottom detect
-            bX = fData.X_PB_bottomAcrossDist;
-            bY = fData.X_PB_bottomUpDist;
+            bX = fData.X_BP_bottomAcrossDist(:,pings);
+            bY = fData.X_BP_bottomUpDist(:,pings);
         end
         
         % data bounds
@@ -259,23 +292,24 @@ switch p.Results.displayType
         maxM = max(M(ind));
         minM = min(M(ind));
         
-        for ii = dispPings
+        for iP = 1:numel(pings)
             cla
-            pcolor(squeeze(X(ii,:,:)),squeeze(Y(ii,:,:)),squeeze(M(ii,:,:)));
+            pcolor(X(:,:,iP),Y(:,:,iP),M(:,:,iP));
+            colormap jet
             colorbar
-            shading interp
+            shading flat
             hold on
-            if strcmp(p.Results.bottomDetectDisplay,'yes')
-                plot(bX(ii,:),bY(ii,:),'k.')
+            if strcmp(bottomDetectDisplay,'yes')
+                plot(bX(:,iP),bY(:,iP),'k.')
             end
-            if ~isempty(p.Results.waterColumnTargets)
-                ind = find( p.Results.waterColumnTargets(:,4) == ii);
+            if ~isempty(waterColumnTargets)
+                ind = find( waterColumnTargets(:,4) == iP);
                 if ~isempty(ind)
-                    temp = p.Results.waterColumnTargets(ind,5:6);
+                    temp = waterColumnTargets(ind,5:6);
                     clear up across
                     for jj = 1:size(temp,1)
-                        up(jj) = fData.X_PBS_sampleUpDist(ii,temp(jj,1),temp(jj,2));
-                        across(jj) = fData.X_PBS_sampleAcrossDist(ii,temp(jj,1),temp(jj,2));
+                        up(jj) = fData.X_SBP_sampleUpDist(iP,temp(jj,1),temp(jj,2));
+                        across(jj) = fData.X_SBP_sampleAcrossDist(iP,temp(jj,1),temp(jj,2));
                     end
                     plot(across,up,'ko')
                 end
@@ -285,27 +319,50 @@ switch p.Results.displayType
             axis([minX maxX minY maxY])
             caxis([minM maxM])
             grid on
-            title(sprintf('File: %s. Ping %i/%i (#%i)',fileName,ii,nPings,pingCounter(ii)),'FontWeight','normal','Interpreter','none')
+            title(sprintf('File: %s. Ping %i/%i (#%i)',fileName,pings(iP),nPings,pingCounter(iP)),'FontWeight','normal','Interpreter','none')
             xlabel('across distance (starboard) (m)')
             ylabel('height above sonar (m)')
+            set(findall(gcf,'-property','FontSize'),'FontSize',8)
             drawnow
-            if ~isempty(p.Results.movieFile)
-                F(ii) = getframe(gcf);
+            if ~isempty(movieFile)
+                F(iP) = getframe(gcf);
             end
         end
         
     case 'projected'
+
+        % sonar location
+        sonarEasting  = fData.X_1P_pingE(1,pings); %m
+        sonarNorthing = fData.X_1P_pingN(1,pings); %m
+        sonarHeight   = fData.X_1P_pingH(1,pings); %m
         
-        % grab data
-        Easting = fData.X_PBS_sampleEasting;
-        Northing = fData.X_PBS_sampleNorthing;
-        Height = fData.X_PBS_sampleHeight;
+        % sonar heading
+        gridConvergence    = fData.X_1P_pingGridConv(1,pings); %deg
+        vesselHeading      = fData.X_1P_pingHeading(1,pings); %deg
+        sonarHeadingOffset = fData.IP_ASCIIparameters.S1H; %deg
+        sonarHeading       = deg2rad(-mod(gridConvergence + vesselHeading + sonarHeadingOffset,360));
         
-        if strcmp(p.Results.bottomDetectDisplay,'yes')
+        % inter-sample distance
+        soundSpeed           = fData.WC_1P_SoundSpeed(1,pings).*0.1; %m/s
+        samplingFrequencyHz  = fData.WC_1P_SamplingFrequencyHz(1,pings); %Hz
+        interSamplesDistance = soundSpeed./(samplingFrequencyHz.*2); % in m
+        
+        % samples
+        nSamples = size(fData.WC_SBP_SampleAmplitudes.Data.val,1);
+        idxSamples = [1:nSamples]';
+        startRangeSampleNumber = fData.WC_BP_StartRangeSampleNumber(:,pings);
+        
+        % beam pointing angle
+        beamPointingAngle = deg2rad(fData.WC_BP_BeamPointingAngle(:,pings)/100);
+    
+        % Get across and upwards distance
+        [Easting, Northing, Height] = CFF_georeference_sample(idxSamples, startRangeSampleNumber, interSamplesDistance, beamPointingAngle, sonarEasting, sonarNorthing, sonarHeight, sonarHeading);
+        
+        if strcmp(bottomDetectDisplay,'yes')
             % bottom detect
-            bEasting = fData.X_PB_bottomEasting;
-            bNorthing = fData.X_PB_bottomNorthing;
-            bHeight = fData.X_PB_bottomHeight;
+            bEasting = fData.X_BP_bottomEasting(:,pings);
+            bNorthing = fData.X_BP_bottomNorthing(:,pings);
+            bHeight = fData.X_BP_bottomHeight(:,pings);
         end
         
         % data bounds
@@ -318,33 +375,35 @@ switch p.Results.displayType
         maxM = max(max(max(M)));
         minM = min(min(min(M)));
         
-        for ii = dispPings
+        for iP = 1:numel(pings)
             cla
-            x = reshape(Easting(ii,:,:),1,[]);
-            y = reshape(Northing(ii,:,:),1,[]);
-            z = reshape(Height(ii,:,:),1,[]);
-            c = reshape(M(ii,:,:),1,[]);
+            x = reshape(Easting(:,:,iP),1,[]);
+            y = reshape(Northing(:,:,iP),1,[]);
+            z = reshape(Height(:,:,iP),1,[]);
+            c = reshape(M(:,:,iP),1,[]);
             scatter3(x,y,z,2,c,'.')
+            colormap jet
             colorbar
             hold on
-            if strcmp(p.Results.bottomDetectDisplay,'yes')
-                plot3(bEasting(ii,:),bNorthing(ii,:),bHeight(ii,:),'k.')
+            if strcmp(bottomDetectDisplay,'yes')
+                plot3(bEasting(:,iP),bNorthing(:,iP),bHeight(:,iP),'k.')
             end
-            if ~isempty(p.Results.waterColumnTargets)
-                plot3(p.Results.waterColumnTargets(:,1),p.Results.waterColumnTargets(:,2),p.Results.waterColumnTargets(:,3),'ko')
+            if ~isempty(waterColumnTargets)
+                plot3(waterColumnTargets(:,1),waterColumnTargets(:,2),waterColumnTargets(:,3),'ko')
             end
             axis equal
             axis([minEasting maxEasting minNorthing maxNorthing minHeight maxHeight])
             caxis([minM maxM])
             grid on
-            title(sprintf('File: %s. Ping %i/%i (#%i)',fileName,ii,nPings,pingCounter(ii)),'FontWeight','normal','Interpreter','none')
+            title(sprintf('File: %s. Ping %i/%i (#%i)',fileName,pings(iP),nPings,pingCounter(iP)),'FontWeight','normal','Interpreter','none')
             xlabel('Easting (m)')
             ylabel('Northing (m)')
             zlabel('Height above datum (m)')
+            set(findall(gcf,'-property','FontSize'),'FontSize',8)
             CFF_nice_easting_northing
             drawnow
-            if ~isempty(p.Results.movieFile)
-                F(ii) = getframe(gcf);
+            if ~isempty(movieFile)
+                F(iP) = getframe(gcf);
             end
         end
         
@@ -353,9 +412,9 @@ switch p.Results.displayType
         % grab data
         Easting = fData.X_1E_gridEasting;
         Northing = fData.X_N1_gridNorthing;
-        Height = fData.X_H_gridHeight;
+        Height = fData.X_11H_gridHeight;
         
-        if strcmp(p.Results.bottomDetectDisplay,'yes')
+        if strcmp(bottomDetectDisplay,'yes')
             % bottom detect
             bottom = fData.X_NE_gridBottom;
         end
@@ -363,26 +422,20 @@ switch p.Results.displayType
         % data bounds
         nE = length(Easting);
         nN = length(Northing);
-        maxEasting = max(Easting(:));
-        minEasting = min(Easting(:));
-        maxNorthing = max(Northing(:));
-        minNorthing = min(Northing(:));
-        maxHeight = max(Height(:));
-        minHeight = min(Height(:));
         maxM = nanmax(M(:));
         minM = nanmin(M(:));
         
-        for kk=1:length(Height)
+        for kk = 1:length(Height)
             cla
-            h1 = imagesc(Easting,Northing,M(:,:,kk));
-            set(h1,'alphadata',~isnan(M(:,:,kk)));
+            im = imagesc(Easting,Northing,M(:,:,kk));
+            set(im,'alphadata',~isnan(M(:,:,kk)));
             
-            if strcmp(p.Results.bottomDetectDisplay,'yes')
+            if strcmp(bottomDetectDisplay,'yes')
                 % bottom display part
                 if kk<length(Height)
                     ind = find( bottom>Height(kk) & bottom<Height(kk+1) );
                     if ~isempty(ind)
-                        [iN,iE] = ind2sub([nN,nE],ind);f
+                        [iN,iE] = ind2sub([nN,nE],ind);
                         hold on
                         plot(Easting(iE),Northing(iN),'k*');
                     end
@@ -393,55 +446,66 @@ switch p.Results.displayType
             grid on;
             set(gca,'Ydir','normal')
             caxis([minM maxM])
+            colormap jet
             colorbar
             CFF_nice_easting_northing
-            title(sprintf('File: %s. Slice %i/%i - Height above datum: %.2f m',fileName,kk,length(Height),Height(kk)),'FontWeight','normal','Interpreter','none')
+            title(sprintf('File: %s (gridded). Slice %i/%i - Height above datum: %.2f m',fileName,kk,length(Height),Height(kk)),'FontWeight','normal','Interpreter','none')
             xlabel('Easting (m)')
             ylabel('Northing (m)')
+            set(findall(gcf,'-property','FontSize'),'FontSize',8)
             drawnow
-            if ~isempty(p.Results.movieFile)
+            if ~isempty(movieFile)
                 F(kk) = getframe(gcf);
             end
         end
         
+    case 'grid_average'
+        
+        % grab data
+        Easting = fData.X_1E_gridEasting;
+        Northing = fData.X_N1_gridNorthing;
+        Height = fData.X_11H_gridHeight;
+        
+        % find desired height above bottom
+        bottomHeight = median(fData.X_BP_bottomHeight(:));
+        heighAboveBottom = 1.5;
+        [~,ind] = min(abs(Height-bottomHeight-heighAboveBottom));
+        avgL = M(:,:,ind);
+        
+        % average the level:
+        % avgL = nanmean(M,3);
+        
+        % data bounds
+        nE = length(Easting);
+        nN = length(Northing);
+        maxM = nanmax(avgL(:));
+        minM = nanmin(avgL(:));
+        
+        cla
+        im = imagesc(Easting,Northing,avgL);
+        set(im,'alphadata',~isnan(avgL));
+     
+        axis equal
+        grid on;
+        set(gca,'Ydir','normal')
+        caxis([minM maxM])
+        colormap jet
+        colorbar
+        CFF_nice_easting_northing
+        title(sprintf('File: %s (gridded, vertical average).',fileName),'FontWeight','normal','Interpreter','none')
+        xlabel('Easting (m)')
+        ylabel('Northing (m)')
+        set(findall(gcf,'-property','FontSize'),'FontSize',8)
+        drawnow
+
 end
 
 % write movie
-if ~isempty(p.Results.movieFile)
-    writerObj = VideoWriter(p.Results.movieFile,'MPEG-4');
+if ~isempty(movieFile)
+    writerObj = VideoWriter(movieFile,'MPEG-4');
     set(writerObj,'Quality',100)
     open(writerObj)
     writeVideo(writerObj,F);
     close(writerObj);
 end
 
-
-% OLD CODE
-%
-% figure; plot(SeedsAcrossDist,SeedsDownDist,'.')
-% axis equal
-% hold on
-% for jj = 1:size(M,1)
-%     pause(0.1)
-%     plot([SeedsAcrossDist(M(jj,1)),SeedsAcrossDist(M(jj,2))],[SeedsDownDist(M(jj,1)),SeedsDownDist(M(jj,2))], 'ro-')
-%     drawnow
-% end
-%
-% %figure
-% clf
-% surf(DownDist,AcrossDist,DATACorr);
-% hold on
-% shading interp;
-% view(90,-90);
-% axis equal;
-% set(gca,'layer','top')
-% axis([-10 0 -20 20])
-% set(gca,'Color',[0.8 0.8 0.8],'XLimMode','manual','YLimMode','manual')
-% set(gca,'ZDir','reverse')
-% hold on
-% plot(BottomY(BottomY~=0),BottomX(BottomY~=0),'k.-')
-%
-% for jj = 1:size(M,1)
-%     plot([SeedsDownDist(M(jj,1)),SeedsDownDist(M(jj,2))],[SeedsAcrossDist(M(jj,1)),SeedsAcrossDist(M(jj,2))],'k.-')
-% end
-%

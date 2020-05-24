@@ -1,22 +1,31 @@
-function [E, N, gridConv, pointScaleFactor, utmzone] = CFF_ll2tm(lon, lat, ellips, tmproj)
-% -------------------------------------------------------------------------
-% [E, N, gridConv, pointScaleFactor, utmzone] = CFF_ll2tm(lon, lat, ellipsoid, tmproj)
+%%% CFF_ll2tm.m
 %
-% Description:
-%    Converts geographic coordinates (Latitude, Longitude) to Transverse
-%    Mercator Projections coordinates (Northing, Easting). Also provides
-%    grid convergence (angle between true north and grid north), point
-%    scale factor and UTM zone if not specified in input. Different
-%    ellipsoids or projections can be specified.
+% Converts geographic coordinates (Latitude, Longitude) to Transverse
+% Mercator Projections coordinates (Northing, Easting). Also provides grid
+% convergence (angle between true north and grid north), point scale factor
+% and UTM zone if not specified in input. Different ellipsoids or
+% projections can be specified.    
 %
-% Input:
-%    - lat: Latitude scalar or vector in decimal degrees.  
-%    - lon: Longitude scalar or vector in decimal degrees.  
-%    - ellips: code string for the input coordinates' ellipsoid.
-%              supported codes: 'wgs84', 'grs80'
-%    - tmproj: code string for the ouptut transverse mercator projection.
-%              supported codes:
+%% Help
 %
+% *USE*
+%
+% _This section contains a more detailed description of what the function
+% does and how to use it, for the interested user to have an overall
+% understanding of its function. Example below to replace. Delete these
+% lines XXX._  
+%
+% This is a text file containing the basic comment template to add at the
+% start of any new ESP3 function to serve as function help. XXX 
+%
+% *INPUT VARIABLES*
+%
+% * |lon: Required. Longitude scalar or vector in decimal degrees.  
+% * |lat|: Required. Latitude scalar or vector in decimal degrees.  
+% * |ellips|: Required. code string for the input coordinates' ellipsoid.
+% Supported codes: 'wgs84', 'grs80' 
+% * |tmproj|: Required. Code string for the ouptut transverse mercator
+% projection. Supported codes: 
 %       'utm' -> Universal Transvere Mercator projection without zone
 %       specified. The function computes the longitudinal zone for input
 %       coordinates and returns the result in variable utmzone. Note: UTM
@@ -64,42 +73,51 @@ function [E, N, gridConv, pointScaleFactor, utmzone] = CFF_ll2tm(lon, lat, ellip
 %       'taietm2000' -> "North Taieri 2000".
 %       'bluftm2000' -> "Bluff 2000".
 %
-% Output:
-%    - E: projection easting scalar or vector
-%    - N: projection northing scalar or vector
-%    - gridConv: grid convergence in degrees. Grid convergence is the angle
-%    at a point between true and grid North. It is positive when grid north
-%    lies to the West of the true North.
-%    - pointScaleFactor: Point scale factor. The scale factor at a point
-%    away from the central meridian.
-%    - utmzone: UTM longitudinal zone (ouput if zone was not specified in
-%             input, i.e. ellips = 'utm')
+% *OUTPUT VARIABLES*
 %
-% Notes:
+% * |E|: Projection easting scalar or vector
+% * |N|: Projection northing scalar or vector
+% * |gridConv|: Grid convergence in degrees. Grid convergence is the angle
+% at a point between true and grid North. It is positive when grid north
+% lies to the West of the true North.  
+% * |pointScaleFactor|: Point scale factor. The scale factor at a point
+% away from the central meridian. 
+% * |utmzone|: UTM longitudinal zone (ouput if zone was not specified in
+% input, i.e. ellips = 'utm').
 %
-% - The GRS80 and WGS84 ellipsoids are so close that the differences in
-%   Lat/Long are usually considered insignificant for most applications.
-%   This function makes this assumption too, even though a fair conversion
-%   from say, WGS84 lat/long to a NZ projection based on GRS80 would
-%   require a datum transformation. If this function is ever extended to
-%   different ellipsoids, a datum transformation will be required.
+% *DEVELOPMENT NOTES*
 %
-% Author notes:
-%    This function is based on "LINZS25002. Standard for New Zealand
-%    Geodetic Datum 2000 Projections: version 2." and original code from
-%    "ll2tm.m" by David Johnson and Brett Beamsley (Metocean Solutions LTD). 
+% * The GRS80 and WGS84 ellipsoids are so close that the differences in
+% Lat/Long are usually considered insignificant for most applications. This
+% function makes this assumption too, even though a fair conversion from
+% say, WGS84 lat/long to a NZ projection based on GRS80 would require a
+% datum transformation. If this function is ever extended to different
+% ellipsoids, a datum transformation will be required.
+% * This function is based on "LINZS25002. Standard for New Zealand
+% Geodetic Datum 2000 Projections: version 2." and original code from
+% "ll2tm.m" by David Johnson and Brett Beamsley (Metocean Solutions LTD).
 %
-% Example:
+% *NEW FEATURES*
 %
-% Author: 
-%   Alexandre Schimel
-%   Coastal Marine Group - University of Waikato
-%   Hamilton, New Zealand
+% * 2018-10-11: new header
+% * 2010-06: first version.
 %
-% Version:
-%   June 2010
-% -------------------------------------------------------------------------
+% *EXAMPLE*
+%
+% _This section contains examples of valid function calls. Note that
+% example lines start with 3 white spaces so that the publish function
+% shows them correctly as matlab code. Example below to replace. Delete
+% these lines XXX._ 
+%
+%   example_use_1; % comment on what this does. XXX
+%   example_use_2: % comment on what this line does. XXX
+%
+% *AUTHOR, AFFILIATION & COPYRIGHT*
+%
+% Alexandre Schimel, University of Waikato
 
+%% Function
+function [E, N, gridConv, pointScaleFactor, utmzone] = CFF_ll2tm(lon, lat, ellips, tmproj)
 
 
 %% ellipsoid parameters:

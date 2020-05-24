@@ -56,8 +56,10 @@ maxX = max(x(:));
 XX = [floor(minX):res:ceil(maxX)];
 YY = [floor(minY):res:ceil(maxY)]';
 
-% initialize ZZ and WW arrays
-ZZ  = -999.*ones(length(YY),length(XX)); % remove NaNs to allow averaging
+% initialize the running count, the running weighted sum, and the running
+% sum of weights: 
+% N = zeros(length(YY),length(XX));
+WS = zeros(length(YY),length(XX));
 WW = zeros(length(YY),length(XX));
 
 % weight gridding
@@ -65,16 +67,20 @@ for ii = 1:length(x(:))
     
     if ~isnan(x(ii))
         
-        % get grid cell index
+        % get grid cell index to which this data point will contribute
         iR = round(((y(ii)-YY(1))./res)+1);
         iC = round(((x(ii)-XX(1))./res)+1);
         
-        % add new point to grid, updating based on weight
-        ZZ(iR,iC)  = ((ZZ(iR,iC).*WW(iR,iC))+z(ii).*w(ii))./(WW(iR,iC)+w(ii));
-        WW(iR,iC) = WW(iR,iC)+w(ii);
+        % calculate new values with added point
+        % N(iR,iC) = N(iR,iC) + 1;
+        WS(iR,iC) = WS(iR,iC) + w(ii).*z(ii);
+        WW(iR,iC) = WW(iR,iC) + w(ii);
         
     end
 end
 
-% put NaNs back in ZZ
-ZZ(ZZ==-999) = NaN;
+% at the end, divide the weighted sum by the sum of weights to get the
+% weighted average values
+ZZ = WS./WW;
+
+

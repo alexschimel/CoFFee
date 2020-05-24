@@ -126,6 +126,7 @@ end
 posLatitude  = fData.Po_D1_Latitude./20000000; % now in decimal degrees
 posLongitude = fData.Po_D1_Longitude./10000000; % now in decimal degrees
 posHeading   = fData.Po_D1_HeadingOfVessel./100; % now in degrees relative to north
+posSpeed     = fData.Po_D1_SpeedOfVesselOverGround./100; % now in m/s
 posTSMIM     = fData.Po_D1_TimeSinceMidnightInMilliseconds; % in ms
 
 heiHeight    = fData.He_D1_Height./100; % now m
@@ -175,6 +176,7 @@ pingE        = nan(size(pingTSMIM));
 pingN        = nan(size(pingTSMIM));
 pingGridConv = nan(size(pingTSMIM));
 pingHeading  = nan(size(pingTSMIM));
+pingSpeed    = nan(size(pingTSMIM));
 
 % interpolate Easting, Northing, Grid Convergence and Heading at ping times
 for jj = 1:length(pingTSMIM)
@@ -186,18 +188,21 @@ for jj = 1:length(pingTSMIM)
         pingN(jj) = posN(2) + (posN(2)-posN(1)).*(pingTSMIM(jj)-posTSMIM(2))./(posTSMIM(2)-posTSMIM(1));
         pingGridConv(jj) = posGridConv(2) + (posGridConv(2)-posGridConv(1)).*(pingTSMIM(jj)-posTSMIM(2))./(posTSMIM(2)-posTSMIM(1));
         pingHeading(jj) = posHeading(2) + (posHeading(2)-posHeading(1)).*(pingTSMIM(jj)-posTSMIM(2))./(posTSMIM(2)-posTSMIM(1));
+        pingSpeed(jj) = posSpeed(2) + (posSpeed(2)-posSpeed(1)).*(pingTSMIM(jj)-posTSMIM(2))./(posTSMIM(2)-posTSMIM(1));
     elseif A < 0
         % the ping time is more recent than any navigation time, extrapolate from the last items in navigation array.
         pingE(jj) = posE(end) + (posE(end)-posE(end-1)).*(pingTSMIM(jj)-posTSMIM(end))./(posTSMIM(end)-posTSMIM(end-1));
         pingN(jj) = posN(end) + (posN(end)-posN(end-1)).*(pingTSMIM(jj)-posTSMIM(end))./(posTSMIM(end)-posTSMIM(end-1));
         pingGridConv(jj) = posGridConv(end) + (posGridConv(end)-posGridConv(end-1)).*(pingTSMIM(jj)-posTSMIM(end))./(posTSMIM(end)-posTSMIM(end-1));
         pingHeading(jj) = posHeading(end) + (posHeading(end)-posHeading(end-1)).*(pingTSMIM(jj)-posTSMIM(end))./(posTSMIM(end)-posTSMIM(end-1));
+        pingSpeed(jj) = posSpeed(end) + (posSpeed(end)-posSpeed(end-1)).*(pingTSMIM(jj)-posTSMIM(end))./(posTSMIM(end)-posTSMIM(end-1));
     elseif ~isempty(iA)
         % the ping time corresponds to an existing navigation time, get easting and northing from it.
         pingE(jj) = posE(iA);
         pingN(jj) = posN(iA);
         pingGridConv(jj) = posGridConv(iA);
         pingHeading(jj) = posHeading(iA);
+        pingSpeed(jj) = posSpeed(iA);
     else
         % the ping time is within the limits of the navigation time array but doesn't correspond to any value in it, interpolate from nearest values
         iNegA = find(A<0);
@@ -211,6 +216,7 @@ for jj = 1:length(pingTSMIM)
         pingN(jj) = posN(iA(2)) + (posN(iA(2))-posN(iA(1))).*(pingTSMIM(jj)-posTSMIM(iA(2)))./(posTSMIM(iA(2))-posTSMIM(iA(1)));
         pingGridConv(jj) = posGridConv(iA(2)) + (posGridConv(iA(2))-posGridConv(iA(1))).*(pingTSMIM(jj)-posTSMIM(iA(2)))./(posTSMIM(iA(2))-posTSMIM(iA(1)));
         pingHeading(jj) = posHeading(iA(2)) + (posHeading(iA(2))-posHeading(iA(1))).*(pingTSMIM(jj)-posTSMIM(iA(2)))./(posTSMIM(iA(2))-posTSMIM(iA(1)));
+        pingSpeed(jj) = posSpeed(iA(2)) + (posSpeed(iA(2))-posSpeed(iA(1))).*(pingTSMIM(jj)-posTSMIM(iA(2)))./(posTSMIM(iA(2))-posTSMIM(iA(1)));
     end
 end
 
@@ -269,6 +275,7 @@ fData.X_P1_pingN        = pingN;
 fData.X_P1_pingH        = pingH;
 fData.X_P1_pingGridConv = pingGridConv;
 fData.X_P1_pingHeading  = pingHeading;
+fData.X_P1_pingSpeed    = pingSpeed;
 
 % fData.X_P1_pingAzimuth?
 % fData.X_P1_pingDepression?

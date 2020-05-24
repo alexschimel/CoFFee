@@ -1,6 +1,8 @@
-%% CFF_invpercentile.m
+%% CFF_check_ALLfilename.m
 %
-% Calculates inverse percentile
+% CFF_check_ALLfilename checks if input filename is a Kongsberg file
+% ("myfile.all" or "myfile.wcd") or the root name ("myfile") of a pair of
+% all/wcd and that it/they exist.
 %
 %% Help
 %
@@ -24,8 +26,9 @@
 % value if there is one (e.g. Default: '10'). Example below to replace.
 % Delete these lines XXX._
 % 
-% * |X|: Required. Description (Information). XXX
-% * |P|: Required. Description (Information). XXX
+% * |input_variable_1|: Description (Information). XXX
+% * |input_variable_2|: Description (Information). XXX
+% * |input_variable_3|: Description (Information). XXX
 %
 % *OUTPUT VARIABLES*
 %
@@ -33,7 +36,8 @@
 % and information. See input variables for template. Example below to
 % replace. Delete these lines XXX._
 %
-% * |V|: Description (Information). XXX
+% * |output_variable_1|: Description (Information). XXX
+% * |output_variable_2|: Description (Information). XXX
 %
 % *DEVELOPMENT NOTES*
 %
@@ -49,7 +53,7 @@
 % _This section contains dates and descriptions of major updates. Example
 % below to replace. Delete these lines XXX._
 %
-% * 2018-10-11: header
+% * YYYY-MM-DD: second version. Describes the update. XXX
 % * YYYY-MM-DD: first version. XXX
 %
 % *EXAMPLE*
@@ -64,18 +68,28 @@
 %
 % *AUTHOR, AFFILIATION & COPYRIGHT*
 %
-% Alexandre Schimel, Deakin University, NIWA. 
+% _This last section contains at least author name and affiliation. Delete
+% these lines XXX._ 
+%
+% Yoann Ladroit, Alexandre Schimel, NIWA. XXX
 
 %% Function
-function [V] = CFF_invpercentile(X,P)
+function out = CFF_check_ALLfilename(file)
 
-if all(isnan(X))
-    V = NaN;
-    return
+% does filename has an extension
+if ~isempty(CFF_file_extension(file))
+    % if filename has an extension
+    
+    % check it's a kongsberg file and that it exists.
+    out = CFF_is_Kongsberg_file(file) && exist(file,'file');
+    
+else
+    % if filename doesn't have an extension, aka file root
+    
+    % build the all and wcd full filenames
+    file = CFF_get_Kongsberg_files(file);
+    
+    % check that they both exist
+    out = exist(file{1},'file') && exist(file{2},'file');
+    
 end
-
-X = X(:);
-X = X(~isnan(X));
-X = sort(X);
-iP = round(P.*numel(X)./100);
-V = X(iP);

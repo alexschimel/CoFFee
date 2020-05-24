@@ -1,131 +1,170 @@
-function [fData] = CFF_filter_WC_bottom_detect(fData,varargin)
-% [fData] = CFF_filter_WC_bottom_detect(fData,varargin)
+%% CFF_filter_WC_bottom_detect.m
 %
-% DESCRIPTION
+% Filter the bottom detect in watercolumn data
 %
-% Filter bottom detection in watercolumn data
+%% Help
 %
-% INPUT VARIABLES
+% *USE*
 %
-% - varargin{1} "method": method for bottom filtering/processing
-%   - noFilter: None
-%   - alex: medfilt2 + inpaint_nans (default)
-%   - amy: ...
+% fData = CFF_filter_WC_bottom_detect(fData,varargin) gets the bottom
+% sample in fData (fData.X_BP_bottomSample) and filter it according to
+% parameters in varargin. The end result is an updated X_BP_bottomSample
+% field.
 %
-% OUTPUT VARIABLES
+% X_BP_bottomSample is initially created with function
+% CFF_georeference_WC_bottom_detect.m from raw data. This function then filters
+% that result and overwrite that field, allowing for using it several times
+% in a row if desired.
 %
-% - fData
+% *INPUT VARIABLES*
 %
-% RESEARCH NOTES
+% * |fData|: Required. Structure for the storage of kongsberg EM series
+% multibeam data in a format more convenient for processing. The data is
+% recorded as fields coded "a_b_c" where "a" is a code indicating data
+% origing, "b" is a code indicating data dimensions, and "c" is the data
+% name. See the help of function CFF_convert_ALLdata_to_fData.m for
+% description of codes. 
+% * |method|: Optional/parameters. Either 'filter' to apply median filter
+% to all bottom detects (default), or 'flag' to find & delete bad bottom
+% detects.
+% * |pingBeamWindowSize|: Optional/parameters. The number of pings and
+% beams to define neighbours to each bottom detect. 1x2 int array, valid
+% entries zero or positive. Set 0 to use just current ping, inf for all
+% pings (long computing time). Set 0 to use just current beam, inf for all
+% beams (long computing time). Default: [5,5].
 %
-% NEW FEATURES
+% * |maxHorizDist|: Optional/parameters. Maximum horizontal distance to
+% consider neighbours. valid entries: numeric, non-zero, positive. Use inf
+% to indicate NOT using a max horizontal distance (default)
 %
-% - 2016-12-01: Using the new "X_PB_bottomSample" field in fData rather
+% * |flagParams|: Optional/parameters. Struct with fields 'type' (char,
+% valid entries 'all' or 'median'); 'variable' (char, valid entries 'slope',
+% 'eucliDist' or 'vertDist'); and 'threshold' (num).  
+%
+% * |interpolate|: Optional/parameters. Interpolate missing values or not.
+% char, valid entries 'yes' (default) or 'no'.
+%
+% *OUTPUT VARIABLES*
+%
+% * |fData|: fData structure with updated "X_BP_bottomSample" field.
+%
+% *DEVELOPMENT NOTES*
+%
+% * Not too happy with how the filtering changes values in outer beams.
+% Look into it....
+%
+% *NEW FEATURES*
+%
+% * 2018-10-11: clean-up for CoFFee v3
+% * 2017-10-10: new v2 functions because of dimensions swap (Alex Schimel)
+% * 2016-12-01: Using the new "X_PB_bottomSample" field in fData rather
 % than "b1"
-% - 2016-11-07: First version. Code taken from CFF_filter_watercolumn.m
+% * 2016-11-07: First version. Code taken from CFF_filter_watercolumn.m
 %
-%%%
-% Alex Schimel, Deakin University
-%%%
+% *EXAMPLE*
+%
+% _This section contains examples of valid function calls. Note that
+% example lines start with 3 white spaces so that the publish function
+% shows them correctly as matlab code. Example below to replace. Delete
+% these lines XXX._ 
+%
+%   example_use_1; % comment on what this does. XXX
+%   example_use_2: % comment on what this line does. XXX
+%
+% *AUTHOR, AFFILIATION & COPYRIGHT*
+%
+% Alexandre Schimel, Waikato University, Deakin University, NIWA. Yoann
+% Ladroit, NIWA. 
 
-
+%% function
+function [fData] = CFF_filter_WC_bottom_detect(fData,varargin)
 
 %% INPUT PARSER
 
 % initialize input parser
 p = inputParser;
 
-% 'fData': The multibeam data structure.
+
 % Required.
 validate_fData = @isstruct;
 addRequired(p,'fData',validate_fData);
 
-% 'method': apply median filter to all bottom detects (filter), or find &
-% delete bad bottom detects (flag).
-% Optional -> Default: 'filter'.
+% 'method': 
 validate_method = @(x) ismember(x,{'filter','flag'});
 default_method = 'filter';
 addOptional(p,'method',default_method,validate_method);
 
-% 'pingBeamWindowSize': the number of pings and beams to define neighbours
-% to each bottom detect. 1x2 int array, valid entries zero or positive.
-% Use inf to indicate use of all pings or beams.
-% set 0 to use just current ping, inf for all pings (long computing time)
-% set 0 to use just current beam, inf for all beams (long computing time)
-
-% Optional -> Default: [5,5].
+% 'pingBeamWindowSize':
 validate_pingBeamWindowSize = @(x) validateattributes(x,{'numeric'},{'size',[1,2],'integer','nonnegative'});
 default_pingBeamWindowSize = [5,5];
 addOptional(p,'pingBeamWindowSize',default_pingBeamWindowSize,validate_pingBeamWindowSize);
 
-% 'maxHorizDist': maximum horizontal distance to consider neighbours. num,
-% valid entries non-zero positive. Use inf to indicate not using a maz
-% horizontal distance.
-% set inf to not filter by horizontal distance
-
-% Optional - Default: inf
+% 'maxHorizDist':
 validate_maxHorizDist = @(x) validateattributes(x,{'numeric'},{'scalar','positive'});
 default_maxHorizDist = inf;
 addOptional(p,'maxHorizDist',default_maxHorizDist,validate_maxHorizDist);
 
-% 'interpolate': interpolate missing values or not. char, valid entries 'yes or 'no'.
-% Optional -> Default 'yes'
-validate_interpolate = @(x) ismember(x,{'yes','no'});
-default_interpolate = 'yes';
-addOptional(p,'interpolate',default_interpolate,validate_interpolate);
-
-% optional 'flagParams', struct with fields:
-%   type, char, valid entries 'all' or 'median'
-%   variable, char, valid entries 'slope', 'eucliDist' or 'vertDist'
-%   threshold, num
+% 'flagParams':
 validate_flagParams = @(x) isstruct(x);
 default_flagParams = struct('type','all','variable','vertDist','threshold',1);
 addOptional(p,'flagParams',default_flagParams,validate_flagParams);
 
+% 'interpolate':
+validate_interpolate = @(x) ismember(x,{'yes','no'});
+default_interpolate = 'yes';
+addOptional(p,'interpolate',default_interpolate,validate_interpolate);
+
 % parsing actual inputs
 parse(p,fData,varargin{:});
 
+% saving results individually
+method             = p.Results.method;
+pingBeamWindowSize = p.Results.pingBeamWindowSize;
+maxHorizDist       = p.Results.maxHorizDist;
+flagParams         = p.Results.flagParams;
+interpolateFlag    = p.Results.interpolate;
+clear p
 
 
 %% PRE-PROCESSING
 
 % extract needed data
-b0 = fData.X_PB_bottomSample;
-bE = fData.X_PB_bottomEasting;
-bN = fData.X_PB_bottomNorthing;
-bH = fData.X_PB_bottomHeight;
+b0 = fData.X_BP_bottomSample; % this calculated field is recorded after "CFF_georeference_WC_bottom_detect", and overwritten every time we filter, to allow extra filtering.
+bE = fData.X_BP_bottomEasting;
+bN = fData.X_BP_bottomNorthing;
+bH = fData.X_BP_bottomHeight;
+
 b0(b0==0) = NaN; % repace no detects by NaNs
-nPings = size(b0,1);
-nBeams = size(b0,2);
+
+% dimensions
+nBeams = size(b0,1);
+nPings = size(b0,2);
 
 % initialize results
 b1 = b0;
 
 
-
 %% PROCESSSING
-switch p.Results.method
+switch method
     
     case 'filter'
         
-        if isinf(p.Results.maxHorizDist)
+        if isinf(maxHorizDist)
             
             % filter method, no limit on horiz distance
-            tic
             for pp = 1:nPings
                 for bb = 1:nBeams
                     % find the subset of all bottom detects within set interval in pings and beams
-                    pmin = max(1,pp-p.Results.pingBeamWindowSize(1));
-                    pmax = min(nPings,pp+p.Results.pingBeamWindowSize(1));
-                    bmin = max(1,bb-p.Results.pingBeamWindowSize(2));
-                    bmax = min(nBeams,bb+p.Results.pingBeamWindowSize(2));
+                    pmin = max(1,pp-pingBeamWindowSize(1));
+                    pmax = min(nPings,pp+pingBeamWindowSize(1));
+                    bmin = max(1,bb-pingBeamWindowSize(2));
+                    bmax = min(nBeams,bb+pingBeamWindowSize(2));
                     % get bottom for subset
-                    subBottom = b0(pmin:pmax,bmin:bmax);
+                    subBottom = b0(bmin:bmax,pmin:pmax);
                     % compute median value
-                    b1(pp,bb) = median(subBottom(:),'omitnan');
+                    b1(bb,pp) = median(subBottom(:),'omitnan');
                 end
             end
-            toc
             
         else
             
@@ -133,21 +172,21 @@ switch p.Results.method
             for pp = 1:nPings
                 for bb = 1:nBeams
                     % find the subset of all bottom detects within set interval in pings and beams
-                    pmin = max(1,pp-p.Results.pingBeamWindowSize(1));
-                    pmax = min(nPings,pp+p.Results.pingBeamWindowSize(1));
-                    bmin = max(1,bb-p.Results.pingBeamWindowSize(2));
-                    bmax = min(nBeams,bb+p.Results.pingBeamWindowSize(2));
+                    pmin = max(1,pp-pingBeamWindowSize(1));
+                    pmax = min(nPings,pp+pingBeamWindowSize(1));
+                    bmin = max(1,bb-pingBeamWindowSize(2));
+                    bmax = min(nBeams,bb+pingBeamWindowSize(2));
                     % get bottom for subset
-                    subBottom = b0(pmin:pmax,bmin:bmax);
+                    subBottom = b0(bmin:bmax,pmin:pmax);
                     % get easting and northing
-                    subEasting = bE(pmin:pmax,bmin:bmax);
-                    subNorthing = bN(pmin:pmax,bmin:bmax);
+                    subEasting = bE(bmin:bmax,pmin:pmax);
+                    subNorthing = bN(bmin:bmax,pmin:pmax);
                     % compute horizontal distance in m
-                    subHzDist = sqrt( (bE(pp,bb)-subEasting).^2 + (bN(pp,bb)-subNorthing).^2 );
+                    subHzDist = sqrt( (bE(bb,pp)-subEasting).^2 + (bN(bb,pp)-subNorthing).^2 );
                     % keep only subset within desired horizontal distance
-                    subBottom(subHzDist>p.Results.maxHorizDist) = NaN;
+                    subBottom(subHzDist>maxHorizDist) = NaN;
                     % compute median value
-                    b1(pp,bb) = median(subBottom(:),'omitnan');
+                    b1(bb,pp) = median(subBottom(:),'omitnan');
                 end
             end
             
@@ -156,7 +195,7 @@ switch p.Results.method
     case 'flag'
         
         % get flagging type first
-        switch p.Results.flagParams.type
+        switch flagParams.type
             case 'all'
                 f = @(x)all(x);
             case 'median'
@@ -171,42 +210,28 @@ switch p.Results.method
         for pp = 1:nPings
             for bb = 1:nBeams
                 % first off, flag method is inapplicable if BT doesn't exist.
-                if isnan(b0(pp,bb))
-                    % keep b1(pp,bb) as Nan.
+                if isnan(b0(bb,pp))
+                    % keep b1(bb,pp) as Nan.
                     continue
                 end
                 % find the subset of all bottom detects within set interval in pings and beams
-                pmin = max(1,pp-p.Results.pingBeamWindowSize(1));
-                pmax = min(nPings,pp+p.Results.pingBeamWindowSize(1));
-                bmin = max(1,bb-p.Results.pingBeamWindowSize(2));
-                bmax = min(nBeams,bb+p.Results.pingBeamWindowSize(2));
-                % index of BT in the subset
-                pid = find(pp==pmin:pmax);
-                bid = find(bb==bmin:bmax);
-                % get easting, northing and height
-                subEasting = bE(pmin:pmax,bmin:bmax);
-                subNorthing = bN(pmin:pmax,bmin:bmax);
-                subHeight = bH(pmin:pmax,bmin:bmax);
-                % remove the BT itself from the subset
-                subEasting(pid,bid) = NaN;
-                subNorthing(pid,bid) = NaN;
-                subHeight(pid,bid) = NaN;
-                % compute horizontal distance in m
-                subHzDist = sqrt( (bE(pp,bb)-subEasting).^2 + (bN(pp,bb)-subNorthing).^2 );
-                % keep only subset within desired horizontal distance
-                subEasting(subHzDist>p.Results.maxHorizDist) = NaN;
-                subNorthing(subHzDist>p.Results.maxHorizDist) = NaN;
-                subHeight(subHzDist>p.Results.maxHorizDist) = NaN;
-                subHzDist(subHzDist>p.Results.maxHorizDist) = NaN;
+                pmin = max(1,pp-pingBeamWindowSize(1));
+                pmax = min(nPings,pp+pingBeamWindowSize(1));
+                bmin = max(1,bb-pingBeamWindowSize(2));
+                bmax = min(nBeams,bb+pingBeamWindowSize(2));
+                
+                subHzDist = sqrt( (bE(bb,pp)-bE(bmin:bmax,pmin:pmax)).^2 + (bN(bb,pp)-bN(bmin:bmax,pmin:pmax)).^2 );
+                subHzDist(subHzDist>maxHorizDist) = NaN;
+                
                 % if there are no subset left, flag that bottom anyway
                 if all(isnan(subHzDist(:)))
-                    b1(pp,bb) = NaN;
+                    b1(bb,pp) = NaN;
                     continue
                 end
                 % compute vertical distance in m
-                subVertDist = subHeight-bH(pp,bb);
+                subVertDist = bH(bmin:bmax,pmin:pmax)-bH(bb,pp);
                 % now switch on the flagging variable
-                switch p.Results.flagParams.variable
+                switch flagParams.variable
                     case 'vert'
                         v = subVertDist(:);
                     case 'eucl'
@@ -221,8 +246,8 @@ switch p.Results.method
                         error('flagParams.variable not recognized')
                 end
                 % finally, apply flagging decision
-                if f(abs(v)) > p.Results.flagParams.threshold
-                    b1(pp,bb) = NaN;
+                if f(abs(v) > flagParams.threshold)
+                    b1(bb,pp) = NaN;
                 end
             end
         end
@@ -234,27 +259,12 @@ end
 
 
 
-% NOTE: OLD METHOD:
-% % apply a median filter (medfilt1 should do about the same)
-% % fS = ceil((p.Results.beamFilterLength-1)./2);
-% fS = p.Results.pingBeamWindowSize(2);
-% for ii=1:nPings
-%     for jj = 1+fS:nBeams-fS
-%         tmp = b0(ii,jj-fS:jj+fS);
-%         tmp = tmp(~isnan(tmp(:)));
-%         if ~isempty(tmp)
-%             b2(ii,jj) = median(tmp);
-%         end
-%     end
-% end
-
-
 %% INTERPOLATE
-switch p.Results.interpolate
+switch interpolateFlag
     
     case 'yes'
         
-        b1 = round(CFF_inpaint_nans(b1));
+        b1 = round(inpaint_nans(b1));
         
         % safeguard against inpaint_nans occasionally yielding numbers
         % below zeros in areas where there are a lot of nans:
@@ -269,16 +279,29 @@ end
 % minb = min([b0(:);b1(:)]); maxb= max([b0(:);b1(:)]);
 % subplot(221); imagesc(b0); colorbar; title('range of raw bottom'); caxis([minb maxb])
 % subplot(222); imagesc(b1); colorbar; title('range of filtered bottom'); caxis([minb maxb])
-% subplot(223); imagesc(b1-b0); colorbar; title('filtered-raw')
+% subplot(223); imagesc(b1-b0); colorbar; title('filtered minus raw')
 
 %% SAVING RESULTS
-fData.X_PB_bottomSample = b1;
+fData.X_BP_bottomSample = b1;
 
 %% RE-PROCESSING BOTTOM FROM RESULTS
-fData = CFF_process_WC_bottom_detect(fData);
+fData = CFF_georeference_WC_bottom_detect(fData);
 
 
 
+%% obsolete code
 
-
+% % OLD method for filtering bottom
+% % apply a median filter (medfilt1 should do about the same)
+% % fS = ceil((p.Results.beamFilterLength-1)./2);
+% fS = pingBeamWindowSize(2);
+% for ii = 1+fS:nBeams-fS
+%   for jj=1:nPings
+%         tmp = b0(ii,jj-fS:jj+fS);
+%         tmp = tmp(~isnan(tmp(:)));
+%         if ~isempty(tmp)
+%             b2(ii,jj) = median(tmp);
+%         end
+%     end
+% end
 

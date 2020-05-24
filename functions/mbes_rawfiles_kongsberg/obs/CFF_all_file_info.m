@@ -1,7 +1,7 @@
 %% CFF_all_file_info.m
 %
 % Records basic info about the datagrams contained in one Kongsberg EM
-% series binary .all or .wcd data file. 
+% series binary .all or .wcd data file.
 %
 %% Help
 %
@@ -13,53 +13,44 @@
 %
 % *INPUT VARIABLES*
 %
-% * |ALLfilename|: Required. String filename to parse (extension in .all or
-% .wcd) 
+% REQUIRED:
+% * |ALLfilename|: string filename to parse (extension in .all or .wcd)
 %
 % *OUTPUT VARIABLES*
 %
 % * |ALLfileinfo|: structure containing information about datagrams in
-% ALLfilename, with fields:  
-%     * |ALLfilename|: input file name
-%     * |filesize|: file size in bytes
-%     * |datagsizeformat|: endianness of the datagram size field 'b' or 'l'
-%     * |datagramsformat|: endianness of the datagrams 'b' or 'l'
-%     * |datagNumberInFile|: number of datagram in file
-%     * |datagPositionInFile|: position of beginning of datagram in file
-%     * |datagTypeNumber|: for each datagram, SIMRAD datagram type in
-%     decimal 
-%     * |datagTypeText|: for each datagram, SIMRAD datagram type
-%     description 
-%     * |parsed|: 0 for each datagram at this stage. To be later turned to
-%     1 for parsing 
-%     * |counter|: the counter of this type of datagram in the file (ie
-%     first datagram of that type is 1 and last datagram is the total
-%     number of datagrams of that type)
-%     * |number|: the number/counter found in the datagram (usually
-%     different to counter) 
-%     * |size|: for each datagram, datagram size in bytes
-%     * |syncCounter|: for each datagram, the number of bytes founds
-%     between this datagram and the previous one (any number different than
-%     zero indicates a sync error)
-%     * |emNumber|: EM Model number (eg 2045 for EM2040c)
-%     * |date|: datagram date in YYYMMDD
-%     * |timeSinceMidnightInMilliseconds|: time since midnight in msecs 
+% ALLfilename, with fields: 
+%   * |ALLfilename|: input file name
+%   * |filesize|: file size in bytes
+%   * |datagsizeformat|: endianness of the datagram size field 'b' or 'l'
+%   * |datagramsformat|: endianness of the datagrams 'b' or 'l'
+%   * |datagNumberInFile|: number of datagram in file
+%   * |datagPositionInFile|: position of beginning of datagram in file
+%   * |datagTypeNumber|: for each datagram, SIMRAD datagram type in decimal
+%   * |datagTypeText|: for each datagram, SIMRAD datagram type description
+%   * |parsed|: 0 for each datagram at this stage. To be later turned to 1 for parsing
+%   * |counter|: the counter of this type of datagram in the file (ie first datagram of that type is 1 and last datagram is the total number of datagrams of that type)
+%   * |number|: the number/counter found in the datagram (usually different to counter)
+%   * |size|: for each datagram, datagram size in bytes
+%   * |syncCounter|: for each datagram, the number of bytes founds between this datagram and the previous one (any number different than zero indicates a sync error)
+%   * |emNumber|: EM Model number (eg 2045 for EM2040c)
+%   * |date|: datagram date in YYYMMDD
+%   * |timeSinceMidnightInMilliseconds|: time since midnight in msecs 
 %
-% *DEVELOPMENT NOTES*
+% *RESEARCH NOTES*
 %
 % * The code currently lists the EM model numbers supported as a test for
-% sync. Add your model number in the list if it is not currently there (and
-% if the parsing works). It would be better to remove this test and try to
-% sync on ETX and Checksum instead.
+% sync. Add your model number in the list if it is not currently there. It
+% would be better to remove this test and try to sync on ETX and Checksum
+% instead.
 % * Check regularly with Kongsberg doc to keep updated with new datagrams.
 %
 % *NEW FEATURES*
 %
-% * 2018-10-11: updated header before adding to Coffee v3
 % * 2017-10-17: changed way filesize is calculated without it reading the
-% entire file
-% * 2017-06-29: header updated
-% * 2015-09-30: first version taking from convert_all_to_mat
+% entire file (Alex Schimel)
+% * 2017-06-29: header updated (Alex Schimel)
+% * 2015-09-30: first version taking from convert_all_to_mat (Alex Schimel)
 %
 % *EXAMPLE*
 %
@@ -68,14 +59,14 @@
 %
 % *AUTHOR, AFFILIATION & COPYRIGHT*
 %
-% Alexandre Schimel, Waikato University, Deakin University, NIWA.
+% Alexandre Schimel, NIWA.
 
 %% Function
 function ALLfileinfo = CFF_all_file_info(ALLfilename)
 
 %% supported systems:
 % see help for info
-emNumberList = [300; 302; 710; 2040; 2045; 3000; 3002; 3020]; %2045 is 2040c
+emNumberList = [300; 302; 2040; 2045; 3000; 3002; 3020]; %2045 is 2040c
 
 
 %% Input arguments management using inputParser
@@ -104,12 +95,15 @@ ALLfilename = p.Results.ALLfilename;
 % opening file
 [fid,~] = fopen(ALLfilename, 'r');
 
+% number of bytes in file
+% OLD APPROACH was reading and saving into memory the entire file!!!
+% temp = fread(fid,inf,'uint8');
+% filesize = length(temp);
+% clear temp
+% NEW APPROACH
 % go to end of file
 fseek(fid,0,1);
-
-% number of bytes in file
 filesize = ftell(fid);
-
 % rewind to start
 fseek(fid,0,-1);
 
@@ -262,12 +256,6 @@ while 1
             try i68=i68+1; catch, i68=1; end
             counter = i68;
             
-        case 71
-            datagTypeText='SURFACE SOUND SPEED (47H)';
-            % counter for this type of datagram
-            try i71=i71+1; catch, i71=1; end
-            counter = i71;
-            
         case 72
             
             datagTypeText = 'HEADING (48H)';
@@ -388,14 +376,8 @@ while 1
             try i110=i110+1; catch, i110=1; end
             counter = i110;
             
-        case 114 
-             datagTypeText = 'AMPLITUDE AND PHASE WC DATAGRAM 114 (72H)';
-            
-            % counter for this type of datagram
-            try i114=i114+1; catch, i114=1; end
-            counter = i114;
         otherwise
-
+            
             % this datagTypeNumber is not recognized yet
             datagTypeText = {sprintf('UNKNOWN DATAGRAM (%sH)',dec2hex(datagTypeNumber))};
             

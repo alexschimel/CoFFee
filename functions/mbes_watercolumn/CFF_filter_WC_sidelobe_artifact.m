@@ -1,38 +1,48 @@
-function [fData] = CFF_filter_WC_sidelobe_artifact(fData,varargin)
-% [fData] = CFF_filter_WC_sidelobe_artifact(fData,varargin)
+%% CFF_filter_WC_sidelobe_artifact.m
 %
-% DESCRIPTION
+% Filter the water column specular/sidelobe artifact
 %
-% Filter water column artifact 
+%% Help
 %
-% INPUT VARIABLES
+% *USE*
 %
-% - varargin{1} "method_spec": method for removal of specular reflection
-%   - 0: None. Keep original
-%   - 1: in devpt
-%   - 2: (default)
-%   - 3: de Moustier's 75th percentile
+% _This section contains a more detailed description of what the function
+% does and how to use it, for the interested user to have an overall
+% understanding of its function. Example below to replace. Delete these
+% lines XXX._  
 %
-% OUTPUT VARIABLES
+% This is a text file containing the basic comment template to add at the
+% start of any new ESP3 function to serve as function help. XXX 
 %
-% - fData
+% *INPUT VARIABLES*
 %
-% RESEARCH NOTES
+% * |fData|: Required. Structure for the storage of kongsberg EM series
+% multibeam data in a format more convenient for processing. The data is
+% recorded as fields coded "a_b_c" where "a" is a code indicating data
+% origing, "b" is a code indicating data dimensions, and "c" is the data
+% name. See the help of function CFF_convert_ALLdata_to_fData.m for
+% description of codes. 
+% * |method_spec|: Optional/Parameters. Method for removal of specular
+% reflection. Default: 2
 %
-% dataset have three dimensions: ping #, beam # and sample #.
+% *OUTPUT VARIABLES*
 %
-% calculating the average backcatter level across samples, would allow
+% * |fData|: fData structure updated with "X_SBP_WaterColumnProcessed" now
+% filtered.
+%
+% *DEVELOPMENT NOTES*
+%
+% * IMPORTANT: only method 2 has been updated. All other methods don't
+% work. to update XXX.
+% * dataset have three dimensions: ping #, beam # and sample #. Calculating
+% the average backcatter level across samples, would allow 
 % us to spot the beams that have constantly higher or lower energy in a
 % given ping. Doing this only for samples in the watercolumn would allow us
-% to normalize the energy in the watercolumn of a ping
-%
-% calculating the average backcatter across all beams would allow
+% to normalize the energy in the watercolumn of a ping. Calculating the
+% average backcatter across all beams would allow 
 % us to spot the samples that have constantly higher or lower energy in a
 % given ping.
-%
-% MORE PROCESSING ideas:
-%
-% the circular artifact on the bottom is due to specular reflection
+% * the circular artifact on the bottom is due to specular reflection
 % affecting all beams.
 % -> remove in each ping by averaging the level at a given range across
 % all beams.
@@ -53,231 +63,272 @@ function [fData] = CFF_filter_WC_sidelobe_artifact(fData,varargin)
 % different steering angles, hence different beamwidths.
 % -> Average not for each beam, but for each steering angle. Sample should
 % be fine.
-% 
 %
-% NEW FEATURES
+% *NEW FEATURES*
 %
-% - 2016-11-07: First version. Code taken from CFF_filter_watercolumn.m
+% * 2018-10-11: Updated header before adding to Coffee v3
+% * 2018-10-09: in this new version, the filtering is using
+% fData.X_SBP_WaterColumnProcessed as source data, whatever it is. By
+% running this function just after CFF_initialize_WC_processing that copy
+% the original data into fData.X_SBP_WaterColumnProcessed, one can filter
+% the original data. If you mask after initialization, the filtering will
+% be applied to that masked original data, etc.
+% * 2016-10-10: v2 for new datasets recorded as SBP instead of PBS
+% * 2016-11-07: First version. Code taken from CFF_filter_watercolumn.m
 %
-%%%
-% Alex Schimel, Deakin University
-%%%
+% *EXAMPLE*
+%
+% _This section contains examples of valid function calls. Note that
+% example lines start with 3 white spaces so that the publish function
+% shows them correctly as matlab code. Example below to replace. Delete
+% these lines XXX._ 
+%
+%   example_use_1; % comment on what this does. XXX
+%   example_use_2: % comment on what this line does. XXX
+%
+% *AUTHOR, AFFILIATION & COPYRIGHT*
+%
+% Alexandre Schimel, Waikato University, Deakin University, NIWA. 
+% Yoann Ladroit, NIWA. 
 
-% random comment
+%% Function
+function [fData] = CFF_filter_WC_sidelobe_artifact(fData,varargin)
 
-%% Extract needed data
-L0 = fData.WC_PBS_SampleAmplitudes./2; % original level divided by 2 (see kongsberg datagrams document)
-bottomSample = fData.X_PB_bottomSample; % original bottom detect
-nPings = size(L0,1);
-nBeams = size(L0,2);
-nSamples = size(L0,3);
+%% INPUT PARSING
 
-%% Set methods
 method_spec = 2; % default
-if nargin==1
+if nargin == 1
     % fData only. keep default
-elseif nargin==2
+elseif nargin == 2
     method_spec = varargin{1};
 else
     error('wrong number of input variables')
 end
 
 
-%% MAIN PROCESSING SWITCH
+%% Extract info about WCD
+wcdata_class  = fData.X_1_WaterColumnProcessed_Class; % int8 or int16
+wcdata_factor = fData.X_1_WaterColumnProcessed_Factor;
+wcdata_nanval = fData.X_1_WaterColumnProcessed_Nanval;
+[nSamples, nBeams, nPings] = size(fData.X_SBP_WaterColumnProcessed.Data.val);
+
+
+%% MAIN PROCESSING METHOD SWITCH
 switch method_spec
     
     case 0
         
         % No filtering. Keep original
-        L1 = L0;
+        if memoryMapFlag
+            % create binary file
+            
+            file_X_SBP_L1 = fullfile(wc_dir,'X_SBP_L1.dat');
+            % open
+            fileID_X_SBP_L1 = fopen(file_X_SBP_L1,'w+');
+            % write
+            fwrite(fileID_X_SBP_L1, CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',datagramSource),[],1,1),'int8');
+            % close
+            fclose(fileID_X_SBP_L1);
+            % Dimensions
+            [nSamples,nBeams,nPings] = size(fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)).Data.val);
+            % re-open as memmapfile
+            fData.X_SBP_L1 = memmapfile(file_X_SBP_L1, 'Format',{'int8' [nSamples nBeams nPings] 'val'},'repeat',1,'writable',true);
+        else
+            fData.X_SBP_L1.Data.val =  CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',datagramSource),[],1,1);
+        end
         
     case 1
         
         % for each ping, and each sample range, calculate the average level
         % over all beams and remove it
         
-        % Compute mean level and std
-        [meanAcrossPings,stdAcrossPings] = CFF_nanstat3(L0,1);
-        [meanAcrossBeams,stdAcrossBeams] = CFF_nanstat3(L0,2);
-        [meanAcrossSamples,stdAcrossSamples] = CFF_nanstat3(L0,3);
+        % Dimensions
+        [nSamples,nBeams,nPings] = size(fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)).Data.val);
         
-        % display the mean
-        figure; imagesc(squeeze(meanAcrossPings)); xlabel('samples'); ylabel('beams')
-        figure; imagesc(squeeze(meanAcrossBeams)); xlabel('samples'); ylabel('pings')
-        figure; imagesc(squeeze(meanAcrossSamples)); xlabel('beams'); ylabel('pings')
+        % init arrays
+        if memoryMapFlag
+            % create binary file
+            file_X_SBP_L1 = fullfile(wc_dir,'X_SBP_L1.dat');
+            fileID_X_SBP_L1 = fopen(file_X_SBP_L1,'w+');
+        else
+            % initialize numerical arrays
+            fData.X_SBP_L1.Data.val = zeros(nSamples,nBeams,nPings,'int8');
+        end
         
-        % repmat for removal
-        meanAcrossPings3   = repmat(meanAcrossPings,[nPings,1,1]);
-        stdAcrossPings3    = repmat(stdAcrossPings,[nPings,1,1]);
-        meanAcrossBeams3   = repmat(meanAcrossBeams,[1,nBeams,1]);
-        stdAcrossBeams3    = repmat(stdAcrossBeams,[1,nBeams,1]);
-        meanAcrossSamples3 = repmat(meanAcrossSamples,[1,1,nSamples]);
-        stdAcrossSamples3  = repmat(stdAcrossSamples,[1,1,nSamples]);
+        % Compute mean level across beams:
+        meanAcrossBeams   = nanmean(CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',datagramSource),[],1,1),2);
         
         % remove this mean:
-        Corr1a = L0 - meanAcrossPings3;
-        Corr1b = L0 - meanAcrossBeams3;
-        Corr1c = L0 - meanAcrossSamples3;
-        Corr1d = L0 - meanAcrossBeams3 - meanAcrossSamples3;
+        X_SBP_L1 = bsxfun(@minus,CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',datagramSource),[],1,1),meanAcrossBeams); % removing mean across beams
         
-        % display
-        CFF_watercolumn_display(fData,L0,'wedge')
-        CFF_watercolumn_display(fData,Corr1a,'flat')
-        CFF_watercolumn_display(fData,Corr1b,'flat')
-        CFF_watercolumn_display(fData,Corr1c,'flat')
-        CFF_watercolumn_display(fData,Corr1d,'flat')
+        % note the same technique could maybe be applied in other
+        % dimensions? across samples?
+        % meanAcrossSamples = nanmean(fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)).Data.val./2,1);
+        % X_SBP_L1 = bsxfun(@minus,fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)).Data.val./2,meanAcrossSamples); % removing mean across samples
+        %
+        % across pings?
+        % meanAcrossPings   = nanmean(fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)).Data.val./2,3);
+        % X_SBP_L1 = bsxfun(@minus,fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)).Data.val./2,meanAcrossPings); % removing mean across pings
+        %
+        % what about across pings then across samples? (VERY experimental)
+        % X_SBP_L1 = bsxfun(@minus,bsxfun(@minus,fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)).Data.val./2,meanAcrossBeams),meanAcrossSamples); % removing mean across pings THEN mean across samples (experimental)
+        %
+        % Maybe something could be done with the std across dimensions?
+        % stdAcrossSamples  = std(fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)).Data.val./2,[],1,'omitnan');
+        % stdAcrossBeams    = std(fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)).Data.val./2,[],2,'omitnan');
+        % stdAcrossPings    = std(fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)).Data.val./2,[],3,'omitnan');
         
-        % keep as L1
-        L1 = Corr1b;
+        % saving result
+        if memoryMapFlag
+            % write into binary files:
+            fwrite(fileID_X_SBP_L1,X_SBP_L1,'single');
+        else
+            % save in array
+            fData.X_SBP_L1.Data.val = X_SBP_L1;
+        end
+        
+        % finalize if memmap files, some finishing up code necessary...
+        if memoryMapFlag
+            
+            % close binary files
+            fclose(fileID_X_SBP_L1);
+            
+            % re-open files as memmapfile
+            fData.X_SBP_L1 = memmapfile(file_X_SBP_L1, 'Format',{'int8' [nSamples nBeams nPings] 'val'},'repeat',1,'writable',true);
+            
+        end
         
     case 2
         
-        % same but a little bit more complex
         
-        % Corr2a = nan(size(L0));
-        Corr2b = nan(size(L0));
-        % Corr2c = nan(size(L0));
-        % Corr2d = nan(size(L0));
+        %% prep
         
-        for ip=1:nPings
+        % define 11 middle beams for reference level
+        nadirBeams = (floor((nBeams./2)-5):ceil((nBeams./2)+5)); % middle beams
+        
+        %% Block processing
+        
+        % block processing setup
+        blockLength = 10;
+        nBlocks = ceil(nPings./blockLength);
+        blocks = [ 1+(0:nBlocks-1)'.*blockLength , (1:nBlocks)'.*blockLength ];
+        blocks(end,2) = nPings;
+        
+        for iB = 1:nBlocks
             
-            thisPing = L0(ip,:,:);
-            thisBottom = bottomSample(ip,:);
+            % list of pings in this block
+            blockPings  = (blocks(iB,1):blocks(iB,2));
+            nBlockPings = length(blockPings);
+            
+            % grab data
+            data = CFF_get_WC_data(fData,'X_SBP_WaterColumnProcessed',blockPings,1,1,'true');
+            
+            % grab bottom detect
+            bottom = fData.X_BP_bottomSample(:,blockPings);
             
             % mean level across all beams for each range (and each ping)
-            [meanAcrossBeams,stdAcrossBeams] = CFF_nanstat3(thisPing,2);
+            meanAcrossBeams = mean(data,2,'omitnan');
             
-            % repmat for removal
-            meanAcrossBeams3 = repmat(meanAcrossBeams,[1,nBeams,1]);
-            %stdAcrossBeams3  = repmat(stdAcrossBeams ,[1,nBeams,1]);
+            % find the reference level as the median level of all samples above the median bottom sample in nadir beams:
+            nadirBottom = median(bottom(nadirBeams,:)); % median value -> bottom
+            refLevel = nan(1,1,nBlockPings);
+            for iP = 1:nBlockPings
+                refLevel(1,1,iP) = nanmedian(reshape(data(1:nadirBottom(iP),nadirBeams,:),1,[]));
+            end
             
-            % find the reference level as the median level of all samples
-            % above the median bottom sample in nadir beams:
-            nadirBeams = [floor((nBeams./2)-5):ceil((nBeams./2)+5)]; % middle beams
-            nadirBottom = median(thisBottom(nadirBeams),2); % median value -> bottom
-            nadirSamples = thisPing(1,nadirBeams,[1:nadirBottom]); % all samples in middle beam, above bottom
-            nadirSamples = nadirSamples(:);
-            nadirSamples = nadirSamples(~isnan(nadirSamples));
-            meanRefLevel = mean(nadirSamples);
-            %stdRefLevel = std(nadirSamples);
+            % statistical compensation. removing mean, then adding
+            % reference level, like everyone does (correction "a" in
+            % Parnum's thesis)
+            data = bsxfun(@plus,bsxfun(@minus,data,meanAcrossBeams),refLevel);
             
-            % statistical compensation:
-            % Corr2a(ip,:,:) =  thisPing - meanAcrossBeams3; % simple mean removal, like my first paper
-            Corr2b(ip,:,:) =  thisPing - meanAcrossBeams3 + meanRefLevel; % adding mean reference, like everyone does (a in Parnum)
-            % Corr2c(ip,:,:) = (thisPing - meanAcrossBeams3)./stdAcrossBeams3 + meanRefLevel; % including normalization for std (b in Parnum)
-            % Corr2d(ip,:,:) = ((thisPing - meanAcrossBeams3)./stdAcrossBeams3).*stdRefLevel + meanRefLevel; % going further: re-introducing a reference std   
-
+            % convert result back into proper format
+            data = data./wcdata_factor;
+            data(isnan(data)) = wcdata_nanval;
+            data = cast(data,wcdata_class);
+            
+            % save in array
+            fData.X_SBP_WaterColumnProcessed.Data.val(:,:,blockPings) = data;
+            
+            % note that other compensations of that style are possible (to
+            % be tested for performance
+            
+            % adding the reference level is simple, but begs the question
+            % of what reference level to use? In my first paper, I
+            % suggested not intriducing a reference level at all, i.e.:
+            % X_SBP_L1 = bsxfun(@minus,thisPing,meanAcrossBeams);
+            
+            % Or we can make the compensation more complicated, for example
+            % including normalization for std (correction "b" in Parnum):
+            % stdAcrossBeams  = std(thisPing,[],2,'omitnan');
+            % X_SBP_L1 = bsxfun(@rdivide,bsxfun(@minus,thisPing,meanAcrossBeams),stdAcrossBeams) + refLevel;
+            
+            % Or, going even further, re-introducing a reference standard
+            % deviation:
+            % stdRefLevel = std(reshape(thisPing((1:nadirBottom),nadirBeams),1,[]),'omitnan');
+            % X_SBP_L1 = bsxfun(@rdivide,bsxfun(@minus,thisPing,meanAcrossBeams),stdAcrossBeams).*stdRefLevel + refLevel;
+            
         end
         
-        % test display
-        % CFF_watercolumn_display(fData,'otherData',Corr2a,'displayType','flat')
-        % CFF_watercolumn_display(fData,'otherData',Corr2b,'displayType','flat')
-        % CFF_watercolumn_display(fData,'otherData',Corr2c,'displayType','flat')
-        % CFF_watercolumn_display(fData,'otherData',Corr2d,'displayType','flat')
-        
-        % keep as L1
-        % L1 = Corr2a;
-        L1 = Corr2b;
         
     case 3
         
         % DEMOUSTIER'S CORRECTION USING PERCENTILES:
-
-        Corr3 = nan(size(L0));
-
-        for ip=1:nPings
-            
-            thisPing = L0(ip,:,:);
-            thisBottom = bottomSample(ip,:);
-            
-            % calculate 75th percentile 
-            clear sevenfiveperc
-            for ismp = 1:nSamples
-                X = thisPing(:,:,ismp);
-            	sevenfiveperc(1,1,ismp) = CFF_invpercentile(X,75);
-            end
-                
-            % repmat for removal
-            sevenfiveperc3 = repmat(sevenfiveperc,[1,nBeams,1]);
-
-            % no reference level in his paper
-            
-            % statistical compensation:
-            Corr3(ip,:,:) =  thisPing - sevenfiveperc3;
-
+        
+        % Dimensions
+        [nSamples,nBeams,nPings] = size(fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)).Data.val);
+        
+        % init arrays
+        if memoryMapFlag
+            % create binary file
+            file_X_SBP_L1 = fullfile(wc_dir,'X_SBP_L1.dat');
+            fileID_X_SBP_L1 = fopen(file_X_SBP_L1,'w+');
+        else
+            % initialize numerical arrays
+            fData.X_SBP_L1.Data.val = zeros(nSamples,nBeams,nPings,'int8');
         end
         
-        % test display
-        % CFF_watercolumn_display(fData,Corr3,'flat')
-        
-        % keep as L1
-        L1 = Corr3;
+        % per-ping processing
+        for ip = 1:nPings
             
+            % grab data
+            thisPing = double(CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',datagramSource),ip,1,1));
+            
+            % calculate 75th percentile
+            sevenfiveperc = nan(nSamples,1);
+            for ismp = 1:nSamples
+                X = thisPing(ismp,:,:);
+                sevenfiveperc(ismp,1) = CFF_invpercentile(X,75);
+            end
+            
+            % statistical compensation:
+            X_SBP_L1 =  bsxfun(@minus,thisPing,sevenfiveperc);
+            
+            % saving result
+            if memoryMapFlag
+                % write into binary files:
+                fwrite(fileID_X_SBP_L1,X_SBP_L1,'int8');
+            else
+                % save in array
+                fData.X_SBP_L1.Data.val(:,:,ip) = X_SBP_L1;
+            end
+            
+            
+        end
+        
+        % finalize if memmap files, some finishing up code necessary...
+        if memoryMapFlag
+            
+            % close binary files
+            fclose(fileID_X_SBP_L1);
+            
+            % re-open files as memmapfile
+            fData.X_SBP_L1 = memmapfile(file_X_SBP_L1, 'Format',{'int8' [nSamples nBeams nPings] 'val'},'repeat',1,'writable',true);
+            
+        end
+        
+        
     otherwise
         
         error('method_spec not recognised')
         
 end
-
-
-%% SAVING RESULT IN FDATA
-fData.X_PBS_L1 = L1;
-
-
-
-%%
-% old code to adapt:
-%
-%
-%
-% % computing correcting coefficients
-% for ii=1:nPings
-%
-%     M = fData.WC_PBS_SampleAmplitudes(ii,:,:);
-%     imagesc(M)
-%
-%     % Compute mean and std across all beams (except Nans)
-%     meanAcrossBeams = nan(1,nSamples);
-%     stdAcrossBeams = nan(1,nSamples);
-%     for kk=1:nSamples
-%         meanAcrossBeams(1,kk) = mean(M(~isnan(M(:,kk)),kk));
-%         stdAcrossBeams(1,kk)  = std(M(~isnan(M(:,kk)),kk));
-%     end
-%
-%     % remove one f them, check the quality in result
-%     MCorr1 = M - ones(nBeams,1)*meanAcrossBeams;
-%
-%     % reference sample, use halfway to seafloor at nadir:
-%     BeamPointingAngle = fData.WC_PB_BeamPointingAngle(ii,:);
-%     [a,indnadir]=min(abs(BeamPointingAngle));
-%     DetectedRange = fData.WC_PB_DetectedRangeInSamples(ii,indnadir);
-%     StartRangeSampleNumber = fData.WC_PB_StartRangeSampleNumber(ii,indnadir);
-%     refsample = round(0.5.*(DetectedRange+StartRangeSampleNumber));
-%     refmean = meanAcrossBeams(refsample);
-%     refstd = stdAcrossBeams(refsample);
-%
-%
-%     %     bottom = fData.WC_PB_DetectedRangeInSamples(ii,:);
-%     %     bottom(bottom==0)=NaN;
-%     %     minBottom= min(bottom);
-%     %     M2 = M(:,1:minBottom-1);
-%     %
-%     %     % mean and std across all samples (from 0 to just before shortest bottom range)
-%     %     meanAcrossSamples = nan(nBeams,1);
-%     %     stdAcrossSamples = nan(nBeams,1);
-%     %     for jj=1:nBeams
-%     %         meanAcrossSamples(jj,1) = mean(M2(jj,~isnan(M2(jj,:))));
-%     %         stdAcrossSamples(jj,1)  = std(M2(jj,~isnan(M2(jj,:))));
-%     %     end
-%     %
-%     %     % mean and std across a number of pings?
-%     %     MCorr2 = M - meanAcrossSamples*ones(1,nSamples);
-%     %     MCorr3 = M - ones(nBeams,1)*meanAcrossBeams - meanAcrossSamples*ones(1,nSamples);
-%     %     % then remove both, try the two orders. check the differences
-%
-% end
-%
-%
-% fDataCorr2 = (((fData - MeanAcrossAllBeams*ones(1,NumberOfBeams))./(StdAcrossAllBeams*ones(1,NumberOfBeams))) .* refstd) + refmean  ;
-%
-% fDataCorr = fDataCorr2;
