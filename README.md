@@ -1,4 +1,5 @@
 # CoFFee - an open-source Matlab toolbox for multibeam sonar data processing
+# Note: outdated..
 
 To allow Matlab to find the data and functions composing this toolbox, you need to add the toolbox's folder and subfolders to Matlab's path.
 
