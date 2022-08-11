@@ -12,11 +12,16 @@ Matlab toolbox for multibeam sonar data processing.
 
 ### Dependencies
 
-* [MATLAB R2020b](https://au.mathworks.com/products/get-matlab.html) and a few required toolboxes (to list).
+* [MATLAB](https://au.mathworks.com/products/get-matlab.html). Authors are currently using R2020b, but it may work on other versions.
+* Some MATLAB toolboxes (not all functions require them):
+  * Signal Processing Toolbox
+  * Mapping Toolbox
+  * Statistics and Machine Learning Toolbox
+  * Parallel Computing Toolbox
 
 ### Installing and using
 
-* Clone the repository.
+* Clone or download the repository.
 * Add the toolbox's folder and subfolders to the Matlab's path by starting your scripts with:
 
 ```
@@ -31,8 +36,8 @@ There is no documentation yet. Contact the authors.
 ## Authors
 
 * Alexandre Schimel ([The Geological Survey of Norway](https://www.ngu.no), alexandre.schimel@ngu.no)
-* Yoann Ladroit ([NIWA](https://niwa.co.nz/), yoann.ladroit@niwa.co.nz)
-* Amy Nay ([CSIRO](https://www.csiro.au/en/), Amy.Nau@csiro.au)
+* Yoann Ladroit (NIWA)
+* Amy Nay (CSIRO)
 
 ## Version History
 
@@ -45,9 +50,10 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 ## See Also
 
 All apps based on CoFFee:
-* *Iskaffe*: https://github.com/alexschimel/Iskaffe
 * *Grounds*: https://github.com/alexschimel/Grounds
 * *Espresso* (private)
+* *Iskaffe*: https://github.com/alexschimel/Iskaffe
+
 
 ## References
 
