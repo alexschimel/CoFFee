@@ -1,6 +1,6 @@
 # *CoFFee*
 
-Matlab toolbox for multibeam sonar data processing
+Matlab toolbox for multibeam sonar data processing.
 
 ## Description
 
@@ -44,7 +44,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 ## See Also
 
-Apps based on CoFFee:
+All apps based on CoFFee:
 * *Iskaffe*: https://github.com/alexschimel/Iskaffe
 * *Grounds*: https://github.com/alexschimel/Grounds
 * *Espresso* (private)
