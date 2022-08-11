@@ -42,6 +42,13 @@ There is no documentation yet. Contact the authors.
 
 Distributed under the MIT License. See `LICENSE.txt` for more information.
 
+## See Also
+
+Apps based on CoFFee:
+* *Iskaffe*: https://github.com/alexschimel/Iskaffe
+* *Grounds*: https://github.com/alexschimel/Grounds
+* *Espresso* (private)
+
 ## References
 
 Articles using CoFFee, or apps based on CoFFee:
