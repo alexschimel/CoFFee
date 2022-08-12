@@ -16,9 +16,10 @@ function ver = CFF_coffee_version()
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
 %   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2022-2022; Last revision: 11-08-2022
+%   2022-2022; Last revision: 12-08-2022
 
-ver = '2.0.0-alpha.1'; % 11/08/2022
+ver = '2.0.0-alpha.2'; % 12/08/2022
+% ver = '2.0.0-alpha.1'; % 11/08/2022
 
 end
 
