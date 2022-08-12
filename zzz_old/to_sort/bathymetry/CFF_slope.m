@@ -66,4 +66,4 @@ for ii = scale+1:nrows-scale
     end
 end
 
-slopeCoef = 
+% slopeCoef = 
