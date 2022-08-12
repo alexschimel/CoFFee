@@ -1,6 +1,7 @@
 function fDataGroup = CFF_analyze_backscatter(fDataGroup,varargin)
 
 global DEBUG
+DEBUG = 0;
 
 % input parser
 p = inputParser;
@@ -43,6 +44,7 @@ for ii = 1:nLines
     
     if DEBUG
         % display BS
+        clf;
         ax1 = nexttile;
         imagesc(fData.X8_BP_ReflectivityBS);
         colormap gray; caxis([-40 0]); grid on
@@ -79,38 +81,54 @@ for ii = 1:nLines
     avgBS = median(fData.X8_BP_ReflectivityBS);
     
     iKeep = zeros(1,nPings);
-    lowth = nan(1,nPings);
+    nBeamsDrop = nan(1,nPings);
     
-    trailNum = 20;
-    iKeep(1:trailNum) = 1;
+    windLen = 10;
+    gateLen = 5;
     
-    iKeep(1:trailNum) = 1;
+    dropThr = -3; % threshold dB to be considered a drop
+    ratDropThr = 0.5; % threhshold ratio of beams that dropped for the entire ping to be considered bad
     
-    for jj = trailNum+1:nPings
-        idx = find(iKeep,trailNum,'last');
-        dat = avgBS(idx);
-        lowth(jj) = median(dat) - 2.*range(dat);
-        if (avgBS(jj)<lowth(jj))
+    iKeep(1:windLen+gateLen) = 1;
+    for jj = windLen+gateLen+1:nPings
+        
+        iWin = (jj-gateLen)+(-windLen:-1);
+        iWin = iWin(logical(iKeep(iWin)));
+        if ~isempty(iWin)
+            % update average from window
+            avgWin = median(fData.X8_BP_ReflectivityBS(:,iWin),2);
+        else
+            % keep previous average
+        end
+        
+        % calculate difference to window average for each beam
+        diffToWin = fData.X8_BP_ReflectivityBS(:,jj) - avgWin;
+        
+        nBeamsDrop(jj) = sum(diffToWin<=dropThr);
+        
+        if nBeamsDrop(jj)./nBeams>=ratDropThr
             iKeep(jj) = 0;
         else
             iKeep(jj) = 1;
         end
+
     end
     badPings2 = ~iKeep;
     
-    
     if DEBUG
-      
-        if any(badPings)
-            plot(find(badPings),400,'r*')
+        if any(badPings2)
+            plot(find(badPings2),round(nBeams./2),'m*');
         end
         ax2 = nexttile;
-        plot(avgBS,'.-'); hold on
-        plot(lowth,'r')
-        plot(find(~iKeep),avgBS(~iKeep),'r*')
+        plot(nBeamsDrop,'.-'); hold on
+        plot(1:nPings,nBeams.*ratDropThr.*ones(1,nPings),'m--');
+        plot(find(~iKeep),nBeamsDrop(~iKeep),'mo');
         grid on
         linkaxes(findall(gcf,'type','axes'),'x');
     end
+    
+    % pur two cirteria together
+    badPings = badPings1 | badPings2;
     
     %% step 3. identify bad sections
     % criteria 1: a section of pings with a percentage of bad pings that
