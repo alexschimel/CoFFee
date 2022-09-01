@@ -122,7 +122,7 @@ maxHorizDist = params.maxHorizDist;
 
 % get pingBeamWindowSize
 if ~isfield(params,'pingBeamWindowSize'), params.pingBeamWindowSize = [3,3]; end % default
-CFF_mustBeTwoNonnegativeUnsignedIntegers(params.pingBeamWindowSize); % validate
+CFF_mustBeTwoNonnegativeIntegers(params.pingBeamWindowSize); % validate
 pingBeamWindowSize = params.pingBeamWindowSize;
 
 

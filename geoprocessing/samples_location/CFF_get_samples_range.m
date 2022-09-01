@@ -10,12 +10,12 @@ function SBP_sampleRange = CFF_get_samples_range(SBP_idxSamples,BP_startSampleNu
 %   returns the range SAMPR (in m) of samples based on their index INDSAMP,
 %   the corresponding beams' start index offset STARTSAMPNUM and the
 %   corresponding pings' inter-sample distance INTERSAMPDIST. The index of
-%   samples must be a SBP tensor or compatible (e.g. a 1BP matrix of one
-%   sample per ping and beam, or a S1 column vector of indices). The index
-%   offset STARTSAMPNUM must be a BP matrix or compatible (e.g. a B1 or 1P
-%   vector). The inter-sample distance INTERSAMPDIST must be a scalar or a
-%   ping vector (1P or P1) and is in m, as obtained from
-%   CFF_INTER_SAMPLE_DISTANCE.
+%   samples INDSAMP must be a SBP tensor or compatible (e.g. a 1BP matrix
+%   of one sample per ping and beam, or a S1 column vector of indices). The
+%   index offset STARTSAMPNUM must be a BP matrix or compatible (e.g. a B1
+%   or 1P vector). The inter-sample distance INTERSAMPDIST must be a scalar
+%   or a ping vector (1P or P1) and is in m, as obtained from
+%   CFF_INTER_SAMPLE_DISTANCE. 
 %
 %   See also CFF_INTER_SAMPLE_DISTANCE, CFF_GET_SAMPLES_DIST,
 %   CFF_GEOREFERENCE_SAMPLE 
