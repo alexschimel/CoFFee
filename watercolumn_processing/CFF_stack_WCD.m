@@ -1,38 +1,76 @@
 function [stack,stackY,params] = CFF_stack_WCD(fData,varargin)
-%FUNCTION_NAME  One-line description of what the function performs
+%CFF_STACK_WCD  Stack WCD in range or depth
 %
-%   Optional multiple lines of information giving more details about the
-%   function. The first line above (so-called H1 line) has no space before
-%   the function name and two spaces after. FUNCTION_NAME is written in
-%   upper-case throughout this docstring. One or multiple examples syntaxes
-%   follow. The docstring is completed by a "See also" section that allows
-%   help functions such as "help" or "doc" to automatically create
-%   hyperlinks. Separated from the docstring by a single empty line are the
-%   author(s) and information on last versions.
+%   This function stacks water-column data in range of in depth. Note this
+%   function requires the bottom samples in input data to have been
+%   previously geoprocessed using CFF_GEOREFERENCE_BOTTOM_DETECT.
 %
-%   [X,Y] = FUNCTION_NAME(A,B,C) returns the sum of A+B as X, and C as Y.
-%   Note the input and output variables are also written in upper case.
-%   This first syntax should show the basic use.
+%   [STACK,STACKY] = CFF_STACK_WCD(FDATA) stacks all pings and beams of
+%   water-column data from the FDATA field 'WC_SBP_SampleAmplitudes' (i.e.
+%   original data) in range, over the range values going from 0 (sonar
+%   face) to the deepest bottom detect in the data, by increments of the
+%   inter-sample distance. The function returns the stacked data STACK as a
+%   range-by-pings matrix, and the vector STACKY of ranges corresponding to
+%   the rows of that matrix. 
 %
-%   X = FUNCTION_NAME(A,B) returns the sum of A+B as X, since the
-%   additional input and outputs in this example are unecessary. This other
-%   syntax shows alterative functioning.
+%   CFF_STACK_WCD(FDATA,PARAMS) uses processing parameters defined as the
+%   fields in the PARAMS structure to modify the default behaviour. 
+%   Possible parameters are: 
+%   'dataField': name of the fData field to use as the (memmaped file) WCD
+%   data to stack. Default is 'WC_SBP_SampleAmplitudes'.
+%   'stackMode': string code for the mode of stacking. Possible values are
+%   'range' (default) or 'depth'.
+%   'angleDegLims': two-values vector of beam angles (in degrees) to which
+%   the stacking is to be limited. Default is [-inf,inf] to conserve all
+%   beams.
+%   'minStackY': minimum range (or depth, depending on stackMode) value for
+%   stacking. Must be zero (default, i.e. stacking starts at sonar face) or
+%   positive. 
+%   'maxStackY': maximum range (or depth, depending on stackMode) value for
+%   stacking. Must be 0 (default) or positive. The value 0 (default) is a
+%   special code to indicate stacking is to go as far as the deepest bottom
+%   detect in the data. Use the value inf to stack as far as data go. 
+%   'resDepthStackY': desired depth resolution when stacking in depth. Must
+%   be 0 (default) or positive. The value 0 (default) is a special code to
+%   indicate the default depth-stacking resolution of twice the
+%   inter-sample distance. Note that this parameter only affects stacking
+%   in depth. When stacking in range, it is not possible to modify the
+%   range resolution (which is the inter-sample distance).
+%   'iPingLims': two-values vector of the indices of pings in FDATA to
+%   which the stacking is to be limited. Default is [1,inf] to conserve all
+%   pings.
+%   'iBeamLims': two-values vector of the indices of beams in FDATA to
+%   which the stacking is to be limited. Default is [1,inf] to conserve all
+%   beams. This parameter does not over-ride 'angleDegLims'. Both
+%   parameters are taken into account to limit beam contributions to the
+%   stack.
+%   'iSampleLims': two-values vector of the indices of samples in FDATA to
+%   which the stacking is to be limited. Default is [1,inf] to conserve all
+%   samples. This parameter does not over-ride 'minStackY' and 'maxStackY'.
+%   All three parameters are taken into account to limit sample
+%   contributions to the stack.
 %
-%   FUNCTION_NAME(...,'parameter',VAL) is another syntax to introduce
-%   optional or paramter inputs. Since the basic inputs and outputs have
-%   already been discussed, they can be ommitted, so the text focuses
-%   exclusively on what the option does compared to the basic syntax.
+%   CFF_STACK_WCD(...,'comms',COMMS) specifies if and how this function
+%   communicates on its internal state (progress, info, errors). COMMS can
+%   be either a CFF_COMMS object, or a text string to initiate a new
+%   CFF_COMMS object. Options are 'disp', 'textprogressbar', 'waitbar',
+%   'oneline', 'multilines'. By default, using an empty CFF_COMMS object
+%   (i.e. no communication). See CFF_COMMS for more information.
 %
-%   See also OTHER_FUNCTION_NAME_1, OTHER_FUNCTION_NAME_2, ESPRESSO.
+%   [STACK,STACKY,PARAMS] = CFF_STACK_WCD(...) also outputs the parameters
+%   used in processing.
+%
+%   See also CFF_GEOREFERENCE_BOTTOM_DETECT.
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz)
-%   XXXX-XXXX; Last revision: XX-XX-XXXX
+%   (NIWA, yoann.ladroit@niwa.co.nz) 
+%   2017-2022; Last revision: 02-09-2022
+
 
 global DEBUG;
 
 
-%% input arguments management
+%% Input arguments management
 p = inputParser;
 addRequired(p,'fData',@(x) CFF_is_fData_version_current(x)); % source fData
 addOptional(p,'params',struct(),@(x) isstruct(x)); % processing parameters
@@ -46,31 +84,13 @@ if ischar(comms)
 end
 
 
-% % params wanted, with default values
-% % basics
-% dataType = original % original or processed (or phase)
-% stackMode = range % range or depth
-% 
-% % min and max indices for WCD to extract
-% iPingLims = [1 inf]
-% iBeamLims = [1 inf]
-% iSampleLims = [1 inf]
-% 
-% % aditional control
-% angleDegLims = [-inf inf]; % keep beams in terms of their angles in degrees
-% minStackY = 0 % min value for depth/range
-% maxStackY = 0 % max value for depth/range. 0 means limit data to bottom
-% resStackY = 0 % depth/range resolution for stack. = means default, ie. = ISD for range, and = 2x ISD for depth.
-
-
-
-%% prep
+%% Prep
 
 % start message
 comms.start('Stacking water-column data');
 
 
-%% data type to work with
+%% Data type to work with
 
 % get dataField parameter
 if ~isfield(params,'dataField'), params.dataField = 'WC_SBP_SampleAmplitudes'; end % default
@@ -81,7 +101,10 @@ dataField = params.dataField;
 datagramSource = CFF_get_datagramSource(fData);
 
 
-%% indices of pings to extract from memmapped files
+%% Indices of pings to extract from memmapped files
+
+% total number of pings in file
+nTotPings = numel(fData.X_1P_pingCounter);
 
 % get iPingsLims parameter
 if ~isfield(params,'iPingLims'), params.iPingLims = [1 inf]; end % default
@@ -90,19 +113,27 @@ iPingLims = params.iPingLims;
 
 % limit inf to actual max number of pings in file
 if isinf(iPingLims(2))
-    iPingLims(2) = numel(fData.X_1P_pingCounter);
+    iPingLims(2) = nTotPings;
 end
 
-% XXX perhaps add an error/return if iPingLims is outside existing pings
+% error if iPingLims(1) is outside range of existing pings
+if iPingLims(1)>nTotPings
+    error('iPingLims(1) is outside range of existing pings.');
+end
+
+% if iPingLims(1) exceed total number of pings, restrict to total number
+if iPingLims(2)>nTotPings
+    iPingLims(2) = nTotPings;
+end
 
 % build vector of indices of pings to extract
-iPings = iPingLims(1):iPingLims(2); 
+iPings = iPingLims(1):iPingLims(2);
 
 % number of pings to extract
 nPings = numel(iPings);
 
 
-%% indices of beams to extract from memmapped files
+%% Indices of beams to extract from memmapped files
 
 % at first, we ignore the iBeamLims input
 
@@ -127,9 +158,10 @@ if isinf(iBeamLims(2))
     iBeamLims(2) = size(subBeamKeep,1);
 end
 
-% XXX perhaps add an error/return if iBeamLims is outside existing beams
+% XXX perhaps add an error/return if iBeamLims is outside the range of
+% existing beams
 
-% then we restrict the BP matrix based on the iBeamLims
+% then we restrict the BP matrix of beams to keep, based on the iBeamLims
 subBeamKeep(1:(iBeamLims(1)-1),:) = false;
 subBeamKeep((iBeamLims(2)+1):end,:) = false;
 
@@ -143,7 +175,7 @@ iBeams = nanmin(indBeamKeep):nanmax(indBeamKeep);
 nBeams = numel(iBeams); 
 
 
-%% indices of samples to extract from memmapped files
+%% Indices of samples to extract from memmapped files
 
 % at first we ignore the iSampleLims input
 
@@ -153,7 +185,10 @@ nBeams = numel(iBeams);
 % get intersample distance to turn ranges into sample numbers
 interSamplesDistance = CFF_inter_sample_distance(fData,iPings);
 
-% XXX perhaps add an error/warning if interSamplesDistance is not constant
+% XXX all this code works on the assumption that interSamplesDistance is
+% constant (and it should be) and then we just use
+% interSamplesDistance(1). But perhaps add an error/warning if
+% interSamplesDistance is not constant.
 
 % get minStackY parameter
 if ~isfield(params,'minStackY'), params.minStackY = 0; end % default
@@ -170,7 +205,7 @@ firstSample = max(1,floor(minStackY./interSamplesDistance(1)));
 if ~isfield(params,'maxStackY'), params.maxStackY = 0; end % default
 mustBeNonnegative(params.maxStackY); % validate
 maxStackY = params.maxStackY;
-% NOTE: maxStackY==0 (default) is used as special code to indicate we want
+% NOTE: maxStackY=0 (default) is used as special code to indicate we want
 % our stack to only go to the bottom, so we extract all samples that
 % contribute data down to the deepest bottom, but no more than that.
 
@@ -220,15 +255,17 @@ switch stackMode
             furthestRange = lastSample.*interSamplesDistance(1);
             maxStackY = furthestRange.*cos(widestAngleRad);
         else
-            % corresponding furthest range
+            % otherwise, calculate the sample corresponding to the furthest
+            % range for maxStackY. First, that range
             furthestRange = maxStackY./cos(widestAngleRad);
-            % corresponding sample
+            % then the corresponding sample
             lastSample = ceil(furthestRange./interSamplesDistance(1));
         end
         
 end
 
-% then we restrict the first and last samples based on input iSampleLims 
+% then we restrict the first and last samples to extract based on input
+% iSampleLims
 
 % get iSampleLims parameter
 if ~isfield(params,'iSampleLims'), params.iSampleLims = [1 inf]; end % default
@@ -242,42 +279,47 @@ iSamples = max(iSampleLims(1),firstSample):min(iSampleLims(2),lastSample);
 nSamples = numel(iSamples);
 
 
-%% initialize the stack, which is a Range (or Depth) by Pings array
+%% Initialize the stack, which is a Range (or Depth) by Pings array
+% Note that there is an input resolution parameter in depth-stacking, but
+% not range-stacking. That's because depth-stacking includes re-gridding so
+% resolution has to be specified anyway, so we can make it parametrable.
+% However, range-stacking can be done fast by simply averaging across
+% beams (aka keeping the native resolution) instead of re-gridding the
+% data. So the range-stacking resolution is the interSamplesDistance.
 switch stackMode
     case 'range'
         % for stacking in range, we stack all samples that will be
-        % extracted. The rows are thus defined by iSamples, or in m: 
-        stackY = iSamples.*interSamplesDistance(1);
-        % note that any input resStackY parameter is ignored here. It's
-        % because we want to keep stacking in range efficient and so we
-        % don't re-grid the data
+        % extracted, that is, iSamples. However, we want the stack to be
+        % defined based on input minStackY and maxStackY, in other words
+        % firstSample and lastSample.
+        stackY = (firstSample:1:lastSample).*interSamplesDistance(1);
 
     case 'depth'
-        % for stacking in depth, since we will grid the data anyway, we can
-        % specify the desired resolution
+        % for stacking in depth, since data are re-gridded, we have to
+        % specify the resolution
         
-        % get resStackY parameter
-        if ~isfield(params,'resStackY'), params.resStackY = 0; end % default
-        mustBeNonnegative(params.resStackY); % validate
-        resStackY = params.resStackY;
-        % NOTE: resStackY==0 (default) is used as special code to indicate
-        % we want to use a default stack Y resolution.
+        % get resDepthStackY parameter
+        if ~isfield(params,'resDepthStackY'), params.resDepthStackY = 0; end % default
+        mustBeNonnegative(params.resDepthStackY); % validate
+        resDepthStackY = params.resDepthStackY;
+        % NOTE: resDepthStackY==0 (default) is used as special code to
+        % indicate we want to use a default resolution.
         
-        if resStackY == 0
+        if resDepthStackY == 0
             % by default, we use a resolution equal to twice the
             % intersample distance
             fact = 2;
-            resStackY = fact*interSamplesDistance(1);
+            resDepthStackY = fact*interSamplesDistance(1);
         end
         
         % build stack Y vector
-        stackY = minStackY:resStackY:maxStackY;
+        stackY = minStackY:resDepthStackY:maxStackY;
 end
 % initialize stack
 stack = nan(numel(stackY),nPings,'single');
 
 
-%% processing setup
+%% Processing setup
 
 % setup GPU
 if CFF_is_parallel_computing_available()
@@ -305,7 +347,7 @@ end
 % disp(info);
 
 
-%% block processing
+%% Block processing
 for iB = 1:size(blocks,1)
     
     % list of pings in this block
@@ -331,8 +373,9 @@ for iB = 1:size(blocks,1)
             % average across beams in natural values, then back to dB
             blockStack = 10*log10(squeeze(mean(10.^(blockWCD/10),2,'omitnan')));
             
-            % add to final array
-            stack(:,blockPings) = blockStack;
+            % save in stack array
+            idxRows = iSamples-firstSample+1;
+            stack(idxRows,blockPings) = blockStack;
             
         case 'depth'
             
@@ -352,7 +395,7 @@ for iB = 1:size(blocks,1)
             clear blockSampleRange % clear up memory
             
             % index of each sample in the depth (row) vector
-            blockIndRow = round((-blockSampleUpDist-stackY(1))/resStackY+1);
+            blockIndRow = round((-blockSampleUpDist-stackY(1))/resDepthStackY+1);
             clear blockSampleUpDist % clear up memory
             
             % NaN those samples that fall outside of the desired stack
@@ -364,7 +407,7 @@ for iB = 1:size(blocks,1)
             blockIndCol = shiftdim(blockIndCol,-1); % 11P
             blockIndCol = repmat(blockIndCol,nSamples,nBeams); %SBP
             
-            % next: vectorize and remove any sample where we have NaNs
+            % vectorize and remove any sample where we have NaNs
             blockIndNaN = isnan(blockIndRow) | isnan(blockWCD);
             blockIndRow(blockIndNaN) = [];
             blockIndCol(blockIndNaN) = [];
@@ -380,14 +423,13 @@ for iB = 1:size(blocks,1)
             blockStackAvg = 10*log10(blockStackSumVal./blockStackNumElem);
             clear blockIndRow blockIndCol % clear up memory
             
-            % save in stacked array
+            % save in stack array
             stack(1:size(blockStackAvg,1),blockPings) = blockStackAvg;
             
     end
 end
 
-% debug display
-DEBUG = 1;
+% display results
 if DEBUG
     figure;
     imagesc(iPings,stackY,stack,'AlphaData',~isnan(stack));
@@ -399,5 +441,6 @@ if DEBUG
     ylabel('m')
 end
 
-%% end message
+
+%% End message
 comms.finish('Done');

@@ -190,11 +190,12 @@ if DEBUG
     linkaxes([ax1,ax2,ax3]);
 end
 
+
 %% Remove average and add reference level
 data = data - avgAcrossBeams + refLevel;
 
 
-%% end message
+%% End message
 comms.finish('Done');
 
 

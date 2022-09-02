@@ -4,8 +4,9 @@ function [fData,params] = CFF_filter_bottom_detect_v2(fData,varargin)
 %   Bottom detects are the sample number in each beam corresponding to the
 %   bottom, according to the bottom detect algorithms. This
 %   filtering/interpolating algorithm can be applied to data either in
-%   bathymetry, or water-column datagrams. The bottom samples must have
-%   been previously geoprocessed.
+%   bathymetry, or water-column datagrams. Note this function requires the
+%   bottom samples in input data to have been previously geoprocessed using
+%   CFF_GEOREFERENCE_BOTTOM_DETECT. 
 %
 %   FDATA = CFF_FILTER_BOTTOM_DETECT_V2(FDATA) filters the bottom detect in
 %   FDATA using default processing parameters, and returns 
