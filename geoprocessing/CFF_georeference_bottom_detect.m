@@ -3,7 +3,9 @@ function fData = CFF_georeference_bottom_detect(fData,varargin)
 %
 %   Get range, swathe coordinates (across and upwards distance from sonar),
 %   and projected coordinates (easting, northing, height) of the bottom
-%   detect samples
+%   detect samples. Note this function requires the navigation in input
+%   data to have been previously processed using
+%   CFF_COMPUTE_PING_NAVIGATION_V2. 
 %
 %   FDATA = CFF_GEOREFERENCE_BOTTOM_DETECT(FDATA) range, swathe
 %   coordinates (across and upwards distance from sonar), and projected

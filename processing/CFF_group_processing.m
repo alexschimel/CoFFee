@@ -14,7 +14,7 @@ function [fDataGroup,params] = CFF_group_processing(procFun,fDataGroup,varargin)
 %
 %   FDATAGROUP = CFF_GROUP_PROCESSING(PROCFUN,FDATAGROUP), with PROCFUN
 %   being a suitable CFF processing function handle (e.g.
-%   @CFF_name_of_my_function), applies the function to the cell array of
+%   @CFF_my_function_name), applies the function to the cell array of
 %   fData structures FDATAGROUP, and returns the cell array of processed
 %   fData structures. PROCFUN can also be a cell array of suitable function
 %   handles, in which case all functions are applied in chain to each

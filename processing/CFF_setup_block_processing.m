@@ -3,8 +3,8 @@ function blocks = CFF_setup_block_processing(nUnits,maxNumUnitsPerBlock)
 %
 %   Setup block processing manually
 %
-%   BLOCKS = CFF_SETUP_BLOCK_PROCESSING(NUNITS,MAXNUMUNITSPERBLOCK) returns an
-%   Nx2 array BLOCKS where each row is the start and end indices for
+%   BLOCKS = CFF_SETUP_BLOCK_PROCESSING(NUNITS,MAXNUMUNITSPERBLOCK) returns
+%   an Nx2 array BLOCKS where each row is the start and end indices for
 %   a block of units to process at a time (typically, pings), using the
 %   total number of units NUNITS, and a maximum number of units per block
 %   MAXNUMUNITSPERBLOCK. If MAXNUMUNITSPERBLOCK is superior or equal to
