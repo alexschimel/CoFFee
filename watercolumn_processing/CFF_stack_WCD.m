@@ -1,4 +1,4 @@
-function [stack,stackY,params] = CFF_stack_WCD(fData,varargin)
+function [stack,stackX,stackY,params] = CFF_stack_WCD(fData,varargin)
 %CFF_STACK_WCD  Stack WCD in range or depth
 %
 %   This function stacks water-column data in range of in depth. Note this
@@ -292,7 +292,7 @@ switch stackMode
         % extracted, that is, iSamples. However, we want the stack to be
         % defined based on input minStackY and maxStackY, in other words
         % firstSample and lastSample.
-        stackY = (firstSample:1:lastSample).*interSamplesDistance(1);
+        stackY = (firstSample:1:lastSample)'.*interSamplesDistance(1);
 
     case 'depth'
         % for stacking in depth, since data are re-gridded, we have to
@@ -313,10 +313,12 @@ switch stackMode
         end
         
         % build stack Y vector
-        stackY = minStackY:resDepthStackY:maxStackY;
+        stackY = (minStackY:resDepthStackY:maxStackY)';
 end
 % initialize stack
 stack = nan(numel(stackY),nPings,'single');
+% save iPings as stackX;
+stackX = iPings;
 
 
 %% Processing setup
@@ -432,7 +434,7 @@ end
 % display results
 if DEBUG
     figure;
-    imagesc(iPings,stackY,stack,'AlphaData',~isnan(stack));
+    imagesc(stackX,stackY,stack,'AlphaData',~isnan(stack));
     colormap jet
     colorbar
     grid on
