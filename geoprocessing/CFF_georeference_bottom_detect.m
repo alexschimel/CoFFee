@@ -7,7 +7,7 @@ function fData = CFF_georeference_bottom_detect(fData,varargin)
 %   data to have been previously processed using
 %   CFF_COMPUTE_PING_NAVIGATION_V2. 
 %
-%   FDATA = CFF_GEOREFERENCE_BOTTOM_DETECT(FDATA) range, swathe
+%   FDATA = CFF_GEOREFERENCE_BOTTOM_DETECT(FDATA) computes range, swathe
 %   coordinates (across and upwards distance from sonar), and projected
 %   coordinates (easting, northing, height) of the bottom detect samples in
 %   FDATA, then saves them as new fields in FDATA.
@@ -20,7 +20,8 @@ function fData = CFF_georeference_bottom_detect(fData,varargin)
 %   CFF_COMMS object (i.e. no communication). See CFF_COMMS for more
 %   information.  
 %
-%   See also CFF_COMPUTE_PING_NAVIGATION_V2, CFF_GROUP_PROCESSING.
+%   See also CFF_COMPUTE_PING_NAVIGATION_V2, CFF_FILTER_BOTTOM_DETECT_V2,
+%   CFF_GROUP_PROCESSING. 
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
 %   (NIWA, yoann.ladroit@niwa.co.nz) 

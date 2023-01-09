@@ -374,7 +374,7 @@ if DEBUG
     ip = 1;
     figure; tiledlayout(1,2);
     ax1=nexttile();imagesc(data(:,:,ip));
-    grid on;colormap(jet);colorbar;title('raw');c=caxis;
+    grid on;colormap(jet);colorbar;title('before masking');c=caxis;
     dataOutTemp = data(:,:,ip);
     dataOutTemp(~mask(:,:,ip)) = NaN;
     ax2=nexttile();imagesc(dataOutTemp);

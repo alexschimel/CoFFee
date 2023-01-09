@@ -1,18 +1,17 @@
 function out = CFF_decode_RuntimeParameters(EM_Runtime)
 %CFF_DECODE_RUNTIMEPARAMETERS  Read the encoded fields of Runtime Param.
 %
-%
-%   Info comes from KONGSBERG. (2022). Kongsberg EM Series Multibeam echo
+%   Info taken from  KONGSBERG. 2022. Kongsberg EM Series Multibeam echo
 %   sounders - EM datagram formats. Document 850-160692/X (pp. 133).
 
-%   See also CFF_READ_ALL_FROM_FILEINFO.
+%   See also CFF_READ_ALL_FROM_FILEINFO, CFF_CONVERT_ALLDATA_TO_FDATA.
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
 %   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2021-2021; Last revision: 22-11-2021
+%   2021-2022; Last revision: 15-12-2022
 
 
-% everything is dependent on EM number (model)
+% A lot is dependent on EM number (model)
 emNumber = unique(EM_Runtime.EMModelNumber);
 if numel(emNumber)>1
     error(['Cannot deal with multiple EM model numbers in a single ' ... 
@@ -30,23 +29,27 @@ end
 out = struct();
 
 
-%% Decoding "Operator Station status"
-% to do XXX
+%% "Operator Station status"
+% to decode properly XXX
+out.OperatorStationStatus = EM_Runtime.OperatorStationStatus;
 
 
-%% Decoding "Processing Unit status (CPU)"
-% to do XXX
+%% "Processing Unit status (CPU)"
+% to decode properly XXX
+out.ProcessingUnitStatus = EM_Runtime.ProcessingUnitStatus;
 
 
-%% Decoding "BSP status"
-% to do XXX
+%% "BSP status"
+% to decode properly XXX
+out.BSPStatus = EM_Runtime.BSPStatus;
 
 
-%% Decoding "Sonar Head or Transceiver status"
-% to do XXX
+%% "Sonar Head or Transceiver status"
+% to decode properly XXX
+out.SonarHeadStatus = EM_Runtime.SonarHeadStatus;
 
 
-%% Decoding "Mode"
+%% "Mode"
 data = EM_Runtime.Mode;
 sz = size(data);
 encodedData = dec2bin(reshape(data,[],1), 8);
@@ -103,7 +106,6 @@ switch emNumber
         
 end
 
-
 % TX pulse form
 switch emNumber
     
@@ -130,7 +132,6 @@ switch emNumber
         
 end
 
-
 % Frequency
 switch emNumber
     case 2045
@@ -145,7 +146,6 @@ switch emNumber
         out.FrequencyKHz = 180 + 10.*parameter;
         
 end
-
 
 % Dual Swath mode
 switch emNumber
@@ -163,11 +163,44 @@ switch emNumber
 end
 
 
-%% Decoding "Filter Identifier"
-% to do XXX
+%% "Filter Identifier"
+% to decode properly XXX
+out.FilterIdentifier = EM_Runtime.FilterIdentifier;
 
 
-%% Decoding "Mode2"
+%% "Minimum depth in m"
+out.MinimumDepth = EM_Runtime.MinimumDepth;
+
+
+%% "Maximum depth in m"
+out.MaximumDepth = EM_Runtime.MaximumDepth;
+
+
+%% "Absorption coefficient in 0.01 dB/km"
+out.AbsorptionCoefficient = EM_Runtime.AbsorptionCoefficient.*0.01; % now in dB/km
+
+
+%% "Transmit pulse length in μs"
+out.TransmitPulseLength = EM_Runtime.TransmitPulseLength.*1e-6; % now in seconds
+
+
+%% "Transmit beamwidth in 0.1 degrees"
+out.TransmitBeamwidth = EM_Runtime.TransmitBeamwidth.*0.1; % now in degrees
+
+
+%% "Transmit power re maximum in dB"
+out.TransmitPowerReMaximum = EM_Runtime.TransmitPowerReMaximum;
+
+
+%% "Receive beamwidth in 0.1 degrees"
+out.ReceiveBeamwidth = EM_Runtime.ReceiveBeamwidth.*0.1; % now in degrees
+
+
+%% "Receive bandwidth in 50 Hz resolution"
+out.ReceiveBandwidth = EM_Runtime.ReceiveBandwidth.*50; % now in Hz
+
+
+%% "Mode 2 or Receiver fixed gain setting in dB"
 data = EM_Runtime.ReceiverFixedGainSetting;
 sz = size(data);
 encodedData = dec2bin(reshape(data,[],1), 8);
@@ -243,15 +276,47 @@ switch emNumber
 end      
 
 
-%% Decoding "sound speed (at the transducer depth)"
-% to do XXX
+%% "TVG law crossover angle in degrees"
+out.TVGLawCrossoverAngle = EM_Runtime.TVGLawCrossoverAngle;
 
-%% Decoding "beamspacing"
-% to do XXX
 
-%% Decoding "yaw and pitch stabilization"
-% to do XXX
+%% "Source of sound speed at transducer"
+% to decode properly XXX
+out.SourceOfSoundSpeedAtTransducer = EM_Runtime.SourceOfSoundSpeedAtTransducer;
 
-%% Decoding "filter identifier 2"
-% to do XXX
+
+%% "Maximum port swath width in m"
+out.MaximumPortSwathWidth = EM_Runtime.MaximumPortSwathWidth;
+
+
+%% "Beam spacing"
+% to decode properly XXX
+out.BeamSpacing = EM_Runtime.BeamSpacing;
+
+
+%% "Maximum port coverage in degrees"
+out.MaximumPortCoverage = EM_Runtime.MaximumPortCoverage;
+
+
+%% "Yaw and pitch stabilization mode"
+% to decode properly XXX
+out.YawAndPitchStabilizationMode = EM_Runtime.YawAndPitchStabilizationMode;
+
+
+%% "Maximum starboard coverage in degrees"
+out.MaximumStarboardCoverage = EM_Runtime.MaximumStarboardCoverage;
+
+
+%% "Maximum starboard swath width in m"
+out.MaximumStarboardSwathWidth = EM_Runtime.MaximumStarboardSwathWidth;
+
+
+%% "Transmit along tilt in 0.1 deg. or Durotong speed in dm/s"
+% to decode properly XXX
+out.DurotongSpeed = EM_Runtime.DurotongSpeed;
+
+
+%% "Filter identifier 2 or HiLo frequency absorption coefficient ratio"
+% to decode properly XXX
+out.HiLoFrequencyAbsorptionCoefficientRatio = EM_Runtime.HiLoFrequencyAbsorptionCoefficientRatio;
 

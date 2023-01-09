@@ -65,3 +65,46 @@ Articles using CoFFee, or apps based on CoFFee:
 * Nau, A. W., Lucieer, V. L., & Alexandre Schimel, C. G. (2018). Modeling the along-track sidelobe interference artifact in multibeam sonar water-column data. OCEANS 2018 MTS/IEEE Charleston, 1–5. https://doi.org/10.1109/OCEANS.2018.8604866
 * Schimel, A. C. G., Ierodiaconou, D., Hulands, L., & Kennedy, D. M. (2015). Accounting for uncertainty in volumes of seabed change measured with repeat multibeam sonar surveys. Continental Shelf Research, 111, 52–68. https://doi.org/10.1016/j.csr.2015.10.019
 * Schimel, A. C. G., Healy, T. R., McComb, P., & Immenga, D. (2010). Comparison of a self-processed EM3000 multibeam echosounder dataset with a QTC view habitat mapping and a sidescan sonar imagery, Tamaki Strait, New Zealand. Journal of Coastal Research, 26(4). https://doi.org/10.2112/08-1132.1
+
+
+## For developers
+
+The philosophy behind *CoFFee* and the apps built on it is that all back-end (processing) goes in *CoFFee* while all front-end (display, user interface, application) goes in those apps. As a result, the development of an app requires the joint development of *CoFFee*. And since there are multiple apps built on *CoFFee*, careful version-controlling and dependency-management is necessary to avoid breaking compatibility.
+
+We use [Semantic Versioning](https://semver.org/) to attribute version numbers:
+* The version of CoFFee is hard-coded in function `CFF_coffee_version.m`.
+* The version of an app is (usually) a static property of the app (`Version`), alongside the CoFFee version it was built on (`CoffeeVersion`).
+
+A careful sequence to develop an app is the following:
+
+1. Checkout the latest commits on the main branches of both *CoFFee* and the app you wish to develop.
+2. Check if that latest version of the app uses the latest version of *CoFFee* (in the code, or warning at start-up). 
+3. If the app is running on an older version of *CoFFee*, fix that first:
+    * Start with updating the app to use that latest version of *CoFFee*.
+    * Before committing those changes, increase the app's version number and update which *CoFFee* version it runs on. 
+    * After committing, remember to add the new tag on git.
+4. Develop the app as you wish. Remember that all processing goes ideally in *CoFFee* and all display and user interface on the app.
+5. When done, if *CoFFee* was modified:
+    * Increase *CoFFee*'s version number (`CFF_coffee_version.m`).
+    * Increase the app's version number (property `Version`), and update which *CoFFee* version it was built on (property `CoffeeVersion`).
+6. Check that everything works:
+    * In MATLAB, run `restoredefaultpath` to ensure you get a clean path.
+    * Delete the user folder to start from a clean slate.
+    * Start the app, check on the start messages that all versions are correct
+    * Test all features of the app.
+7. If *CoFFee* was modified, push it up on git first. Add a tag.
+8. If you wish to compile this new version of the app:
+    * In MATLAB, run `restoredefaultpath` to ensure you get a clean path. 
+    * Run the app and check a last time it all works fine.
+    * Double-click on the app's `*.prj` file to run the application compiler with existing settings:
+      * Remove the app's `*.mlapp` main file and add it again for the application compiler to find all dependencies.
+      * Update the version number in the setup filename, the application information, and the default installation folder.
+      * Save.
+      * Click on `Package`.
+    * Install the new executable with the setup file.
+    * Test that the setup works correctly.
+    * Test that the installed software runs correctly.
+9. Push the app up on git. Add a version tag.
+10. If you compiled that new version:
+    * Create a new release on github from the tag. 
+    * Add the binary setup, and a zipped version of the `for_redistribution_files_only` folder.

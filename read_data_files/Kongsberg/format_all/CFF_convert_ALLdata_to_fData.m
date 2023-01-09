@@ -262,14 +262,12 @@ for iF = 1:nStruct
         fData.Ru_1D_Date                            = ALLdata.EM_Runtime.Date;
         fData.Ru_1D_TimeSinceMidnightInMilliseconds = ALLdata.EM_Runtime.TimeSinceMidnightInMilliseconds;
         fData.Ru_1D_PingCounter                     = ALLdata.EM_Runtime.PingCounter;
-        fData.Ru_1D_TransmitPowerReMaximum          = ALLdata.EM_Runtime.TransmitPowerReMaximum;
-        fData.Ru_1D_ReceiveBeamwidth                = ALLdata.EM_Runtime.ReceiveBeamwidth./10; % now in degrees
-        
-        % decoding encoded fields
-        decodedParameters = CFF_decode_RuntimeParameters(ALLdata.EM_Runtime);
-        for fn = fieldnames(decodedParameters)'
+
+        % reading/decoding fields in a separate function
+        runtimeParameters = CFF_decode_RuntimeParameters(ALLdata.EM_Runtime);
+        for fn = fieldnames(runtimeParameters)'
             fn2 = ['Ru_1D_' fn{1}];
-            fData.(fn2) = decodedParameters.(fn{1});
+            fData.(fn2) = runtimeParameters.(fn{1});
         end
     end
     
