@@ -1,3 +1,5 @@
+![](https://github.com/alexschimel/CoFFee/blob/d7b1b86031bc83adc59aa77fdf4164101bb9fd16/apps/logo/coffee_banner.png?raw=true)
+
 # *CoFFee*
 
 Matlab toolbox for multibeam sonar data processing.
@@ -53,6 +55,7 @@ All apps based on CoFFee:
 * *Grounds*: https://github.com/alexschimel/Grounds
 * *Espresso* (private)
 * *Iskaffe*: https://github.com/alexschimel/Iskaffe
+* *Kopp*: https://github.com/alexschimel/Kopp
 
 
 ## References
@@ -98,7 +101,7 @@ A careful sequence to develop an app is the following:
     * Run the app and check a last time it all works fine.
     * Double-click on the app's `*.prj` file to run the application compiler with existing settings:
       * Remove the app's `*.mlapp` main file and add it again for the application compiler to find all dependencies.
-      * Update the version number in the setup filename, the application information, and the default installation folder.
+      * Update the version number in the 'runtime downloaded from web', the 'application information', and the default installation folder.
       * Save.
       * Click on `Package`.
     * Install the new executable with the setup file.
