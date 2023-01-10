@@ -6,15 +6,15 @@ Matlab toolbox for multibeam sonar data processing.
 
 ## Description
 
-*CoFFee* is a free and open-source MATLAB library/toolbox for parsing, visualizing, and processing multibeam sonar data processing.
+*CoFFee* is a free and open-source MATLAB toolbox (libary of functions) for reading multibeam sonar raw data files, visualizing their contents, and applying various processsing algorithms. It serves as the engine for several apps/GUIs designed for specific applications.
 
-**This is currently a pre-release of version 2.0, so use at your perils!**
+**IMPORTANT NOTE: This is a pre-release (v2), that is, still clunky. Use at your peril!**
 
 ## Getting Started
 
 ### Dependencies
 
-* [MATLAB](https://au.mathworks.com/products/get-matlab.html). Authors are currently using R2020b, but it may work on other versions.
+* [MATLAB](https://au.mathworks.com/products/get-matlab.html). We are currently using R2020b, but it may work on other versions.
 * Some MATLAB toolboxes (not all functions require them):
   * Signal Processing Toolbox
   * Mapping Toolbox
@@ -24,7 +24,7 @@ Matlab toolbox for multibeam sonar data processing.
 ### Installing and using
 
 * Clone or download the repository.
-* Add the toolbox's folder and subfolders to the Matlab's path by starting your scripts with:
+* Add the toolbox's folder and subfolders to the Matlab's path by adding the following lines at the top of your scripts:
 
 ```
 coffeeFolder = 'C:\my\path\to\CoFFee';
@@ -51,16 +51,16 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 ## See Also
 
-All apps based on CoFFee:
-* *Grounds*: https://github.com/alexschimel/Grounds
-* *Espresso* (private)
-* *Iskaffe*: https://github.com/alexschimel/Iskaffe
-* *Kopp*: https://github.com/alexschimel/Kopp
+All apps based on *CoFFee*:
+* [*Grounds*](https://github.com/alexschimel/Grounds): Elevation Change Analysis
+* *Espresso*: Water-column data viewing and processing (private)
+* [*Iskaffe*](https://github.com/alexschimel/Iskaffe): Multibeam backscatter quality control
+* [*Kopp*](https://github.com/alexschimel/Kopp): Tracking Multibeam raw data parameter changes
 
 
 ## References
 
-Articles using CoFFee, or apps based on CoFFee:
+Articles using *CoFFee*, or apps based on *CoFFee*:
 * Nau, A. W., Scoulding, B., Kloser, R. J., Ladroit, Y., & Lucieer, V. (2022). Extended Detection of Shallow Water Gas Seeps From Multibeam Echosounder Water Column Data. Frontiers in Remote Sensing, 3(July), 1–18. https://doi.org/10.3389/frsen.2022.839417
 * Porskamp, P., Schimel, A. C. G., Young, M., Rattray, A., Ladroit, Y., & Ierodiaconou, D. (2022). Integrating multibeam echosounder water‐column data into benthic habitat mapping. Limnology and Oceanography, 1–13. https://doi.org/10.1002/lno.12160
 * Schimel, A. C. G., Brown, C. J., & Ierodiaconou, D. (2020). Automated Filtering of Multibeam Water-Column Data to Detect Relative Abundance of Giant Kelp (Macrocystis pyrifera). Remote Sensing, 12(9), 1371. https://doi.org/10.3390/rs12091371
@@ -72,11 +72,11 @@ Articles using CoFFee, or apps based on CoFFee:
 
 ## For developers
 
-The philosophy behind *CoFFee* and the apps built on it is that all back-end (processing) goes in *CoFFee* while all front-end (display, user interface, application) goes in those apps. As a result, the development of an app requires the joint development of *CoFFee*. And since there are multiple apps built on *CoFFee*, careful version-controlling and dependency-management is necessary to avoid breaking compatibility.
+The philosophy behind *CoFFee* and the apps built on it is that all back-end (processing) goes in *CoFFee* while all front-end (display, user interface, application) goes in those apps. As a result, the development of an app requires the joint development of *CoFFee*, and since there are multiple apps built on *CoFFee*, careful version-controlling and dependency-management is necessary to avoid breaking compatibility.
 
 We use [Semantic Versioning](https://semver.org/) to attribute version numbers:
-* The version of CoFFee is hard-coded in function `CFF_coffee_version.m`.
-* The version of an app is (usually) a static property of the app (`Version`), alongside the CoFFee version it was built on (`CoffeeVersion`).
+* The version of *CoFFee* is hard-coded in function `CFF_coffee_version.m`.
+* The version of an app is (usually) a static property of the app (`Version`), alongside the *CoFFee* version it was built on (`CoffeeVersion`).
 
 A careful sequence to develop an app is the following:
 
