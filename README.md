@@ -1,4 +1,4 @@
-![](https://github.com/alexschimel/CoFFee/blob/d7b1b86031bc83adc59aa77fdf4164101bb9fd16/apps/logo/coffee_banner.png?raw=true)
+![](https://github.com/alexschimel/CoFFee/blob/master/apps/logo/coffee_banner.png?raw=true)
 
 # *CoFFee*
 
