@@ -111,4 +111,7 @@ A careful sequence to develop an app is the following:
 10. If you compiled that new version:
     * Zip the "for_redistribution_files_only" folder
     * Create a new release on github from the tag. 
-    * Add the binary setup, and a zipped version of the `for_redistribution_files_only` folder.
+      * Add appropriate sections: Download, New features, Bug fixes
+      * Add to the new release: the binary setup, and the zipped `for_redistribution_files_only.zip` file.
+      * Change links in the new release's Download section
+    * Update the link of the "Download Latest release installer" button on the app's README.md
