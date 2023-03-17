@@ -109,5 +109,6 @@ A careful sequence to develop an app is the following:
     * Test that the installed software runs correctly.
 9. Push the app up on git. Add a version tag.
 10. If you compiled that new version:
+    * Zip the "for_redistribution_files_only" folder
     * Create a new release on github from the tag. 
     * Add the binary setup, and a zipped version of the `for_redistribution_files_only` folder.
