@@ -23,7 +23,8 @@ function ver = CFF_coffee_version()
 %   (NIWA, yoann.ladroit@niwa.co.nz) 
 %   2022-2023; Last revision: 09-01-2023
 
-ver = '2.0.0-alpha.6'; % 09/01/2023
+ver = '2.0.0-alpha.7'; % 17/03/2023
+% ver = '2.0.0-alpha.6'; % 09/01/2023
 % ver = '2.0.0-alpha.5'; % 08/09/2022
 % ver = '2.0.0-alpha.4'; % 02/09/2022
 % ver = '2.0.0-alpha.3'; % 12/08/2022
