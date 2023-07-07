@@ -62,6 +62,7 @@ function fData = CFF_convert_ALLdata_to_fData(ALLdataGroup,varargin)
 %         * B1: beam-like single-column-vector
 %         * BP: beam/ping array
 %         * TP: transmit-sector/ping array
+%         * HP: head/ping array
 %         * SP: samples/ping array (note: samples are not sorted, this is
 %         not equivalent to range!)
 %         * 1D: datagram-like single-row-vector (for attitude or
@@ -90,11 +91,12 @@ function fData = CFF_convert_ALLdata_to_fData(ALLdataGroup,varargin)
 %   you're at it.
 %   * Have not tested the loading of data from 'EM_Depth' and
 %   'EM_SeabedImage' in the new format version (v2). Might need debugging.
-%
+%   * Several datagrams still need to be upgraded to deal with dual head
+%   systems
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2022; Last revision: 07-04-2022
+%   Ladroit (NIWA, yoann.ladroit@km.kongsberg.com)
+%   2017-2022; Last revision: 05-07-2023
 
 
 %% Input arguments management
@@ -459,9 +461,9 @@ for iF = 1:nStruct
             
             % There is no index on head order, so sort them from portmost
             % to starboardmost 
-            [~,I] = sort(cellfun(@(x) x(1), ALLdata.EM_XYZ88.AcrosstrackDistanceY(idxDtg(:,1))));
-            idxDtg = idxDtg(I,:);
-            headNumber = headNumber(I);
+            [~,indHeadOrder] = sort(cellfun(@(x) x(1), ALLdata.EM_XYZ88.AcrosstrackDistanceY(idxDtg(:,1))));
+            idxDtg = idxDtg(indHeadOrder,:);
+            headNumber = headNumber(indHeadOrder);
         end
         
         % save ping numbers
@@ -477,13 +479,13 @@ for iF = 1:nStruct
         fData.X8_1P_TransmitTransducerDepth         = ALLdata.EM_XYZ88.TransmitTransducerDepth(idxDtg(1,:));
         fData.X8_1P_SamplingFrequencyInHz           = ALLdata.EM_XYZ88.SamplingFrequencyInHz(idxDtg(1,:));
         
-        % for those fields, we sum the values from 
-        fData.X8_1P_NumberOfBeamsInDatagram         = sum(ALLdata.EM_XYZ88.NumberOfBeamsInDatagram(idxDtg),1);
-        fData.X8_1P_NumberOfValidDetections         = sum(ALLdata.EM_XYZ88.NumberOfValidDetections(idxDtg),1);
+        % for those fields, we can simply sum the values from all heads 
+        fData.X8_1P_NumberOfBeamsInDatagram = sum(ALLdata.EM_XYZ88.NumberOfBeamsInDatagram(idxDtg),1);
+        fData.X8_1P_NumberOfValidDetections = sum(ALLdata.EM_XYZ88.NumberOfValidDetections(idxDtg),1);
         
         % save dimensions
         nPings    = numel(pingCounters); % total number of pings in file
-        maxnBeams = max(fData.X8_1P_NumberOfBeamsInDatagram); % maximum beam number in file
+        maxnBeams = max(fData.X8_1P_NumberOfBeamsInDatagram); % maximum number of beams in a ping
         
         % initialize BP fields
         fData.X8_B1_BeamNumber                   = (1:maxnBeams)';
@@ -525,7 +527,8 @@ for iF = 1:nStruct
                 fData.X8_BP_RealTimeCleaningInformation(iBOut,iPOut)  = ALLdata.EM_XYZ88.RealTimeCleaningInformation{iPIn};
                 fData.X8_BP_ReflectivityBS(iBOut,iPOut)               = ALLdata.EM_XYZ88.ReflectivityBS{iPIn}*0.1; % now in dB
                 
-                % add head number
+                % add head number to allow relating each BP matrix to the
+                % correct head
                 fData.X8_BP_HeadSystemSerialNumber(iBOut,iPOut) = headNumber(iH);
                 
                 % update
@@ -601,65 +604,142 @@ for iF = 1:nStruct
     end
     
     
-    %% EM_SeabedImage89  XXX1 to update for dual head support
+    %% EM_SeabedImage89
+    % updated for dual head support (20230705) following XYZ88 code as
+    % template
     if isfield(ALLdata,'EM_SeabedImage89') && ~isfield(fData,'S8_1P_Date')
         
         comms.step('Converting EM_SeabedImage89'); 
         
-        nPings  = length(ALLdata.EM_SeabedImage89.TypeOfDatagram); % total number of pings in file
-        maxnBeams = max(ALLdata.EM_SeabedImage89.NumberOfValidBeams); % maximum beam number (beam index number +1), in file
-        maxnSamples = max(cellfun(@(x) max(x),ALLdata.EM_SeabedImage89.NumberOfSamplesPerBeam)); % maximum number of samples for a beam, in file
+        % get the number of heads
+        headNumber = unique(ALLdata.EM_SeabedImage89.SystemSerialNumber,'stable');
         
-        fData.S8_1P_Date                            = ALLdata.EM_SeabedImage89.Date;
-        fData.S8_1P_TimeSinceMidnightInMilliseconds = ALLdata.EM_SeabedImage89.TimeSinceMidnightInMilliseconds;
-        fData.S8_1P_PingCounter                     = ALLdata.EM_SeabedImage89.PingCounter;
-        fData.S8_1P_SamplingFrequencyInHz           = ALLdata.EM_SeabedImage89.SamplingFrequencyInHz;
-        fData.S8_1P_RangeToNormalIncidence          = ALLdata.EM_SeabedImage89.RangeToNormalIncidence;
-        fData.S8_1P_NormalIncidenceBS               = ALLdata.EM_SeabedImage89.NormalIncidenceBS;
-        fData.S8_1P_ObliqueBS                       = ALLdata.EM_SeabedImage89.ObliqueBS;
-        fData.S8_1P_TxBeamwidthAlong                = ALLdata.EM_SeabedImage89.TxBeamwidthAlong;
-        fData.S8_1P_TVGLawCrossoverAngle            = ALLdata.EM_SeabedImage89.TVGLawCrossoverAngle;
-        fData.S8_1P_NumberOfValidBeams              = ALLdata.EM_SeabedImage89.NumberOfValidBeams;
+        % get ping numbers and datagrams indices
+        if numel(headNumber) == 1
+            % there should not be multiple datagrams per ping in
+            % single-head data, but taking unique here just in case there
+            % are duplicates datagrams
+            % NOTE: have not tested this yet...
+            [pingCounters, idxDtg] = unique(ALLdata.EM_SeabedImage89.PingCounter,'stable');
+            idxDtg = idxDtg';
+        else
+            % in case there's more than one head, we're going to only keep
+            % pings for which we have data for all heads
+            
+            % pings in first head
+            idxFirstHead = ALLdata.EM_SeabedImage89.SystemSerialNumber==headNumber(1);
+            pingCounters = unique(ALLdata.EM_SeabedImage89.PingCounter(idxFirstHead),'stable');
+            
+            % update by keeping only common values to other heads in turn
+            for iH = 2:numel(headNumber)
+                idxThisOtherHead = ALLdata.EM_SeabedImage89.SystemSerialNumber==headNumber(iH);
+                pingCountersThisOhterHead = unique(ALLdata.EM_SeabedImage89.PingCounter(idxThisOtherHead),'stable');
+                pingCounters = intersect(pingCounters, pingCountersThisOhterHead);
+            end
+            
+            % get the index of first datagram per head for a given ping
+            % number
+            idxDtg = nan(numel(headNumber), numel(pingCounters));
+            for iH = 1:numel(headNumber)
+                idxDtg(iH,:) = arrayfun(@(x) find(ALLdata.EM_SeabedImage89.SystemSerialNumber==headNumber(iH) & ALLdata.EM_SeabedImage89.PingCounter==x, 1), pingCounters);
+            end
+            
+            % there is no index on head order, so take the order from a
+            % previous datagram type (normally, XYZ88) otherwise take it in
+            % the order the head numbers were found
+            if ~exist('indHeadOrder','var')
+                indHeadOrder = 1:numel(headNumber);
+            end
+            idxDtg = idxDtg(indHeadOrder,:);
+            headNumber = headNumber(indHeadOrder); 
+        end
         
-        % initialize
+        % save ping numbers
+        fData.S8_1P_PingCounter = pingCounters;
+        
+        % for those fields, we only retain the value from the first head,
+        % although in practice for some fields, the values may be different
+        % across heads.
+        fData.S8_1P_Date                            = ALLdata.EM_SeabedImage89.Date(idxDtg(1,:));
+        fData.S8_1P_TimeSinceMidnightInMilliseconds = ALLdata.EM_SeabedImage89.TimeSinceMidnightInMilliseconds(idxDtg(1,:));
+        
+        % for those fields, we order the vector in a head x ping array
+        fData.S8_HP_SamplingFrequencyInHz  = ALLdata.EM_SeabedImage89.SamplingFrequencyInHz(idxDtg);
+        fData.S8_HP_RangeToNormalIncidence = ALLdata.EM_SeabedImage89.RangeToNormalIncidence(idxDtg);
+        fData.S8_HP_NormalIncidenceBS      = ALLdata.EM_SeabedImage89.NormalIncidenceBS(idxDtg);
+        fData.S8_HP_ObliqueBS              = ALLdata.EM_SeabedImage89.ObliqueBS(idxDtg);
+        fData.S8_HP_TxBeamwidthAlong       = ALLdata.EM_SeabedImage89.TxBeamwidthAlong(idxDtg);
+        fData.S8_HP_TVGLawCrossoverAngle   = ALLdata.EM_SeabedImage89.TVGLawCrossoverAngle(idxDtg);
+        
+        % for those fields, we can simply sum the values from all heads
+        fData.S8_1P_NumberOfValidBeams = sum(ALLdata.EM_SeabedImage89.NumberOfValidBeams(idxDtg),1);
+        
+        % save dimensions
+        nPings      = numel(pingCounters); % total number of pings in file
+        maxnBeams   = max(fData.S8_1P_NumberOfValidBeams); % maximum number of beams in a ping
+        maxnSamples = max(cellfun(@(x) max(x),ALLdata.EM_SeabedImage89.NumberOfSamplesPerBeam)); % maximum number of samples in a beam
+        
+        % initialize remaining fields
         fData.S8_BP_SortingDirection       = nan(maxnBeams,nPings);
         fData.S8_BP_DetectionInfo          = nan(maxnBeams,nPings);
         fData.S8_BP_NumberOfSamplesPerBeam = nan(maxnBeams,nPings);
         fData.S8_BP_CentreSampleNumber     = nan(maxnBeams,nPings);
         fData.S8_B1_BeamNumber             = (1:maxnBeams)';
         fData.S8_SBP_SampleAmplitudes      = cell(nPings,1); % saving as a cell vector of sparse matrices, per ping
+        % true SBP array would be: fData.S8_SBP_SampleAmplitudes = nan(maxnSamples,maxnBeams,nPings);
         
-        % in this more recent datagram, all beams are in. No beamnumber anymore
-        BeamNumber = fData.S8_B1_BeamNumber;
-        
-        for iP = 1:nPings
+        % and fill that data ping per ping
+        for iPOut = 1:nPings
             
-            % Get data from datagram
-            NumberOfSamplesPerBeam = cell2mat(ALLdata.EM_SeabedImage89.NumberOfSamplesPerBeam(iP));
-            Samples                = cell2mat(ALLdata.EM_SeabedImage89.SampleAmplitudes(iP).beam(:));
+            % init number of beams recorded so far
+            nBeamTot = 0;
             
-            % from number of samples per beam, get indices of first and last
-            % sample for each beam in the Samples data vector
-            iFirst = [1;cumsum(NumberOfSamplesPerBeam(1:end-1))+1];
-            iLast  = iFirst+NumberOfSamplesPerBeam-1;
+            % initialize the BS time-series (samples/beam array,
+            % use zero instead of NaN to allow turning it to sparse )
+            temp = zeros(maxnSamples,maxnBeams);
             
-            % store
-            fData.S8_BP_SortingDirection(BeamNumber,iP)       = cell2mat(ALLdata.EM_SeabedImage89.SortingDirection(iP));
-            fData.S8_BP_NumberOfSamplesPerBeam(BeamNumber,iP) = NumberOfSamplesPerBeam;
-            fData.S8_BP_CentreSampleNumber(BeamNumber,iP)     = cell2mat(ALLdata.EM_SeabedImage89.CentreSampleNumber(iP));
-            
-            % initialize the beams/sample array (use zero instead of NaN to
-            % allow turning it to sparse
-            temp = zeros(maxnSamples,length(BeamNumber));
-            
-            % and fill in
-            for iB = 1:length(BeamNumber)
-                temp(1:NumberOfSamplesPerBeam(iB),BeamNumber(iB)) = Samples(iFirst(iB):iLast(iB));
+            % parse data per head
+            for iH = 1:numel(headNumber)
+                
+                % index of ping for this head in ALLdata
+                iPIn = find( ALLdata.EM_SeabedImage89.PingCounter==pingCounters(iPOut) & ...
+                    ALLdata.EM_SeabedImage89.SystemSerialNumber==headNumber(iH));
+                
+                % index of beams in output array
+                nBeamsIn = ALLdata.EM_SeabedImage89.NumberOfValidBeams(iPIn);
+                iBOut = nBeamTot + (1:nBeamsIn);
+                
+                % get data from datagram
+                NumberOfSamplesPerBeam = cell2mat(ALLdata.EM_SeabedImage89.NumberOfSamplesPerBeam(iPIn));
+                Samples                = cell2mat(ALLdata.EM_SeabedImage89.SampleAmplitudes(iPIn).beam(:));
+                
+                % from number of samples per beam, get indices of first and
+                % last sample for each beam in the Samples data vector
+                iFirst = [1;cumsum(NumberOfSamplesPerBeam(1:end-1))+1];
+                iLast  = iFirst+NumberOfSamplesPerBeam-1;
+                
+                % store the BP variables
+                fData.S8_BP_SortingDirection(iBOut,iPOut)       = cell2mat(ALLdata.EM_SeabedImage89.SortingDirection(iPIn));
+                fData.S8_BP_DetectionInfo(iBOut,iPOut)          = cell2mat(ALLdata.EM_SeabedImage89.DetectionInfo(iPIn));
+                fData.S8_BP_NumberOfSamplesPerBeam(iBOut,iPOut) = NumberOfSamplesPerBeam;
+                fData.S8_BP_CentreSampleNumber(iBOut,iPOut)     = cell2mat(ALLdata.EM_SeabedImage89.CentreSampleNumber(iPIn));
+                
+                % add head number to allow relating each BP matrix to the
+                % correct head
+                fData.S8_BP_HeadSystemSerialNumber(iBOut,iPOut) = headNumber(iH);
+                
+                % get BS time-series samples
+                for iB = 1:length(iBOut)
+                    temp(1:NumberOfSamplesPerBeam(iB),iBOut(iB)) = Samples(iFirst(iB):iLast(iB));
+                end
+                
+                % update total number of beams so far
+                nBeamTot = iBOut(end);
             end
             
-            % and save as sparse matrix, as sparse version
-            % to use full matrices, fData.S8_SBP_SampleAmplitudes(:,:,iP) = temp;
-            fData.S8_SBP_SampleAmplitudes(iP,1) = {sparse(temp)};
+            % save BS time-series as a sparse matrix to save space.
+            % to use full matrices: fData.S8_SBP_SampleAmplitudes(:,:,iPOut) = temp;
+            fData.S8_SBP_SampleAmplitudes(iPOut,1) = {sparse(temp)};
             
         end
         

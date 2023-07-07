@@ -784,52 +784,43 @@ for iDatag = datagToParse'
             try i88=i88+1; catch, i88=1; end
             
             % parsing
-            ALLdata.EM_XYZ88.NumberOfBytesInDatagram(i88)           = nbDatag;
-            ALLdata.EM_XYZ88.STX(i88)                               = stxDatag;
-            ALLdata.EM_XYZ88.TypeOfDatagram(i88)                    = datagTypeNumber;
-            ALLdata.EM_XYZ88.EMModelNumber(i88)                     = emNumber;
-            ALLdata.EM_XYZ88.Date(i88)                              = date;
-            ALLdata.EM_XYZ88.TimeSinceMidnightInMilliseconds(i88)   = timeSinceMidnightInMilliseconds;
-            ALLdata.EM_XYZ88.PingCounter(i88)                       = number;
-            ALLdata.EM_XYZ88.SystemSerialNumber(i88)                = systemSerialNumber;
+            ALLdata.EM_XYZ88.NumberOfBytesInDatagram(i88)         = nbDatag;
+            ALLdata.EM_XYZ88.STX(i88)                             = stxDatag;
+            ALLdata.EM_XYZ88.TypeOfDatagram(i88)                  = datagTypeNumber;
+            ALLdata.EM_XYZ88.EMModelNumber(i88)                   = emNumber;
+            ALLdata.EM_XYZ88.Date(i88)                            = date;
+            ALLdata.EM_XYZ88.TimeSinceMidnightInMilliseconds(i88) = timeSinceMidnightInMilliseconds;
+            ALLdata.EM_XYZ88.PingCounter(i88)                     = number;
+            ALLdata.EM_XYZ88.SystemSerialNumber(i88)              = systemSerialNumber;
             
-            ALLdata.EM_XYZ88.HeadingOfVessel(i88)                   = fread(fid,1,'uint16');
-            ALLdata.EM_XYZ88.SoundSpeedAtTransducer(i88)            = fread(fid,1,'uint16');
-            ALLdata.EM_XYZ88.TransmitTransducerDepth(i88)           = fread(fid,1,'float32');
-            ALLdata.EM_XYZ88.NumberOfBeamsInDatagram(i88)           = fread(fid,1,'uint16');
-            ALLdata.EM_XYZ88.NumberOfValidDetections(i88)           = fread(fid,1,'uint16');
-            ALLdata.EM_XYZ88.SamplingFrequencyInHz(i88)             = fread(fid,1,'float32');
-            ALLdata.EM_XYZ88.ScanningInfo(i88)                      = fread(fid,1,'uint8');
-            ALLdata.EM_XYZ88.Spare1(i88)                            = fread(fid,1,'uint8');
-            ALLdata.EM_XYZ88.Spare2(i88)                            = fread(fid,1,'uint8');
-            ALLdata.EM_XYZ88.Spare3(i88)                            = fread(fid,1,'uint8');
+            ALLdata.EM_XYZ88.HeadingOfVessel(i88)         = fread(fid,1,'uint16');
+            ALLdata.EM_XYZ88.SoundSpeedAtTransducer(i88)  = fread(fid,1,'uint16');
+            ALLdata.EM_XYZ88.TransmitTransducerDepth(i88) = fread(fid,1,'float32');
+            ALLdata.EM_XYZ88.NumberOfBeamsInDatagram(i88) = fread(fid,1,'uint16');
+            ALLdata.EM_XYZ88.NumberOfValidDetections(i88) = fread(fid,1,'uint16');
+            ALLdata.EM_XYZ88.SamplingFrequencyInHz(i88)   = fread(fid,1,'float32');
+            ALLdata.EM_XYZ88.ScanningInfo(i88)            = fread(fid,1,'uint8');
+            ALLdata.EM_XYZ88.Spare1(i88)                  = fread(fid,1,'uint8');
+            ALLdata.EM_XYZ88.Spare2(i88)                  = fread(fid,1,'uint8');
+            ALLdata.EM_XYZ88.Spare3(i88)                  = fread(fid,1,'uint8');
             
             % repeat cycle: N entries of 20 bits
             temp = ftell(fid);
             C = 20;
             N = ALLdata.EM_XYZ88.NumberOfBeamsInDatagram(i88);
-            ALLdata.EM_XYZ88.DepthZ{i88}                        = fread(fid,N,'float32',C-4);
-            fseek(fid,temp+4,'bof'); % to next data type
-            ALLdata.EM_XYZ88.AcrosstrackDistanceY{i88}          = fread(fid,N,'float32',C-4);
-            fseek(fid,temp+8,'bof'); % to next data type
-            ALLdata.EM_XYZ88.AlongtrackDistanceX{i88}           = fread(fid,N,'float32',C-4);
-            fseek(fid,temp+12,'bof'); % to next data type
-            ALLdata.EM_XYZ88.DetectionWindowLength{i88}         = fread(fid,N,'uint16',C-2);
-            fseek(fid,temp+14,'bof'); % to next data type
-            ALLdata.EM_XYZ88.QualityFactor{i88}                 = fread(fid,N,'uint8',C-1);
-            fseek(fid,temp+15,'bof'); % to next data type
-            ALLdata.EM_XYZ88.BeamIncidenceAngleAdjustment{i88}  = fread(fid,N,'int8',C-1);
-            fseek(fid,temp+16,'bof'); % to next data type
-            ALLdata.EM_XYZ88.DetectionInformation{i88}          = fread(fid,N,'uint8',C-1);
-            fseek(fid,temp+17,'bof'); % to next data type
-            ALLdata.EM_XYZ88.RealTimeCleaningInformation{i88}   = fread(fid,N,'int8',C-1);
-            fseek(fid,temp+18,'bof'); % to next data type
-            ALLdata.EM_XYZ88.ReflectivityBS{i88}                = fread(fid,N,'int16',C-2);
-            fseek(fid,2-C,'cof'); % we need to come back after last jump
+            ALLdata.EM_XYZ88.DepthZ{i88}                       = fread(fid,N,'float32',C-4); fseek(fid,temp+4,'bof');  % to next data type
+            ALLdata.EM_XYZ88.AcrosstrackDistanceY{i88}         = fread(fid,N,'float32',C-4); fseek(fid,temp+8,'bof');  
+            ALLdata.EM_XYZ88.AlongtrackDistanceX{i88}          = fread(fid,N,'float32',C-4); fseek(fid,temp+12,'bof'); 
+            ALLdata.EM_XYZ88.DetectionWindowLength{i88}        = fread(fid,N,'uint16',C-2);  fseek(fid,temp+14,'bof'); 
+            ALLdata.EM_XYZ88.QualityFactor{i88}                = fread(fid,N,'uint8',C-1);   fseek(fid,temp+15,'bof'); 
+            ALLdata.EM_XYZ88.BeamIncidenceAngleAdjustment{i88} = fread(fid,N,'int8',C-1);    fseek(fid,temp+16,'bof'); 
+            ALLdata.EM_XYZ88.DetectionInformation{i88}         = fread(fid,N,'uint8',C-1);   fseek(fid,temp+17,'bof'); 
+            ALLdata.EM_XYZ88.RealTimeCleaningInformation{i88}  = fread(fid,N,'int8',C-1);    fseek(fid,temp+18,'bof');
+            ALLdata.EM_XYZ88.ReflectivityBS{i88}               = fread(fid,N,'int16',C-2);   fseek(fid,2-C,'cof');     % we need to come back after last jump
             
-            ALLdata.EM_XYZ88.Spare4(i88)                            = fread(fid,1,'uint8');
-            ALLdata.EM_XYZ88.ETX(i88)                               = fread(fid,1,'uint8');
-            ALLdata.EM_XYZ88.CheckSum(i88)                          = fread(fid,1,'uint16');
+            ALLdata.EM_XYZ88.Spare4(i88)   = fread(fid,1,'uint8');
+            ALLdata.EM_XYZ88.ETX(i88)      = fread(fid,1,'uint8');
+            ALLdata.EM_XYZ88.CheckSum(i88) = fread(fid,1,'uint16');
             
             % ETX check
             if ALLdata.EM_XYZ88.ETX(i88)~=3
@@ -864,35 +855,31 @@ for iDatag = datagToParse'
             ALLdata.EM_SeabedImage89.PingCounter(i89)                     = number;
             ALLdata.EM_SeabedImage89.SystemSerialNumber(i89)              = systemSerialNumber;
             
-            ALLdata.EM_SeabedImage89.SamplingFrequencyInHz(i89)           = fread(fid,1,'float32');
-            ALLdata.EM_SeabedImage89.RangeToNormalIncidence(i89)          = fread(fid,1,'uint16');
-            ALLdata.EM_SeabedImage89.NormalIncidenceBS(i89)               = fread(fid,1,'int16'); %BSN
-            ALLdata.EM_SeabedImage89.ObliqueBS(i89)                       = fread(fid,1,'int16'); %BSO
-            ALLdata.EM_SeabedImage89.TxBeamwidthAlong(i89)                = fread(fid,1,'uint16');
-            ALLdata.EM_SeabedImage89.TVGLawCrossoverAngle(i89)            = fread(fid,1,'uint16');
-            ALLdata.EM_SeabedImage89.NumberOfValidBeams(i89)              = fread(fid,1,'uint16');
+            ALLdata.EM_SeabedImage89.SamplingFrequencyInHz(i89)  = fread(fid,1,'float32');
+            ALLdata.EM_SeabedImage89.RangeToNormalIncidence(i89) = fread(fid,1,'uint16');
+            ALLdata.EM_SeabedImage89.NormalIncidenceBS(i89)      = fread(fid,1,'int16'); %BSN
+            ALLdata.EM_SeabedImage89.ObliqueBS(i89)              = fread(fid,1,'int16'); %BSO
+            ALLdata.EM_SeabedImage89.TxBeamwidthAlong(i89)       = fread(fid,1,'uint16');
+            ALLdata.EM_SeabedImage89.TVGLawCrossoverAngle(i89)   = fread(fid,1,'uint16');
+            ALLdata.EM_SeabedImage89.NumberOfValidBeams(i89)     = fread(fid,1,'uint16');
             
             % repeat cycle: N entries of 6 bits
             temp = ftell(fid);
             C = 6;
             N = ALLdata.EM_SeabedImage89.NumberOfValidBeams(i89);
-            ALLdata.EM_SeabedImage89.SortingDirection{i89}            = fread(fid,N,'int8',C-1);
-            fseek(fid,temp+1,'bof'); % to next data type
-            ALLdata.EM_SeabedImage89.DetectionInfo{i89}               = fread(fid,N,'uint8',C-1);
-            fseek(fid,temp+2,'bof'); % to next data type
-            ALLdata.EM_SeabedImage89.NumberOfSamplesPerBeam{i89}      = fread(fid,N,'uint16',C-2); %Ns
-            fseek(fid,temp+4,'bof'); % to next data type
-            ALLdata.EM_SeabedImage89.CentreSampleNumber{i89}          = fread(fid,N,'uint16',C-2);
-            fseek(fid,2-C,'cof'); % we need to come back after last jump
+            ALLdata.EM_SeabedImage89.SortingDirection{i89}       = fread(fid,N,'int8',C-1);   fseek(fid,temp+1,'bof'); % to next data type
+            ALLdata.EM_SeabedImage89.DetectionInfo{i89}          = fread(fid,N,'uint8',C-1);  fseek(fid,temp+2,'bof');
+            ALLdata.EM_SeabedImage89.NumberOfSamplesPerBeam{i89} = fread(fid,N,'uint16',C-2); fseek(fid,temp+4,'bof'); % Ns
+            ALLdata.EM_SeabedImage89.CentreSampleNumber{i89}     = fread(fid,N,'uint16',C-2); fseek(fid,2-C,'cof');    % we need to come back after last jump
             
             % reading image data
             Ns = [ALLdata.EM_SeabedImage89.NumberOfSamplesPerBeam{i89}];
             tmp = fread(fid,sum(Ns),'int16');
             ALLdata.EM_SeabedImage89.SampleAmplitudes(i89).beam = mat2cell(tmp,Ns);
             
-            ALLdata.EM_SeabedImage89.Spare(i89)                           = fread(fid,1,'uint8');
-            ALLdata.EM_SeabedImage89.ETX(i89)                             = fread(fid,1,'uint8');
-            ALLdata.EM_SeabedImage89.CheckSum(i89)                        = fread(fid,1,'uint16');
+            ALLdata.EM_SeabedImage89.Spare(i89)    = fread(fid,1,'uint8');
+            ALLdata.EM_SeabedImage89.ETX(i89)      = fread(fid,1,'uint8');
+            ALLdata.EM_SeabedImage89.CheckSum(i89) = fread(fid,1,'uint16');
             
             % ETX check
             if ALLdata.EM_SeabedImage89.ETX(i89)~=3
@@ -1399,7 +1386,12 @@ for ifif = 1:numel(All_fields)
         pings = ALLdata.(All_fields{ifif}).PingCounter;
         
         % search for indices where pings go from 65535 to 0
-        idx_rollover = find(diff(pings)==-double(intmax('uint16')));
+        % NOTE - the following works well when you have all pings in a
+        % datagram type (like XYZ88), but not for datagram types that don't
+        % have all pings (like Runtime Paramters). So changing the
+        % following to detect a large drop in pingCounter instead.
+        % idx_rollover = find(diff(pings)==-double(intmax('uint16')));
+        idx_rollover = find(diff(pings)<=-100);
         
         % new ping numbers
         idx_high = [idx_rollover+1 numel(pings)];

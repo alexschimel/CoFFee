@@ -20,10 +20,11 @@ function ver = CFF_coffee_version()
 %   See also CFF_GET_CURRENT_FDATA_VERSION.
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2022-2023; Last revision: 09-01-2023
+%   (Kongsberg Maritime, yoann.ladroit@km.kongsberg.com) 
+%   2022-2023; Last revision: 07-07-2023
 
-ver = '2.0.0-alpha.7'; % 17/03/2023
+ver = '2.0.0-alpha.8'; % 07/07/2023
+% ver = '2.0.0-alpha.7'; % 17/03/2023
 % ver = '2.0.0-alpha.6'; % 09/01/2023
 % ver = '2.0.0-alpha.5'; % 08/09/2022
 % ver = '2.0.0-alpha.4'; % 02/09/2022

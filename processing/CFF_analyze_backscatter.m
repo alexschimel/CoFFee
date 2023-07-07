@@ -54,7 +54,7 @@ for ii = 1:nLines
     
     %% step 1. find bad soundings
     % criteria 1: identifying bad beams from detection info
-    [DetectInfo, ~] = CFF_decode_X8_DetectionInfo(fData.X8_BP_DetectionInformation);
+    [DetectInfo, ~] = CFF_decode_DetectionInfo(fData.X8_BP_DetectionInformation);
     badSoundings = DetectInfo>1;
     
     if DEBUG
