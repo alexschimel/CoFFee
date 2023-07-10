@@ -72,7 +72,7 @@ Articles using *CoFFee*, or apps based on *CoFFee*:
 
 ## For developers
 
-The philosophy behind *CoFFee* and the apps built on it is that all back-end (processing) goes in *CoFFee* while all front-end (display, user interface, application) goes in those apps. As a result, the development of an app requires the joint development of *CoFFee*, and since there are multiple apps built on *CoFFee*, careful version-controlling and dependency-management is necessary to avoid breaking compatibility.
+Please maintain the *CoFFee* coding philosophy, which is that any core functionality (raw file reading, conversion, data processing, etc.) is coded as *CoFFee* functions, so that only user-interaction functionalities (display, user interface, callbacks, etc.) are coded in apps. This allows reusing core functionalities across apps. Therefore, the development of an app requires the joint development of *CoFFee*, and since there are multiple apps built on *CoFFee*, careful version-controlling and dependency-management is necessary to avoid breaking compatibility.
 
 We use [Semantic Versioning](https://semver.org/) to attribute version numbers:
 * The version of *CoFFee* is hard-coded in function `CFF_coffee_version.m`.
@@ -87,31 +87,33 @@ A careful sequence to develop an app is the following:
     * Before committing those changes, increase the app's version number and update which *CoFFee* version it runs on. 
     * After committing, remember to add the new tag on git.
 4. Develop the app as you wish. Remember that all processing goes ideally in *CoFFee* and all display and user interface on the app.
-5. When done, if *CoFFee* was modified:
-    * Increase *CoFFee*'s version number (`CFF_coffee_version.m`).
-    * Increase the app's version number (property `Version`), and update which *CoFFee* version it was built on (property `CoffeeVersion`).
-6. Check that everything works:
+5. When done, increase the app's version number (app property `Version`)
+6. If *CoFFee* was modified, increase *CoFFee*'s version number (`CFF_coffee_version.m`), and update in the app which *CoFFee* version it was built on (app property `CoffeeVersion`).
+7. Verify that everything works:
     * In MATLAB, run `restoredefaultpath` to ensure you get a clean path.
     * Delete the user folder to start from a clean slate.
     * Start the app, check on the start messages that all versions are correct
     * Test all features of the app.
-7. If *CoFFee* was modified, push it up on git first. Add a tag.
-8. If you wish to compile this new version of the app:
-    * In MATLAB, run `restoredefaultpath` to ensure you get a clean path. 
-    * Run the app and check a last time it all works fine.
+8. Push the app up on git. Add a version tag.
+9. If *CoFFee* was modified, push it up on git. Add a version tag.
+10. If you wish to compile/release this new version of the app:
     * Double-click on the app's `*.prj` file to run the application compiler with existing settings:
       * Remove the app's `*.mlapp` main file and add it again for the application compiler to find all dependencies.
       * Update the version number in the 'runtime downloaded from web', the 'application information', and the default installation folder.
       * Save.
       * Click on `Package`.
-    * Install the new executable with the setup file.
-    * Test that the setup works correctly.
-    * Test that the installed software runs correctly.
-9. Push the app up on git. Add a version tag.
-10. If you compiled that new version:
-    * Zip the "for_redistribution_files_only" folder
-    * Create a new release on github from the tag. 
-      * Add appropriate sections: Download, New features, Bug fixes
-      * Add to the new release: the binary setup, and the zipped `for_redistribution_files_only.zip` file.
-      * Change links in the new release's Download section
+    * Test that the compiled version works correctly.
+      * Uninstall any previous version of the app, and delete the user folder.
+      * Install the new executable with the setup file.
+      * Test that the installed software runs correctly.
+    * Create a new release on github
+      * Go to the new tag and create a new release
+      * Add binaries to the new release:
+        * The binary setup (iskaffe_v***_setup.exe)
+        * A zipped file of the "for_redistribution_files_only" folder
+      * Fill in the release notes by copy-pasting the release notes of the previous release (Sections Download, New features, Bug fixes) and edit them
+      * In the Download section, make sure to edit the links to the new release's binaries
+      * Publish the new release
+      * Test that the download links are correct
     * Update the link of the "Download Latest release installer" button on the app's README.md
+      * Tese that the new download link works
