@@ -1,36 +1,54 @@
-function rawfileslist = CFF_list_raw_files_in_dir(folder_init, recursive_flag)
+function rawfileslist = CFF_list_raw_files_in_dir(folder_init, recursive_flag, filesType)
 %CFF_LIST_RAW_FILES_IN_DIR  List raw multibeam files available in folder
 %
 %   By default, searches only in "folder_init". If "recursive_flag" = 1,
 %   also searches recursively. 
 %
-%   Files are returned in this grouped order: 
-%   1) pairs of .all/.wcd, 
-%   2) unpaired .all files, 
-%   3) unpaired .wcd files, 
-%   4) pairs of .kmall/.kmwcd, 
-%   5) unpaired .kmall files,
-%   6) unpaired .kmwcd files, .s7k files.
+%   Optional FILESTYPE only search for specified types. If absent,
+%   returning everything
+%
+%   filesTypes, and rereturned in this grouped order: 
+%   1) ".all/.wcd" - pairs of .all/.wcd, 
+%   2) ".all" - unpaired .all files, 
+%   3) ".wcd" - unpaired .wcd files, 
+%   4) ".kmall/.kmwcd" - pairs of .kmall/.kmwcd, 
+%   5) ".kmall" - unpaired .kmall files,
+%   6) ".kmwcd" - unpaired .kmwcd files, 
+%   7) ".s7k" - .s7k files.
 %   
 %   In each group, files are listed by alphabetical fullpathname.
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
 %   Ladroit (Kongsberg Maritime, yoann.ladroit@km.kongsberg.com)
-%   2017-2023; Last revision: 17-03-2023
-
-% for now, list all raw files whatever the sonar type, but maybe at some
-% point add some control in input to specify what sonar types we want
+%   2017-2023; Last revision: 14-07-2023
 
 if isempty(folder_init)
     rawfileslist = {};
     return
 end
 
-% just added: allow possibility to look for files recursively (i.e.
+% allow possibility to look for files recursively (i.e.
 % including all sub-folders)
 if exist('recursive_flag','var') && recursive_flag==1
     folder_init = fullfile(folder_init,'**');
 end
+
+% allow possibility to only search for certain file types
+if exist('filesType','var')
+    if ischar(filesType)
+        filesType = {filesType};
+    end
+else
+    filesType = {...
+        '.all/.wcd',...
+        '.all',...
+        '.wcd',...
+        '.kmall/.kmwcd',...
+        '.kmall',...
+        '.kmwcd',...
+        '.s7k'};
+end
+
 
 %% Kongsberg all format
 
@@ -38,8 +56,23 @@ end
 all_files = list_files_with_ext(folder_init,'*.all');
 wcd_files = list_files_with_ext(folder_init,'*.wcd');
 
-% finding pairs
-[paired_all_wcd_files, all_only_files, wcd_only_files] = pair_files(all_files, wcd_files);
+if ~ismember('.all/.wcd',filesType)
+    % pairing not wanted
+    paired_all_wcd_files = {};
+    if ismember('.all',filesType)
+        all_only_files = all_files;
+    else
+        all_only_files = {};
+    end
+    if ismember('.wcd',filesType)
+        wcd_only_files = wcd_files;
+    else
+        wcd_only_files = {};
+    end
+else
+    % pairing wanted
+    [paired_all_wcd_files, all_only_files, wcd_only_files] = pair_files(all_files, wcd_files);
+end
 
 
 %% Kongsberg kmall format
@@ -48,22 +81,46 @@ wcd_files = list_files_with_ext(folder_init,'*.wcd');
 kmall_files = list_files_with_ext(folder_init,'*.kmall');
 kmwcd_files = list_files_with_ext(folder_init,'*.kmwcd');
 
-% finding pairs
-[paired_kmall_kmwcd_files, kmall_only_files, kmwcd_only_files] = pair_files(kmall_files, kmwcd_files);
+if ~ismember('.kmall/.kmwcd',filesType)
+    % pairing not wanted
+    paired_kmall_kmwcd_files = {};
+    if ismember('.kmall',filesType)
+        kmall_only_files = kmall_files;
+    else
+        kmall_only_files = {};
+    end
+    if ismember('.kmwcd',filesType)
+        kmwcd_only_files = kmwcd_files;
+    else
+        kmwcd_only_files = {};
+    end
+else
+    % pairing wanted
+    [paired_kmall_kmwcd_files, kmall_only_files, kmwcd_only_files] = pair_files(kmall_files, kmwcd_files);
+end
+
 
 
 %% Reson s7k format
 
 % list files
-s7k_files = list_files_with_ext(folder_init,'*.s7k');
+if ismember('.s7k',filesType)
+    s7k_files = list_files_with_ext(folder_init,'*.s7k');
+else
+    s7k_files = {};
+end
 
 
 %% Compiling full list of files
 
-% concatenate
+% concatenate everything
 rawfileslist = cat(1, ...
-    paired_all_wcd_files, all_only_files, wcd_only_files, ...
-    paired_kmall_kmwcd_files, kmall_only_files, kmwcd_only_files, ...
+    paired_all_wcd_files, ...
+    all_only_files, ...
+    wcd_only_files, ...
+    paired_kmall_kmwcd_files, ...
+    kmall_only_files, ...
+    kmwcd_only_files, ...
     s7k_files);
 
 end

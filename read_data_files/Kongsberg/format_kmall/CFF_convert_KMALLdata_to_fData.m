@@ -34,7 +34,7 @@ function fData = CFF_convert_KMALLdata_to_fData(KMALLdataGroup,varargin)
 %   example, in dual-swath mode, a single Tx transducer will transmit 2
 %   pulses to create two along-swathes, and in kmall those two swathes are
 %   recorded with the same ping counter because they were produced at about
-%   the same time. 
+%   the same time.
 %   To deal with this, we're going to create new "swath numbers" based on
 %   the original ping number and swath counter for a ping.
 %   For example a ping #832 made up of four swathes counted 0-3 will have
@@ -42,7 +42,7 @@ function fData = CFF_convert_KMALLdata_to_fData(KMALLdataGroup,varargin)
 %   maintain the current "ping" nomenclature in fData, but using those
 %   swath numbers.
 %   Note that if we have single-swath data, then the swath number matches
-%   the ping number (832). 
+%   the ping number (832).
 %   Note that this is made more complicated by the fact that an individual
 %   swathe can have its data on multiple consecutive datagrams, as
 %   different "Rx fans" (i.e multiple Rx heads) are recorded on separate
@@ -55,7 +55,7 @@ function fData = CFF_convert_KMALLdata_to_fData(KMALLdataGroup,varargin)
 %
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
+%   Ladroit (NIWA, yoann.ladroit@km.kongsberg.com)
 %   2017-2021; Last revision: 21-07-2021
 
 
@@ -79,7 +79,7 @@ parse(p,KMALLdataGroup,varargin{:})
 KMALLdataGroup = p.Results.KMALLdataGroup;
 dr_sub = p.Results.dr_sub;
 db_sub = p.Results.db_sub;
-global comms
+%global comms
 if ischar(p.Results.comms)
     comms = CFF_Comms(p.Results.comms);
 else
@@ -146,487 +146,728 @@ for iF = 1:nStruct
     KMALLfilename = KMALLdata.KMALLfilename;
     fData.ALLfilename{iF} = KMALLfilename;
     
-    % now reading each type of datagram.
-    % Note we only convert the datagrams if fData does not already contain
-    % any.
+    % now completing each "type" of fData fields (IP, Ru, X8, etc.) from
+    % the KMALL datagrams in the KMALLdata structure, but only if those
+    % fData types to not already exist.
     
     
-    %% '#IIP - Installation parameters and sensor setup'
-    if isfield(KMALLdata,'EMdgmIIP') && ~isfield(fData,'IP_ASCIIparameters')
-        
-        comms.step('Converting #IIP'); 
-        
-        % number of entries
-        % nD = numel(KMALLdata.EMdgmIIP);
-        
-        % get date and time-since-midnight-in-milleseconds from header
-        % [fData.IP_1D_Date, fData.IP_1D_TimeSinceMidnightInMilliseconds] = CFF_get_date_and_TSMIM_from_kmall_header([KMALLdata.EMdgmIIP.header]);
-        
-        % DEV NOTES: Only value needed (to date) is the "sonar
-        % heading offset". In installation parameters datagrams of .all
-        % files, we only had one field "S1H" per head. Here we have heading
-        % values for both the Tx and Rx antennae. So not sure which one we
-        % should take, or the difference between the two... but for now,
-        % take the value from Rx.
-        
-        % read ASCIIdata
-        ASCIIdata = KMALLdata.EMdgmIIP(1).install_txt;
-        
-        % remove carriage returns, tabs and linefeed
-        ASCIIdata = regexprep(ASCIIdata,char(9),'');
-        ASCIIdata = regexprep(ASCIIdata,newline,'');
-        ASCIIdata = regexprep(ASCIIdata,char(13),'');
-        
-        % read some fields and record value in old field for the software
-        % to pick up
-        try
-            IP_ASCIIparameters.TRAI_RX1 = CFF_read_TRAI(ASCIIdata,'TRAI_RX1');
-            IP_ASCIIparameters.S1H = IP_ASCIIparameters.TRAI_RX1.H;
-        catch
-            % at least in some EM2040C dual head data, I've found this
-            % field missing and instead having TRAI_HD1
-            IP_ASCIIparameters.TRAI_HD1 = CFF_read_TRAI(ASCIIdata,'TRAI_HD1');
-            IP_ASCIIparameters.S1H = IP_ASCIIparameters.TRAI_HD1.H;
+    %% fData.IP_ (installation parameters)
+    % DEV NOTES: Only value needed for processing (to date) is the "sonar
+    % heading offset". In installation parameters datagrams of .all files,
+    % we only had one field "S1H" per head. Here we have heading values for
+    % both the Tx and Rx antennae. So not sure which one we should take, or
+    % the difference between the two... but for now, take the value from
+    % Rx.
+    if ~isfield(fData,'IP_ASCIIparameters')
+        if isfield(KMALLdata,'EMdgmIIP')
+            comms.step('Parsing Installation Parameters from #IIP datagrams');
+            
+            % number of entries
+            % nD = numel(KMALLdata.EMdgmIIP);
+            
+            % get date and time-since-midnight-in-milleseconds from header
+            header = [KMALLdata.EMdgmIIP.header];
+            [fData.IP_1D_Date, fData.IP_1D_TimeSinceMidnightInMilliseconds] = CFF_kmall_time_to_all_time([header.time_sec],[header.time_nanosec]);
+            
+            % read ASCIIdata
+            ASCIIdata = KMALLdata.EMdgmIIP(1).install_txt;
+            
+            % remove carriage returns, tabs and linefeed
+            ASCIIdata = regexprep(ASCIIdata,char(9),'');
+            ASCIIdata = regexprep(ASCIIdata,newline,'');
+            ASCIIdata = regexprep(ASCIIdata,char(13),'');
+            
+            % read some fields and record value in old field for the
+            % software to pick up
+            try
+                IP_ASCIIparameters.TRAI_RX1 = CFF_read_TRAI(ASCIIdata,'TRAI_RX1');
+                IP_ASCIIparameters.S1H = IP_ASCIIparameters.TRAI_RX1.H;
+            catch
+                % at least in some EM2040C dual head data, I've found this
+                % field missing and instead having TRAI_HD1
+                IP_ASCIIparameters.TRAI_HD1 = CFF_read_TRAI(ASCIIdata,'TRAI_HD1');
+                IP_ASCIIparameters.S1H = IP_ASCIIparameters.TRAI_HD1.H;
+            end
+            
+            % finally store in fData
+            fData.IP_ASCIIparameters = IP_ASCIIparameters;
+            
         end
-        
-        % finally store in fData
-        fData.IP_ASCIIparameters = IP_ASCIIparameters;
-        
     end
     
     
-    %% '#MRZ - Multibeam (M) raw range (R) and depth(Z) datagram'
-    if isfield(KMALLdata,'EMdgmMRZ') && ~isfield(fData,'X8_1D_Date')
-        
-        comms.step('Converting #MRZ'); 
-        
-        % DEV NOTE: note we don't decimate beam data here as we do for
-        % water-column data
-        
-        % remove duplicate datagrams
-        EMdgmMRZ = CFF_remove_duplicate_KMALL_datagrams(KMALLdata.EMdgmMRZ);
-
-        % extract data
-        header   = [EMdgmMRZ.header];
-        cmnPart  = [EMdgmMRZ.cmnPart];
-        pingInfo = [EMdgmMRZ.pingInfo];
-        rxInfo   = [EMdgmMRZ.rxInfo];
-        sounding = [EMdgmMRZ.sounding];
-        % CFF_get_kmall_TxRx_info(cmnPart) % evaluate to get info for debugging
-        
-        % DEV NOTE: In the .all format, we only record two fields from the
-        % "Runtime Parameters" datagram: "TransmitPowerReMaximum" for
-        % radiometric corrections, and "ReceiveBeamwidth" for estimation of
-        % the bottom echo for its removal. In the .kmall format, these two
-        % values are found in the MRZ datagrams.
-        
-        % Receive beamwidth
-        Rx_BW = unique([pingInfo.receiveArraySizeUsed_deg]);
-        if numel(Rx_BW)>1
-            comms.error('Found more than one Rx beamwidth records. Keeping only the first value');
+    %% fData.Po_ (navigation data)
+    % DEV NOTE: There are many entries here but I found a lot of issues in
+    % the heading. Digging in the data revealed that many successive
+    % entries have same values of timeFromSensor_sec, latitude, longitude,
+    % and other values. Yet speed and heading change with every entry...
+    % and heading has errors. I suspect those two values are (badly)
+    % calculated fromt the lat/long. So now we only record one entry per
+    % unique time stamp. Note the time stamp is in seconds so no more than
+    % one record per second. The nanosecond field is wrong. Alex 12 july
+    % 2021
+    if ~isfield(fData,'Po_1D_Date')
+        if isfield(KMALLdata,'EMdgmSPO')
+            comms.step('Parsing navigation data from #SPO datagrams');
+            
+            % extract data
+            header     = [KMALLdata.EMdgmSPO.header];
+            sensorData = [KMALLdata.EMdgmSPO.sensorData];
+            
+            % get time vector from header, sort, and remove duplicates
+            dt = CFF_kmall_time_to_datetime([header.time_sec],[header.time_nanosec]);
+            [~,I] = sort(dt);
+            iKeep = [true,diff(dt(I))~=0];
+            ind = I(iKeep);
+            
+            % get time
+            [fData.Po_1D_Date,fData.Po_1D_TimeSinceMidnightInMilliseconds] =  CFF_datetime_to_all_time(dt(ind));
+            % get the rest from sensorData
+            fData.Po_1D_Latitude                    = [sensorData(ind).correctedLat_deg]; % in decimal degrees
+            fData.Po_1D_Longitude                   = [sensorData(ind).correctedLong_deg]; % in decimal degrees
+            fData.Po_1D_SpeedOfVesselOverGround     = [sensorData(ind).speedOverGround_mPerSec]; % in m/s
+            fData.Po_1D_HeadingOfVessel             = [sensorData(ind).courseOverGround_deg]; % in degrees relative to north
+            fData.Po_1D_MeasureOfPositionFixQuality = [sensorData(ind).posFixQuality_m];
+            fData.Po_1D_PositionSystemDescriptor    = zeros(1,numel(fData.Po_1D_Date)); % dummy values
+            
         end
-        fData.Ru_1D_ReceiveBeamwidth = Rx_BW(1);
-        
-        % Transmit Power Re Maximum
-        Tx_pow = unique([pingInfo.transmitPower_dB]);
-        if numel(Tx_pow)>1
-            comms.error('Found more than one Tx Power records. Keeping only the first value');
-        end
-        fData.Ru_1D_TransmitPowerReMaximum = Tx_pow(1);
-                
-        % number of datagrams
-        nDatag = numel(cmnPart);
-        
-        % number of pings
-        dtg_pingCnt = [cmnPart.pingCnt]; % actual ping number for each datagram
-        dtg_swathAlongPosition = [cmnPart.swathAlongPosition]; % swath number for a ping
-        dtg_swathCnt = dtg_pingCnt + 0.01.*dtg_swathAlongPosition; % "new ping number" for each datagram
-        [swath_counter, iFirstDatagram, iC] = unique(dtg_swathCnt,'stable'); % list of swath numbers
-        nSwaths = numel(swath_counter); % total number of swaths in file
-        
-        % number of beams
-        dtg_nBeams = [rxInfo.numSoundingsMaxMain]; % number of beams per datagram ("main soundings" only. Ignoring "extra detections")
-        nBeams = arrayfun(@(idx) sum(dtg_nBeams(iC==idx)), 1:nSwaths); % total number of beams per swath
-        maxnBeams = nanmax(nBeams); % maximum number of "beams per swath" in the file
-        
-        % date and time
-        [dtg_date,dtg_TSMIM] = CFF_get_date_and_TSMIM_from_kmall_header(header); % date and time per datagram
-        fData.X8_1P_Date = dtg_date(iFirstDatagram); % date per swath
-        fData.X8_1P_TimeSinceMidnightInMilliseconds = dtg_TSMIM(iFirstDatagram); % time per swath
-        
-        % record data per ping
-        fData.X8_1P_PingCounter             = NaN; % unused anyway
-        fData.X8_1P_HeadingOfVessel         = NaN; % unused anyway
-        fData.X8_1P_SoundSpeedAtTransducer  = NaN; % unused anyway
-        fData.X8_1P_TransmitTransducerDepth = NaN; % unused anyway
-        fData.X8_1P_NumberOfBeamsInDatagram = NaN; % unused anyway
-        fData.X8_1P_NumberOfValidDetections = NaN; % unused anyway
-        fData.X8_1P_SamplingFrequencyInHz   = NaN; % unused anyway
-        
-        % initialize data per beam and ping
-        fData.X8_BP_DepthZ                       = nan(maxnBeams,nSwaths);
-        fData.X8_BP_AcrosstrackDistanceY         = nan(maxnBeams,nSwaths);
-        fData.X8_BP_AlongtrackDistanceX          = NaN; % unused anyway
-        fData.X8_BP_DetectionWindowLength        = NaN; % unused anyway
-        fData.X8_BP_QualityFactor                = NaN; % unused anyway
-        fData.X8_BP_BeamIncidenceAngleAdjustment = NaN; % unused anyway
-        fData.X8_BP_DetectionInformation         = NaN; % unused anyway
-        fData.X8_BP_RealTimeCleaningInformation  = NaN; % unused anyway
-        fData.X8_BP_ReflectivityBS               = nan(maxnBeams,nSwaths);
-        fData.X8_B1_BeamNumber                   = (1:maxnBeams)';
-        
-        % record data per beam and ping
-        for iS = 1:nSwaths
-            dtg_iS = find(iC==iS); % indices of datagrams for that swath
-            nB_tot = 0; % initialize total number of beams recorded so far for that swath
-            for iD = 1:numel(dtg_iS)
-                SD = sounding(dtg_iS(iD)); % soundings data for that datagram
-                nB = dtg_nBeams(dtg_iS(iD)); % number of actual beams in this datagram (ignoring "extra detections")
-                iB_dst = nB_tot + (1:nB); % indices of beams in output arrays
-                fData.X8_BP_DepthZ(iB_dst,iS)               = SD.z_reRefPoint_m(1:nB);
-                fData.X8_BP_AcrosstrackDistanceY(iB_dst,iS) = SD.y_reRefPoint_m(1:nB);
-                fData.X8_BP_ReflectivityBS(iB_dst,iS)       = SD.reflectivity1_dB(1:nB);
-                nB_tot = nB_tot + nB; % update total number of beams recorded so far for this swath
-            end
-        end
-        
-        % debug graph
-        debugDisp = 0;
-        if debugDisp
-            f = figure();
-            ax_z = axes(f,'outerposition',[0 0.66 1 0.3]);
-            imagesc(ax_z, -fData.X8_BP_DepthZ);
-            colorbar(ax_z); grid on; title(ax_z, 'bathy'); colormap(ax_z,'jet');
-            ax_y = axes(f,'outerposition',[0 0.33 1 0.3]);
-            imagesc(ax_y, fData.X8_BP_AcrosstrackDistanceY);
-            colorbar(ax_y); grid on; title(ax_y, 'across-track distance');
-            ax_bs = axes(f,'outerposition',[0 0 1 0.3]);
-            imagesc(ax_bs, fData.X8_BP_ReflectivityBS);
-            caxis(ax_bs, [prctile(fData.X8_BP_ReflectivityBS(:),5), prctile(fData.X8_BP_ReflectivityBS(:),95)]);
-            colorbar(ax_bs); grid on; title(ax_bs, 'BS (scaled 5-95th percentile)'); colormap(ax_bs,'gray');
-            drawnow;
-        end
-
     end
     
-    %% '#MWC - Multibeam (M) water (W) column (C) datagram'
-    if isfield(KMALLdata,'EMdgmMWC') && ~isfield(fData,'WC_1D_Date')
-        
-        comms.step('Converting #MWC'); 
-        
-        % remove duplicate datagrams
-        EMdgmMWC = CFF_remove_duplicate_KMALL_datagrams(KMALLdata.EMdgmMWC);
-        
-        % extract data
-        header = [EMdgmMWC.header];
-        cmnPart = [EMdgmMWC.cmnPart];
-        rxInfo  = [EMdgmMWC.rxInfo];
-        % CFF_get_kmall_TxRx_info(cmnPart) % evaluate to get info for debugging
-        
-        % number of datagrams
-        nDatag = numel(EMdgmMWC);
-        
-        % number of pings
-        dtg_pingCnt = [cmnPart.pingCnt]; % actual ping number for each datagram
-        dtg_swathAlongPosition = [cmnPart.swathAlongPosition]; % swath number for a ping
-        dtg_swathCnt = dtg_pingCnt + 0.01.*dtg_swathAlongPosition; % "new ping number" for each datagram
-        [swath_counter, iFirstDatagram, iC] = unique(dtg_swathCnt,'stable'); % list of swath numbers
-        nSwaths = numel(swath_counter); % total number of swaths in file
-        
-        % number of beams
-        dtg_nBeams = [rxInfo.numBeams]; % number of beams per datagram
-        nBeams = arrayfun(@(idx) sum(dtg_nBeams(iC==idx)), 1:nSwaths); % total number of beams per swath
-        maxnBeams = nanmax(nBeams); % maximum number of "beams per swath" in the file
-        maxnBeams_sub = ceil(maxnBeams/db_sub); % maximum number of beams TO READ per swath
-        
-        % number of samples
-        dtg_nSamples = arrayfun(@(idx) [EMdgmMWC(idx).beamData_p(:).numSampleData], 1:nDatag, 'UniformOutput', false); % number of samples per ping per datagram
-        [maxnSamples_groups, ping_group_start, ping_group_end] = CFF_group_pings(dtg_nSamples, swath_counter, dtg_swathCnt); % making groups of pings to limit size of memmaped files
-        maxnSamples_groups = ceil(maxnSamples_groups/dr_sub); % maximum number of samples TO READ, per group.
-        
-        % add the WCD decimation factors given here in input
-        fData.dr_sub = dr_sub;
-        fData.db_sub = db_sub;
-        
-        % data per ping
-        % here taken from first datagram. Ideally, check consistency
-        % between datagrams for a given ping
-        [dtg_date,dtg_TSMIM] = CFF_get_date_and_TSMIM_from_kmall_header(header); % date and time per datagram
-        fData.WC_1P_Date = dtg_date(iFirstDatagram); % date per swath
-        fData.WC_1P_TimeSinceMidnightInMilliseconds = dtg_TSMIM(iFirstDatagram); % time per swath
-        fData.WC_1P_PingCounter               = swath_counter;
-        fData.WC_1P_NumberOfDatagrams         = NaN; % unused anyway
-        fData.WC_1P_NumberOfTransmitSectors   = NaN; % unused anyway
-        fData.WC_1P_TotalNumberOfReceiveBeams = NaN; % unused anyway
-        fData.WC_1P_SoundSpeed                = [rxInfo(iFirstDatagram).soundVelocity_mPerSec];
-        fData.WC_1P_SamplingFrequencyHz       = [rxInfo(iFirstDatagram).sampleFreq_Hz];
-        fData.WC_1P_TXTimeHeave               = NaN; % unused anyway
-        fData.WC_1P_TVGFunctionApplied        = [rxInfo(iFirstDatagram).TVGfunctionApplied];
-        fData.WC_1P_TVGOffset                 = [rxInfo(iFirstDatagram).TVGoffset_dB];
-        fData.WC_1P_ScanningInfo              = NaN; % unused anyway
-        
-        % data per transmit sector and ping
-        fData.WC_TP_TiltAngle            = NaN; % unused anyway
-        fData.WC_TP_CenterFrequency      = NaN; % unused anyway
-        fData.WC_TP_TransmitSectorNumber = NaN; % unused anyway
-        
-        % initialize data per (decimated) beam and ping
-        fData.WC_BP_BeamPointingAngle      = nan(maxnBeams_sub,nSwaths);
-        fData.WC_BP_StartRangeSampleNumber = nan(maxnBeams_sub,nSwaths);
-        fData.WC_BP_NumberOfSamples        = nan(maxnBeams_sub,nSwaths);
-        fData.WC_BP_DetectedRangeInSamples = zeros(maxnBeams_sub,nSwaths);
-        fData.WC_BP_TransmitSectorNumber   = NaN; % unused anyway
-        fData.WC_BP_BeamNumber             = NaN; % unused anyway
-        fData.WC_BP_SystemSerialNumber     = NaN; % unused anyway
-        
-        % The actual water-column data will not be saved in fData but in
-        % binary files. Get the output directory to store those files 
-        wc_dir = CFF_converted_data_folder(KMALLfilename);
-                
-        % Clean up that folder first before adding anything to it
-        CFF_clean_delete_fdata(wc_dir);
-        
-        % DEV NOTE: Info format for raw WC data and storage
-        % In these raw datagrams, you have both amplitude and phase.
-        %
-        % Amplitude samples are recorded exactly as in the .all format, 
-        % that is in "int8" (signed integers from -128 to 127) with -128
-        % being the NaN value. Raw values needs to be multiplied by a 
-        % factor of 1/2 to retrieve the true value, aka real values go from
-        % -127/2 = -63.5 dB to 127/2 = 63.5 dB in increments of 0.5 dB
-        % For storage, we keep the same format in order to save disk space.
-        %
-        % Phase might or might not be recorded, and depending on the value
-        % of the flag may be recorded in 'int8' with a factor of 180./128,
-        % or in 'int16' with a factor of 0.01.
-        %
-        % For storage, we keep the same format in order to save disk space.
-        
-        % initialize data-holding binary files for Amplitude
-        fData = CFF_init_memmapfiles(fData, ...
-            'field', 'WC_SBP_SampleAmplitudes', ...
-            'wc_dir', wc_dir, ...
-            'Class', 'int8', ...
-            'Factor', 1./2, ...
-            'Nanval', intmin('int8'), ...
-            'Offset', 0, ...
-            'MaxSamples', maxnSamples_groups, ...
-            'MaxBeams', maxnBeams_sub, ...
-            'ping_group_start', ping_group_start, ...
-            'ping_group_end', ping_group_end);
-        
-        % was phase recorded
-        dtg_phaseFlag = [rxInfo.phaseFlag];
-        if all(dtg_phaseFlag==0)
-            phaseFlag = 0;
-        elseif all(dtg_phaseFlag==1)
-            phaseFlag = 1;
-        elseif all(dtg_phaseFlag==2)
-            phaseFlag = 2;
-        else
-            % hopefully this error should never occur. Otherwise it's
-            % fixable but have to change the code a bit.
-            error('phase flag is inconsistent across ping records in this file.')
-        end
-        
-        % record phase data, if available
-        if phaseFlag
+    
+    %% fData.X8_ ("pear beam" data - bathymetry and backscatter )
+    % DEV NOTE: See function doc string about "swathes". Note we don't
+    % decimate beam data here as we do for water-column data
+    if ~isfield(fData,'X8_1D_Date')
+        if isfield(KMALLdata,'EMdgmMRZ')
+            comms.step('Parsing X8 fields from #MRZ datagrams');
             
-            % two different formats for raw phase, depending on the value
-            % of the flag. Keep the same for storage
-            if phaseFlag==1
-                phaseFormat = 'int8';
-                phaseFactor = 180./128;
-            else
-                phaseFormat = 'int16';
-                phaseFactor = 0.01;
+            % remove duplicate datagrams
+            [EMdgmMRZ, nDup] = CFF_remove_duplicate_KMALL_datagrams(KMALLdata.EMdgmMRZ);
+            if nDup
+                infoStr = sprintf('Found and discarded %i duplicate datagrams',nDup);
+                comms.info(infoStr);
             end
-            phaseNanValue = intmin(phaseFormat);
             
-            % initialize data-holding binary files for Phase
+            % extract data
+            header   = [EMdgmMRZ.header];
+            cmnPart  = [EMdgmMRZ.cmnPart];
+            pingInfo = [EMdgmMRZ.pingInfo];
+            rxInfo   = [EMdgmMRZ.rxInfo];
+            sounding = [EMdgmMRZ.sounding];
+            % CFF_get_kmall_TxRx_info(cmnPart) % evaluate to get info for debugging
+            
+            % number of datagrams
+            % nDatag = numel(cmnPart);
+            
+            % number of pings
+            dtg_pingCnt = [cmnPart.pingCnt]; % actual ping number for each datagram
+            dtg_swathAlongPosition = [cmnPart.swathAlongPosition]; % alongship index for the location of the swath in multi swath mode. Index 0 is the aftmost swath.
+            dtg_swathCnt = dtg_pingCnt + 0.01.*dtg_swathAlongPosition; % "new ping number" for each datagram
+            [swath_counter, iFirstDatagram, iC] = unique(dtg_swathCnt,'stable'); % list of swath numbers
+            nSwaths = numel(swath_counter); % total number of swaths in file
+            
+            % number of beams
+            dtg_nBeams = [rxInfo.numSoundingsMaxMain]; % number of beams per datagram ("main soundings" only. Ignoring "extra detections")
+            nBeams = arrayfun(@(idx) sum(dtg_nBeams(iC==idx)), 1:nSwaths); % total number of beams per swath
+            maxnBeams = nanmax(nBeams); % maximum number of "beams per swath" in the file
+            
+            % date and time
+            [dtg_date,dtg_TSMIM] = CFF_kmall_time_to_all_time([header.time_sec],[header.time_nanosec]);
+            fData.X8_1P_Date = dtg_date(iFirstDatagram); % date per swath
+            fData.X8_1P_TimeSinceMidnightInMilliseconds = dtg_TSMIM(iFirstDatagram); % time per swath
+            
+            % record data per ping
+            fData.X8_1P_PingCounter             = swath_counter;
+            fData.X8_1P_HeadingOfVessel         = NaN; % unused (for now)
+            fData.X8_1P_SoundSpeedAtTransducer  = NaN; % unused (for now)
+            fData.X8_1P_TransmitTransducerDepth = [pingInfo(iFirstDatagram).txTransducerDepth_m]; % unused (for now)
+            fData.X8_1P_NumberOfBeamsInDatagram = NaN; % unused (for now)
+            fData.X8_1P_NumberOfValidDetections = NaN; % unused (for now)
+            fData.X8_1P_SamplingFrequencyInHz   = NaN; % unused (for now)
+            
+            % initialize data per beam and ping
+            fData.X8_BP_DepthZ                       = nan(maxnBeams,nSwaths);
+            fData.X8_BP_AcrosstrackDistanceY         = nan(maxnBeams,nSwaths);
+            fData.X8_BP_AlongtrackDistanceX          = nan(maxnBeams,nSwaths);
+            fData.X8_BP_DetectionWindowLength        = NaN; % unused (for now)
+            fData.X8_BP_QualityFactor                = NaN; % unused (for now)
+            fData.X8_BP_BeamIncidenceAngleAdjustment = NaN; % unused (for now)
+            fData.X8_BP_RealTimeCleaningInformation  = NaN; % unused (for now)
+            fData.X8_BP_ReflectivityBS               = nan(maxnBeams,nSwaths);
+            fData.X8_B1_BeamNumber                   = (1:maxnBeams)';
+            
+            % init a temp array to store detectionMethod before decoding it
+            tempDetectMethod = nan(maxnBeams,nSwaths);
+            
+            % record data per beam and ping
+            for iS = 1:nSwaths
+                dtg_iS = find(iC==iS); % indices of datagrams for that swath
+                nB_tot = 0; % initialize total number of beams recorded so far for that swath
+                for iD = 1:numel(dtg_iS)
+                    SD = sounding(dtg_iS(iD)); % soundings data for that datagram
+                    nB = dtg_nBeams(dtg_iS(iD)); % number of actual beams in this datagram (ignoring "extra detections")
+                    iB_dst = nB_tot + (1:nB); % indices of beams in output arrays
+                    fData.X8_BP_DepthZ(iB_dst,iS)               = SD.z_reRefPoint_m(1:nB);
+                    fData.X8_BP_AcrosstrackDistanceY(iB_dst,iS) = SD.y_reRefPoint_m(1:nB);
+                    fData.X8_BP_AlongtrackDistanceX(iB_dst,iS)  = SD.x_reRefPoint_m(1:nB);
+                    fData.X8_BP_ReflectivityBS(iB_dst,iS)       = SD.reflectivity1_dB(1:nB);
+                    tempDetectMethod(iB_dst,iS)                 = SD.detectionMethod(1:nB);
+                    nB_tot = nB_tot + nB; % update total number of beams recorded so far for this swath
+                end
+            end
+            
+            % note the coordinate system for (x,y,z) is different in the
+            % .all and .kmall formats so some transformation is necessary
+            % since processing code will expect (x,y,z) in the .all
+            % coordinate system.
+            %
+            % * In the .all format, the coordinate system is the " Vessel
+            % Coordinate System, where x is forward, y is starboard and z
+            % is downward" and the origin is the centre of the array face.
+            %
+            % * In the .kmall format, the coordinate system is the "Surface
+            % Coordinate System (SCS)" where:
+            % Origo of the SCS is the vessel reference point at the time of
+            % transmission. The SCS is defined according to the right hand
+            % rule.  
+            % x-axis pointing forward along the horizontal projection of
+            % the vessel main axis. 
+            % y-axis pointing horizontally to starboard, orthogonal to the
+            % horizontal projection of the vessel main axis. 
+            % z-axis pointing down along the g-vector.
+            % To move SCS into the waterline, use reference point height
+            % corrected for roll and pitch at the time of transmission. 
+            %
+            % Looks like the coordinate system is the same, but the origin
+            % is different. So the transformation is simply offsets.
+            
+            % for x and y, the kmall data conveniently includes the
+            % offsets: 
+            fData.X8_BP_AlongtrackDistanceX  = fData.X8_BP_AlongtrackDistanceX +  [pingInfo(iFirstDatagram).x_kmallToall_m];
+            fData.X8_BP_AcrosstrackDistanceY = fData.X8_BP_AcrosstrackDistanceY + [pingInfo(iFirstDatagram).y_kmallToall_m];
+            
+            % for z, the kmall data includes the distance of the ref point
+            % to the water line, and the distance of the water line to the
+            % sonar face:
+            WLreRP = [pingInfo(iFirstDatagram).z_waterLevelReRefPoint_m];
+            TTD = [pingInfo(iFirstDatagram).txTransducerDepth_m];
+            
+            % debug graph
+            dbug = 0;
+            if dbug
+                figure;
+                tiledlayout(3,1)
+                ax(1) = nexttile; plot(WLreRP); ylabel('WLreRP'); grid on
+                ax(2) = nexttile; plot(TTD); ylabel('TTD'); grid on
+                ax(3) = nexttile;
+                plot(fData.X8_BP_DepthZ(200,:)); % to vessel ref point
+                hold on
+                plot(fData.X8_BP_DepthZ(200,:) - WLreRP); % to waterline
+                plot(fData.X8_BP_DepthZ(200,:) - WLreRP - TTD); % to sonar face
+                ylabel('depth middle beam'); grid on
+                legend({'to vessel ref point (orig)','% to waterline','to sonar face (.all)'})
+                linkaxes(ax,'x')
+            end
+            
+            fData.X8_BP_DepthZ = fData.X8_BP_DepthZ - WLreRP - TTD;
+            
+            % debug graph
+            dbug = 0;
+            if dbug
+                f = figure();
+                ax_z = axes(f,'outerposition',[0 0.66 1 0.3]);
+                imagesc(ax_z, -fData.X8_BP_DepthZ);
+                colorbar(ax_z); grid on; title(ax_z, 'bathy'); colormap(ax_z,'jet');
+                ax_y = axes(f,'outerposition',[0 0.33 1 0.3]);
+                imagesc(ax_y, fData.X8_BP_AcrosstrackDistanceY);
+                colorbar(ax_y); grid on; title(ax_y, 'across-track distance');
+                ax_bs = axes(f,'outerposition',[0 0 1 0.3]);
+                imagesc(ax_bs, fData.X8_BP_ReflectivityBS);
+                caxis(ax_bs, [prctile(fData.X8_BP_ReflectivityBS(:),1), prctile(fData.X8_BP_ReflectivityBS(:),99)]);
+                colorbar(ax_bs); grid on; title(ax_bs, 'BS (scaled 1-99th percentile)'); colormap(ax_bs,'gray');
+                linkaxes([ax_z,ax_y,ax_bs]);
+                drawnow;
+                
+                figure;
+                tiledlayout(2,1)
+                clear ax
+                ax(1) = nexttile; imagesc(-fData.X8_BP_DepthZ); colorbar; grid on; title('bathy'); colormap(ax(1),'jet');
+                ax(2) = nexttile; imagesc(fData.X8_BP_ReflectivityBS); colorbar; grid on; title('backscatter (beam average'); colormap(ax(2),'gray');
+                linkaxes(ax);
+                
+                figure;
+                iP  = 304
+                yyaxis left
+                plot(fData.X8_BP_ReflectivityBS(iP,:),'.-'); ylabel('BS')
+                yyaxis right
+                plot(fData.X8_BP_DepthZ(iP,:),'.-'); ylabel('bathy')
+            end
+            
+            % decode detectMethod
+            fData.X8_BP_DetectionValidity = categorical(tempDetectMethod,[0,1,2],{'invalid','valid','valid'});
+            fData.X8_BP_DetectionInfo     = categorical(tempDetectMethod,[0,1,2],{'invalid','amplitude','phase'});
+            
+            % debug graph
+            dbug = 0;
+            if dbug
+               figure; tiledlayout(2,1);
+               ax3(1) = nexttile; image(double(fData.X8_BP_DetectionValidity)); CFF_add_cat_array_legend(fData.X8_BP_DetectionValidity);
+               ax3(2) = nexttile; image(double(fData.X8_BP_DetectionInfo)); CFF_add_cat_array_legend(fData.X8_BP_DetectionInfo);
+               linkaxes(ax3);
+            end
+            
+      
+        end
+    end
+    
+    
+    %% fData.WC_ (water-column data)
+    % DEV NOTE: ...
+    if ~isfield(fData,'WC_1D_Date')
+        if isfield(KMALLdata,'EMdgmMWC')
+            comms.step('Parsing water-column data from #MWC datagrams');
+            
+            % remove duplicate datagrams
+            [EMdgmMWC, nDup] = CFF_remove_duplicate_KMALL_datagrams(KMALLdata.EMdgmMWC);
+            if nDup
+                infoStr = sprintf('Found and discarded %i duplicate datagrams',nDup);
+                comms.info(infoStr);
+            end
+            
+            % extract data
+            header = [EMdgmMWC.header];
+            cmnPart = [EMdgmMWC.cmnPart];
+            rxInfo  = [EMdgmMWC.rxInfo];
+            % CFF_get_kmall_TxRx_info(cmnPart) % evaluate to get info for debugging
+            
+            % number of datagrams
+            nDatag = numel(EMdgmMWC);
+            
+            % number of pings
+            dtg_pingCnt = [cmnPart.pingCnt]; % actual ping number for each datagram
+            dtg_swathAlongPosition = [cmnPart.swathAlongPosition]; % alongship index for the location of the swath in multi swath mode. Index 0 is the aftmost swath.
+            dtg_swathCnt = dtg_pingCnt + 0.01.*dtg_swathAlongPosition; % "new ping number" for each datagram
+            [swath_counter, iFirstDatagram, iC] = unique(dtg_swathCnt,'stable'); % list of swath numbers
+            nSwaths = numel(swath_counter); % total number of swaths in file
+            
+            % number of beams
+            dtg_nBeams = [rxInfo.numBeams]; % number of beams per datagram
+            nBeams = arrayfun(@(idx) sum(dtg_nBeams(iC==idx)), 1:nSwaths); % total number of beams per swath
+            maxnBeams = nanmax(nBeams); % maximum number of "beams per swath" in the file
+            maxnBeams_sub = ceil(maxnBeams/db_sub); % maximum number of beams TO READ per swath
+            
+            % number of samples
+            dtg_nSamples = arrayfun(@(idx) [EMdgmMWC(idx).beamData_p(:).numSampleData], 1:nDatag, 'UniformOutput', false); % number of samples per ping per datagram
+            [maxnSamples_groups, ping_group_start, ping_group_end] = CFF_group_pings(dtg_nSamples, swath_counter, dtg_swathCnt); % making groups of pings to limit size of memmaped files
+            maxnSamples_groups = ceil(maxnSamples_groups/dr_sub); % maximum number of samples TO READ, per group.
+            
+            % add the WCD decimation factors given here in input
+            fData.dr_sub = dr_sub;
+            fData.db_sub = db_sub;
+            
+            % data per ping
+            % here taken from first datagram. Ideally, check consistency
+            % between datagrams for a given ping
+            [dtg_date,dtg_TSMIM] = CFF_kmall_time_to_all_time([header.time_sec],[header.time_nanosec]);
+            fData.WC_1P_Date = dtg_date(iFirstDatagram); % date per swath
+            fData.WC_1P_TimeSinceMidnightInMilliseconds = dtg_TSMIM(iFirstDatagram); % time per swath
+            fData.WC_1P_PingCounter               = swath_counter;
+            fData.WC_1P_NumberOfDatagrams         = NaN; % unused (for now)
+            fData.WC_1P_NumberOfTransmitSectors   = NaN; % unused (for now)
+            fData.WC_1P_TotalNumberOfReceiveBeams = NaN; % unused (for now)
+            fData.WC_1P_SoundSpeed                = [rxInfo(iFirstDatagram).soundVelocity_mPerSec];
+            fData.WC_1P_SamplingFrequencyHz       = [rxInfo(iFirstDatagram).sampleFreq_Hz];
+            fData.WC_1P_TXTimeHeave               = NaN; % unused (for now)
+            fData.WC_1P_TVGFunctionApplied        = [rxInfo(iFirstDatagram).TVGfunctionApplied];
+            fData.WC_1P_TVGOffset                 = [rxInfo(iFirstDatagram).TVGoffset_dB];
+            fData.WC_1P_ScanningInfo              = NaN; % unused (for now)
+            
+            % data per transmit sector and ping
+            fData.WC_TP_TiltAngle            = NaN; % unused (for now)
+            fData.WC_TP_CenterFrequency      = NaN; % unused (for now)
+            fData.WC_TP_TransmitSectorNumber = NaN; % unused (for now)
+            
+            % initialize data per (decimated) beam and ping
+            fData.WC_BP_BeamPointingAngle      = nan(maxnBeams_sub,nSwaths);
+            fData.WC_BP_StartRangeSampleNumber = nan(maxnBeams_sub,nSwaths);
+            fData.WC_BP_NumberOfSamples        = nan(maxnBeams_sub,nSwaths);
+            fData.WC_BP_DetectedRangeInSamples = zeros(maxnBeams_sub,nSwaths);
+            fData.WC_BP_TransmitSectorNumber   = NaN; % unused (for now)
+            fData.WC_BP_BeamNumber             = NaN; % unused (for now)
+            fData.WC_BP_SystemSerialNumber     = NaN; % unused (for now)
+            
+            % The actual water-column data will not be saved in fData but
+            % in binary files. Get the output directory to store those
+            % files
+            wc_dir = CFF_converted_data_folder(KMALLfilename);
+            
+            % Clean up that folder first before adding anything to it
+            CFF_clean_delete_fdata(wc_dir);
+            
+            % DEV NOTE: Info format for raw WC data and storage
+            % In these raw datagrams, you have both amplitude and phase.
+            %
+            % Amplitude samples are recorded exactly as in the .all format,
+            % that is in "int8" (signed integers from -128 to 127) with
+            % -128 being the NaN value. Raw values needs to be multiplied
+            % by a factor of 1/2 to retrieve the true value, aka real
+            % values go from -127/2 = -63.5 dB to 127/2 = 63.5 dB in
+            % increments of 0.5 dB
+            % For storage, we keep the same format in order to save disk
+            % space.
+            %
+            % Phase might or might not be recorded, and depending on the
+            % value of the flag may be recorded in 'int8' with a factor of
+            % 180./128, or in 'int16' with a factor of 0.01.
+            %
+            % For storage, we keep the same format in order to save disk
+            % space.
+            
+            % initialize data-holding binary files for Amplitude
             fData = CFF_init_memmapfiles(fData, ...
-                'field', 'WC_SBP_SamplePhase', ...
+                'field', 'WC_SBP_SampleAmplitudes', ...
                 'wc_dir', wc_dir, ...
-                'Class', phaseFormat, ...
-                'Factor', phaseFactor, ...
-                'Nanval', phaseNanValue, ...
+                'Class', 'int8', ...
+                'Factor', 1./2, ...
+                'Nanval', intmin('int8'), ...
                 'Offset', 0, ...
                 'MaxSamples', maxnSamples_groups, ...
                 'MaxBeams', maxnBeams_sub, ...
                 'ping_group_start', ping_group_start, ...
                 'ping_group_end', ping_group_end);
             
-        end
-        
-        % Also the samples data were not recorded, only their location in
-        % the source file, so we need to fopen the source file to grab the
-        % data.
-        fid = fopen(KMALLfilename,'r','l');
-        
-        % debug graph
-        debugDisp = 0;
-        if debugDisp
-            f = figure();
-            if ~phaseFlag
-                ax_mag = axes(f,'outerposition',[0 0 1 1]);
-                title('WCD amplitude');
+            % was phase recorded
+            dtg_phaseFlag = [rxInfo.phaseFlag];
+            if all(dtg_phaseFlag==0)
+                phaseFlag = 0;
+            elseif all(dtg_phaseFlag==1)
+                phaseFlag = 1;
+            elseif all(dtg_phaseFlag==2)
+                phaseFlag = 2;
             else
-                ax_mag = axes(f,'outerposition',[0 0.5 1 0.5]);
-                title('WCD amplitude');
-                ax_phase = axes(f,'outerposition',[0 0 1 0.5]);
-                title('WCD phase');
-            end
-        end
-        
-        % initialize ping group number
-        iG = 1;
-        
-        % now get data for each swath...
-        for iS = 1:nSwaths
-            
-            % ping group number is the index of the memmaped file in which
-            % that swath's data will be saved.
-            if iS > ping_group_end(iG)
-                iG = iG+1;
+                % hopefully this error should never occur. Otherwise it's
+                % fixable but have to change the code a bit.
+                error('phase flag is inconsistent across ping records in this file.')
             end
             
-            % (re-)initialize amplitude and phase arrays for that swath
-            Mag_tmp = intmin('int8').*ones(maxnSamples_groups(iG),maxnBeams_sub,'int8');
+            % record phase data, if available
             if phaseFlag
-                Ph_tmp = phaseNanValue.*ones(maxnSamples_groups(iG),maxnBeams_sub,phaseFormat);
+                
+                % two different formats for raw phase, depending on the
+                % value of the flag. Keep the same for storage
+                if phaseFlag==1
+                    phaseFormat = 'int8';
+                    phaseFactor = 180./128;
+                else
+                    phaseFormat = 'int16';
+                    phaseFactor = 0.01;
+                end
+                phaseNanValue = intmin(phaseFormat);
+                
+                % initialize data-holding binary files for Phase
+                fData = CFF_init_memmapfiles(fData, ...
+                    'field', 'WC_SBP_SamplePhase', ...
+                    'wc_dir', wc_dir, ...
+                    'Class', phaseFormat, ...
+                    'Factor', phaseFactor, ...
+                    'Nanval', phaseNanValue, ...
+                    'Offset', 0, ...
+                    'MaxSamples', maxnSamples_groups, ...
+                    'MaxBeams', maxnBeams_sub, ...
+                    'ping_group_start', ping_group_start, ...
+                    'ping_group_end', ping_group_end);
+                
             end
             
-            % data for one swath can be spread over several datagrams,
-            % typically when using dual Rx systems, so we're going to loop
-            % over all datagrams to grab this swath's entire data
-            dtg_iS = find(iC==iS); % indices of datagrams for that swath
-            nB_tot = 0; % initialize total number of beams recorded so far for that swath
-            iB_src_start = 1; % index of first beam to read in a datagram, start with 1 and to be updated later
+            % Also the samples data were not recorded, only their location
+            % in the source file, so we need to fopen the source file to
+            % grab the data.
+            fid = fopen(KMALLfilename,'r','l');
             
-            % in each datagram...
-            for iD = 1:numel(dtg_iS)
+            % debug graph
+            debugDisp = 0;
+            if debugDisp
+                f = figure();
+                if ~phaseFlag
+                    ax_mag = axes(f,'outerposition',[0 0 1 1]);
+                    title('WCD amplitude');
+                else
+                    ax_mag = axes(f,'outerposition',[0 0.5 1 0.5]);
+                    title('WCD amplitude');
+                    ax_phase = axes(f,'outerposition',[0 0 1 0.5]);
+                    title('WCD phase');
+                end
+            end
+            
+            % initialize ping group number
+            iG = 1;
+            
+            % now get data for each swath...
+            for iS = 1:nSwaths
                 
-                % beamData_p for this datagram
-                BD = EMdgmMWC(dtg_iS(iD)).beamData_p;
+                % ping group number is the index of the memmaped file in
+                % which that swath's data will be saved.
+                if iS > ping_group_end(iG)
+                    iG = iG+1;
+                end
                 
-                % important variables for data to grab
-                nRx = numel(BD.beamPointAngReVertical_deg); % total number of beams in this datagram
-                iB_src = iB_src_start:db_sub:nRx; % indices of beams to read in this datagram
-                nB = numel(iB_src); % number of beams to record from this datagram
-                iB_dst = nB_tot + (1:nB); % indices of those beams in output arrays
+                % (re-)initialize amplitude and phase arrays for that swath
+                Mag_tmp = intmin('int8').*ones(maxnSamples_groups(iG),maxnBeams_sub,'int8');
+                if phaseFlag
+                    Ph_tmp = phaseNanValue.*ones(maxnSamples_groups(iG),maxnBeams_sub,phaseFormat);
+                end
                 
-                % data per beam
-                fData.WC_BP_BeamPointingAngle(iB_dst,iS)      = BD.beamPointAngReVertical_deg(iB_src);
-                fData.WC_BP_StartRangeSampleNumber(iB_dst,iS) = BD.startRangeSampleNum(iB_src);
-                fData.WC_BP_NumberOfSamples(iB_dst,iS)        = BD.numSampleData(iB_src);
-                fData.WC_BP_DetectedRangeInSamples(iB_dst,iS) = BD.detectedRangeInSamplesHighResolution(iB_src);
+                % data for one swath can be spread over several datagrams,
+                % typically when using dual Rx systems, so we're going to
+                % loop over all datagrams to grab this swath's entire data
+                dtg_iS = find(iC==iS); % indices of datagrams for that swath
+                nB_tot = 0; % initialize total number of beams recorded so far for that swath
+                iB_src_start = 1; % index of first beam to read in a datagram, start with 1 and to be updated later
                 
-                % in each beam...
-                for iB = 1:nB
+                % in each datagram...
+                for iD = 1:numel(dtg_iS)
                     
-                    % data size
-                    sR = BD.startRangeSampleNum(iB_src(iB)); % start range sample number
-                    nS = BD.numSampleData(iB_src(iB)); % number of samples in this beam
-                    nS_sub = ceil(nS/dr_sub); % number of samples we're going to record
+                    % beamData_p for this datagram
+                    BD = EMdgmMWC(dtg_iS(iD)).beamData_p;
                     
-                    % get to start of amplitude block
-                    dpif = BD.sampleDataPositionInFile(iB_src(iB));
-                    fseek(fid,dpif,-1);
+                    % important variables for data to grab
+                    nRx = numel(BD.beamPointAngReVertical_deg); % total number of beams in this datagram
+                    iB_src = iB_src_start:db_sub:nRx; % indices of beams to read in this datagram
+                    nB = numel(iB_src); % number of beams to record from this datagram
+                    iB_dst = nB_tot + (1:nB); % indices of those beams in output arrays
                     
-                    % amplitude block is nS records of 1 byte each.
-                    Mag_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int8=>int8',dr_sub-1); % read with decimation
+                    % data per beam
+                    fData.WC_BP_BeamPointingAngle(iB_dst,iS)      = BD.beamPointAngReVertical_deg(iB_src);
+                    fData.WC_BP_StartRangeSampleNumber(iB_dst,iS) = BD.startRangeSampleNum(iB_src);
+                    fData.WC_BP_NumberOfSamples(iB_dst,iS)        = BD.numSampleData(iB_src);
+                    fData.WC_BP_DetectedRangeInSamples(iB_dst,iS) = BD.detectedRangeInSamplesHighResolution(iB_src);
                     
-                    if phaseFlag
-                        % go to start of phase block
-                        fseek(fid,dpif+nS,-1);
+                    % in each beam...
+                    for iB = 1:nB
                         
-                        if phaseFlag == 1
-                            % phase block is nS records of 1 byte each.
-                            Ph_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int8=>int8',dr_sub-1); % read with decimation
+                        % data size
+                        sR = BD.startRangeSampleNum(iB_src(iB)); % start range sample number
+                        nS = BD.numSampleData(iB_src(iB)); % number of samples in this beam
+                        nS_sub = ceil(nS/dr_sub); % number of samples we're going to record
+                        
+                        % get to start of amplitude block
+                        dpif = BD.sampleDataPositionInFile(iB_src(iB));
+                        fseek(fid,dpif,-1);
+                        
+                        % amplitude block is nS records of 1 byte each.
+                        Mag_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int8=>int8',dr_sub-1); % read with decimation
+                        
+                        if phaseFlag
+                            % go to start of phase block
+                            fseek(fid,dpif+nS,-1);
+                            
+                            if phaseFlag == 1
+                                % phase block is nS records of 1 byte each.
+                                Ph_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int8=>int8',dr_sub-1); % read with decimation
+                            else
+                                % phase block is nS records of 2 bytes each.
+                                % XXX1 case not tested yet. Find suitable data
+                                % files
+                                Ph_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int16=>int16',2*dr_sub-2); % read with decimation
+                            end
+                        end
+                    end
+                    
+                    % update variables before reading next datagram, if
+                    % necessary
+                    nB_tot = nB_tot + nB; % total number of beams recorded so far for this swath
+                    iB_src_start = iB_src(end) - nRx + db_sub; % index of first beam to read in next datagram
+                    
+                end
+                
+                % debug graph
+                if debugDisp
+                    % display amplitude
+                    imagesc(ax_mag,double(Mag_tmp)./2);
+                    colorbar(ax_mag)
+                    title(ax_mag, sprintf('Ping %i/%i, WCD amplitude',iS,nSwaths));
+                    % display phase
+                    if phaseFlag
+                        imagesc(ax_phase,double(Ph_tmp).*phaseFactor);
+                        colorbar(ax_phase)
+                        title(ax_phase, 'WCD phase');
+                    end
+                    drawnow;
+                end
+                
+                % finished reading this swath's WC data. Store the data in
+                % the appropriate binary file, at the appropriate ping,
+                % through the memory mapping
+                fData.WC_SBP_SampleAmplitudes{iG}.Data.val(:,:,iS-ping_group_start(iG)+1) = Mag_tmp;
+                if phaseFlag
+                    fData.WC_SBP_SamplePhase{iG}.Data.val(:,:,iS-ping_group_start(iG)+1) = Ph_tmp;
+                end
+                
+            end
+            
+            % close the original raw file
+            fclose(fid);
+            
+        end
+    end
+    
+    
+    
+    %% fData.Ru_ (runtime parameters)
+    % DEV NOTE: A bit complicated as SOME runtime parameters are in #IOP
+    % datagrams (the "user set" parameters, which we want to log to track
+    % undesirable change in parameters, i.e. for Iskaffe), and SOME runtime
+    % parameters are in #MRZ datagrams, namely the receive beamwidth
+    % (needed for echo footprint computation) and the transmit power re.
+    % maximum (for for BS level correction)
+    if ~isfield(fData,'Ru_1D_Date')
+        if isfield(KMALLdata,'EMdgmIOP') && isfield(KMALLdata,'EMdgmMRZ')
+            comms.step('Parsing runtime parameters from #IOP and #MRZ datagrams');
+            
+            % first, read the info from #IOP
+            clear RuParFromIOP
+            % read time info
+            RuParFromIOP.time = CFF_getKM(KMALLdata,'EMdgmIOP',[],'header',[],'time_sec') ...
+                + CFF_getKM(KMALLdata,'EMdgmIOP',[],'header',[],'time_nanosec').*10^-9;
+            % read parameters, one datagram at a time
+            nD = numel(KMALLdata.EMdgmIOP);
+            for iD = 1:nD
+                % read runtime_txt, liny by line
+                lines = strsplit(KMALLdata.EMdgmIOP(iD).runtime_txt,newline);
+                for iL = 1:length(lines)
+                    line = lines{iL};
+                    if ~isempty(line)
+                        % find if line contains ":"
+                        idxSeparator = strfind(line,':');
+                        if isempty(idxSeparator)
+                            % new section starts
+                            % save section name by removing any space from line
+                            newSectionName = regexprep(matlab.lang.makeValidName(line,'ReplacementStyle','delete'),'_','');
                         else
-                            % phase block is nS records of 2 bytes each.
-                            % XXX1 case not tested yet. Find suitable data
-                            % files 
-                            Ph_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int16=>int16',2*dr_sub-2); % read with decimation
+                            % new key and value pair
+                            % split line into key and value
+                            key = regexprep(matlab.lang.makeValidName(line(1:idxSeparator-1),'ReplacementStyle','delete'),'_','');
+                            fullKey = [newSectionName key];
+                            val = strtrim(line(idxSeparator+2:end));
+                            % store in fData as a categorical
+                            RuParFromIOP.(fullKey)(iD) = categorical({val});
                         end
                     end
                 end
-                
-                % update variables before reading next datagram, if
-                % necessary
-                nB_tot = nB_tot + nB; % total number of beams recorded so far for this swath
-                iB_src_start = iB_src(end) - nRx + db_sub; % index of first beam to read in next datagram
-                
             end
-            
-            % debug graph
-            if debugDisp
-                % display amplitude
-                imagesc(ax_mag,double(Mag_tmp)./2);
-                colorbar(ax_mag)
-                title(ax_mag, sprintf('Ping %i/%i, WCD amplitude',iS,nSwaths));
-                % display phase
-                if phaseFlag
-                    imagesc(ax_phase,double(Ph_tmp).*phaseFactor);
-                    colorbar(ax_phase)
-                    title(ax_phase, 'WCD phase');
+            % sort by time
+            [~,I] = sort(RuParFromIOP.time);
+            fnames = fieldnames(RuParFromIOP);
+            for ifn = 1:numel(fnames)
+                val = RuParFromIOP.(fnames{ifn});
+                RuParFromIOP.(fnames{ifn}) = val(I);
+            end
+            % remove datagrams where no change occured (except time)
+            if numel(RuParFromIOP.time)>1
+                fnames = setdiff(fnames,'time');
+                iNoChange = nan(numel(fnames),numel(RuParFromIOP.time)); % matrix of indices where no change occured, per field
+                for ifn = 1:numel(fnames)
+                    iNoChange(ifn,:) = [false,RuParFromIOP.(fnames{ifn})(2:end)==RuParFromIOP.(fnames{ifn})(1:end-1)];
                 end
-                drawnow;
+                iToRemove = all(iNoChange,1);
+                RuParFromIOP.time(iToRemove) = [];
+                for ifn = 1:numel(fnames)
+                    RuParFromIOP.(fnames{ifn})(iToRemove) = [];
+                end
             end
             
-            % finished reading this swath's WC data. Store the data in the
-            % appropriate binary file, at the appropriate ping, through the
-            % memory mapping
-            fData.WC_SBP_SampleAmplitudes{iG}.Data.val(:,:,iS-ping_group_start(iG)+1) = Mag_tmp;
-            if phaseFlag
-                fData.WC_SBP_SamplePhase{iG}.Data.val(:,:,iS-ping_group_start(iG)+1) = Ph_tmp;
+            % second, read the info from #MRZ
+            clear RuParFromMRZ
+            % read time info
+            RuParFromMRZ.time = CFF_getKM(KMALLdata,'EMdgmMRZ',[],'header',[],'time_sec') ...
+                + CFF_getKM(KMALLdata,'EMdgmMRZ',[],'header',[],'time_nanosec').*10^-9;
+            % read parameters
+            parFieldnamesIn = {'receiveArraySizeUsed_deg','transmitPower_dB'};
+            parFieldnamesOut = {'ReceiveBeamwidth','TransmitPowerReMaximum'};
+            for iP = 1:numel(parFieldnamesIn)
+                RuParFromMRZ.(parFieldnamesOut{iP}) = CFF_getKM(KMALLdata,'EMdgmMRZ',[],'pingInfo',[],parFieldnamesIn{iP});
+            end
+            % sort by time
+            [~,I] = sort(RuParFromMRZ.time);
+            fnames = fieldnames(RuParFromMRZ);
+            for ifn = 1:numel(fnames)
+                val = RuParFromMRZ.(fnames{ifn});
+                RuParFromMRZ.(fnames{ifn}) = val(I);
+            end
+            % remove datagrams where no changes occur
+            if numel(RuParFromMRZ.time)>1
+                fnames = setdiff(fnames,'time');
+                iNoChange = nan(numel(fnames),numel(RuParFromMRZ.time)); % matrix of indices where no change occured, per field
+                for ifn = 1:numel(fnames)
+                    iNoChange(ifn,:) = [false,RuParFromMRZ.(fnames{ifn})(2:end)==RuParFromMRZ.(fnames{ifn})(1:end-1)];
+                end
+                iToRemove = all(iNoChange,1);
+                RuParFromMRZ.time(iToRemove) = [];
+                for ifn = 1:numel(fnames)
+                    RuParFromMRZ.(fnames{ifn})(iToRemove) = [];
+                end
             end
             
+            % third, merge them
+            clear RuParBoth
+            % stack them to start
+            RuParBoth.time = [RuParFromIOP.time, RuParFromMRZ.time];
+            fnames = setdiff(fieldnames(RuParFromIOP),'time');
+            for ifn = 1:numel(fnames)
+                RuParBoth.(fnames{ifn}) = [RuParFromIOP.(fnames{ifn}), repmat(categorical({''}),size(RuParFromMRZ.time))];
+            end
+            fnames = setdiff(fieldnames(RuParFromMRZ),'time');
+            for ifn = 1:numel(fnames)
+                RuParBoth.(fnames{ifn}) = [nan(size(RuParFromIOP.time)), RuParFromMRZ.(fnames{ifn})];
+            end
+            % sort by time
+            [~,I] = sort(RuParBoth.time);
+            fnames = fieldnames(RuParBoth);
+            for ifn = 1:numel(fnames)
+                val = RuParBoth.(fnames{ifn});
+                RuParBoth.(fnames{ifn}) = val(I);
+            end
+            % datagram by datagram, if a field is undefined/nan, copy last
+            % value
+            nD = numel(RuParBoth.time);
+            fnames = setdiff(fieldnames(RuParBoth),'time');
+            for ifn = 1:numel(fnames)
+                if iscategorical(RuParBoth.(fnames{ifn}))
+                    for iD = 2:nD
+                        if isundefined(RuParBoth.(fnames{ifn})(iD))
+                            RuParBoth.(fnames{ifn})(iD) = RuParBoth.(fnames{ifn})(iD-1);
+                        end
+                    end
+                elseif isnumeric(RuParBoth.(fnames{ifn}))
+                    for iD = 2:nD
+                        if isnan(RuParBoth.(fnames{ifn})(iD))
+                            RuParBoth.(fnames{ifn})(iD) = RuParBoth.(fnames{ifn})(iD-1);
+                        end
+                    end
+                end
+            end
+            
+            % finally, save back in fData
+            % date and time
+            dt = datetime(RuParBoth.time,'ConvertFrom','posixtime');
+            fData.Ru_1D_Date = convertTo(dt,'yyyymmdd');
+            fData.Ru_1D_TimeSinceMidnightInMilliseconds = milliseconds(timeofday(dt));
+            % match ping counter - for each Ru datagram time, find
+            % index of swathe in X8_ which time immediately follows
+            RuDatetime =  CFF_all_time_to_datetime(fData.Ru_1D_Date,fData.Ru_1D_TimeSinceMidnightInMilliseconds);
+            X8Datetime =  CFF_all_time_to_datetime(fData.X8_1P_Date,fData.X8_1P_TimeSinceMidnightInMilliseconds);        
+            timeVecDiff = RuDatetime-X8Datetime';
+            timeVecDiff(timeVecDiff>0) = NaN;
+            [~,iSw] = max(timeVecDiff,[],1,'omitnan');
+            fData.Ru_1D_PingCounter = fData.X8_1P_PingCounter(iSw);
+            % add all parameters
+            fnames = setdiff(fieldnames(RuParBoth),'time');
+            for ifn = 1:numel(fnames)
+                newField = ['Ru_1D_' fnames{ifn}];
+                fData.(newField) = RuParBoth.(fnames{ifn});
+            end
+           
         end
-        
-        % close the original raw file
-        fclose(fid);
-        
-    end
-    
-    %% '#SPO - Sensor (S) data for position (PO)'
-    if isfield(KMALLdata,'EMdgmSPO') && ~isfield(fData,'Po_1D_Date')
-        
-        comms.step('Converting #SPO'); 
-        
-        % extract data
-        header     = [KMALLdata.EMdgmSPO.header];
-        sensorData = [KMALLdata.EMdgmSPO.sensorData];
-        
-        % DEV NOTE: There are many entries here but I found a lot of issues
-        % in the heading. Digging in the data revealed that many successive
-        % entries have same values of timeFromSensor_sec, latitude,
-        % longitude, and other values. Yet speed and heading change with
-        % every entry... and heading has errors. I suspect those two values
-        % are (badly) calculated fromt the lat/long. So now we only record
-        % one entry per unique time stamp. Note the time stamp is in
-        % seconds so no more than one record per second. The nanosecond
-        % field is wrong. Alex 12 july 2021
-        
-        % get unique time entries from sensorData
-        % idx_t = 1:numel(sensorData); % for test to store all
-        idx_t = [1, find([0, diff([sensorData.timeFromSensor_sec])]~=0)];
-        
-        % number of entries to record
-        nD = numel(idx_t);
-        
-        % get date and time-since-midnight-in-milleseconds from header
-        [dtg_date,dtg_TSMIM] = CFF_get_date_and_TSMIM_from_kmall_header(header); % date and time per datagram
-        fData.Po_1D_Date = dtg_date(idx_t);
-        fData.Po_1D_TimeSinceMidnightInMilliseconds = dtg_TSMIM(idx_t);
-        
-        fData.Po_1D_Latitude                    = [sensorData(idx_t).correctedLat_deg]; % in decimal degrees
-        fData.Po_1D_Longitude                   = [sensorData(idx_t).correctedLong_deg]; % in decimal degrees
-        fData.Po_1D_SpeedOfVesselOverGround     = [sensorData(idx_t).speedOverGround_mPerSec]; % in m/s
-        fData.Po_1D_HeadingOfVessel             = [sensorData(idx_t).courseOverGround_deg]; % in degrees relative to north
-        fData.Po_1D_MeasureOfPositionFixQuality = [sensorData(idx_t).posFixQuality_m];
-        fData.Po_1D_PositionSystemDescriptor    = zeros(1,nD); % dummy values
-        
     end
     
     %% communicate progress
@@ -638,43 +879,81 @@ end
 %% end message
 comms.finish('Done');
 
+end
 
-%% nested functions
+% DEV NOTE: I hate that I have to code this. Data in KMALLdata are a mess
+% to access because of my initial choice to do arrays of struct. I would
+% need to change a lot to fix this, so in the meantime, here's a function
+% to access data in them.
+function out = CFF_getKM(KMALLdata, L1name, L1range, L2name, L2range, L3name, L3range)
+out = KMALLdata;
 
-    function out_EM_struct = CFF_remove_duplicate_KMALL_datagrams(in_EM_struct)
-        % DEV NOTE: I have found occurences of duplicate MRZ datagrams in some test
-        % files. Not sure how common it is, but the conversion code ends up
-        % duplicating the data too. Instead of modifying the code everywhere to be
-        % always considering the possibility of duplicates, it's easier to look for
-        % them at the start and remove them before parsing.
-        % In the examples I found, it would be sufficient to check for the set
-        % unicity of the cmnPart fields pingCnt, rxFanIndex, and
-        % swathAlongPosition. But the range of cases covered by the kmall format
-        % can be complicated (including systems with dual Rx heads and dual Tx
-        % heads in multi-swath mode!!! see documentation of EMdgmMbody_def) so to
-        % be entierely safe, we will instead use ALL the fields of cmnPart in a
-        % test for set unicity.
+% get top field
+if exist('L1name','var') && isfield(out,L1name)
+    out = KMALLdata.(L1name);
+    
+    % limit top field range
+    if exist('L1range','var') && ~isempty(L1range)
+        out = out(L1range);
+    end
+    
+    % get middle field
+    if exist('L2name','var') && isfield(out,L2name)
+        out = [out.(L2name)];
         
-        if isfield(in_EM_struct, 'cmnPart')
+        % limit middle field range
+        if exist('L2range','var') && ~isempty(L2range)
+            out = out(L2range);
+        end
+        
+        % get bottom field
+        if exist('L3name','var') && isfield(out,L3name)
+            out = [out.(L3name)];
             
-            cmnPart_table = struct2table([in_EM_struct.cmnPart]);
-            [~, ia, ~] = unique(cmnPart_table,'rows', 'stable');
-            idx_duplicates = ~ismember(1:size(cmnPart_table,1), ia);
-            
-            % remove duplicates
-            out_EM_struct = in_EM_struct(~idx_duplicates);
-            
-            % info
-            if any(idx_duplicates)
-                infoStr = sprintf('Found and discarded %i duplicate datagrams',sum(idx_duplicates));
-                comms.info(infoStr);
+            % limit bottom field range
+            if exist('L3range','var') && ~isempty(L3range)
+                out = out(L3range);
             end
-            
-        else
-            out_EM_struct = in_EM_struct;
         end
         
     end
+    
+end
+
+end
+
+
+% DEV NOTE: I have found occurences of duplicate MRZ datagrams in some test
+% files. Not sure how common it is, but if doing nothing, the conversion
+% code ends up duplicating the data too.
+% Instead of modifying the code everywhere to be always considering the
+% possibility of duplicates, it's easier to look for them at the start and
+% remove them before parsing.
+% In the examples I found, it would be sufficient to check for the set
+% unicity of the cmnPart fields pingCnt, rxFanIndex, and
+% swathAlongPosition. But the range of cases covered by the kmall format
+% can be complicated (including systems with dual Rx heads and dual Tx
+% heads in multi-swath mode!!! see documentation of EMdgmMbody_def) so to
+% be entierely safe, we will instead use ALL the fields of cmnPart in a
+% test for set unicity.
+function [outEMstruct,nDuplicates] = CFF_remove_duplicate_KMALL_datagrams(inEMstruct)
+
+nDuplicates = 0;
+
+if isfield(inEMstruct, 'cmnPart')
+    
+    % fidn duplicates
+    cmnPartTable = struct2table([inEMstruct.cmnPart]);
+    [~, ia, ~] = unique(cmnPartTable,'rows', 'stable');
+    idxDuplicates = ~ismember(1:size(cmnPartTable,1), ia);
+    
+    % remove duplicates
+    outEMstruct = inEMstruct(~idxDuplicates);
+    nDuplicates = sum(idxDuplicates);
+    
+else
+    outEMstruct = inEMstruct;
+end
 
 end
 
@@ -717,22 +996,6 @@ end
 
 end
 
-
-%%
-function [KM_date, TSMIM] = CFF_get_date_and_TSMIM_from_kmall_header(header)
-
-% get values
-time_sec = [header.time_sec];
-time_nanosec = [header.time_nanosec];
-
-% convert raw to datetime
-dt = datetime(time_sec + time_nanosec.*10^-9,'ConvertFrom','posixtime');
-
-% convert datetime to date and TSMIM
-KM_date = convertTo(dt, 'yyyymmdd');
-TSMIM = milliseconds(timeofday(dt));
-
-end
 
 %%
 function str = CFF_get_kmall_TxRx_info(cmnPart)

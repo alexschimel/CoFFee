@@ -495,10 +495,13 @@ for iF = 1:nStruct
         fData.X8_BP_DetectionWindowLength        = nan(maxnBeams,nPings);
         fData.X8_BP_QualityFactor                = nan(maxnBeams,nPings);
         fData.X8_BP_BeamIncidenceAngleAdjustment = nan(maxnBeams,nPings);
-        fData.X8_BP_DetectionInformation         = nan(maxnBeams,nPings);
         fData.X8_BP_RealTimeCleaningInformation  = nan(maxnBeams,nPings);
         fData.X8_BP_ReflectivityBS               = nan(maxnBeams,nPings);
         fData.X8_BP_HeadSystemSerialNumber       = nan(maxnBeams,nPings);
+
+        % init a temp array to store EM_XYZ88.DetectionInformation before
+        % decoding it
+        tempDetectInfo = nan(maxnBeams,nPings);
         
         % and fill that data ping per ping
         for iPOut = 1:nPings
@@ -523,7 +526,6 @@ for iF = 1:nStruct
                 fData.X8_BP_DetectionWindowLength(iBOut,iPOut)        = ALLdata.EM_XYZ88.DetectionWindowLength{iPIn};
                 fData.X8_BP_QualityFactor(iBOut,iPOut)                = ALLdata.EM_XYZ88.QualityFactor{iPIn};
                 fData.X8_BP_BeamIncidenceAngleAdjustment(iBOut,iPOut) = ALLdata.EM_XYZ88.BeamIncidenceAngleAdjustment{iPIn}*0.1; % now in deg
-                fData.X8_BP_DetectionInformation(iBOut,iPOut)         = ALLdata.EM_XYZ88.DetectionInformation{iPIn};
                 fData.X8_BP_RealTimeCleaningInformation(iBOut,iPOut)  = ALLdata.EM_XYZ88.RealTimeCleaningInformation{iPIn};
                 fData.X8_BP_ReflectivityBS(iBOut,iPOut)               = ALLdata.EM_XYZ88.ReflectivityBS{iPIn}*0.1; % now in dB
                 
@@ -531,10 +533,17 @@ for iF = 1:nStruct
                 % correct head
                 fData.X8_BP_HeadSystemSerialNumber(iBOut,iPOut) = headNumber(iH);
                 
+                tempDetectInfo(iBOut,iPOut) = ALLdata.EM_XYZ88.DetectionInformation{iPIn};
+                
                 % update
                 nBeamTot = iBOut(end);
             end
         end
+        
+        % decoding DetectionInformation
+        [ fData.X8_BP_DetectionValidity,...
+          fData.X8_BP_DetectionInfo,...
+          fData.X8_BP_ReflectivityCorrection ] = CFF_decode_DetectionInfo(tempDetectInfo);
         
     end
     
@@ -681,12 +690,15 @@ for iF = 1:nStruct
         
         % initialize remaining fields
         fData.S8_BP_SortingDirection       = nan(maxnBeams,nPings);
-        fData.S8_BP_DetectionInfo          = nan(maxnBeams,nPings);
         fData.S8_BP_NumberOfSamplesPerBeam = nan(maxnBeams,nPings);
         fData.S8_BP_CentreSampleNumber     = nan(maxnBeams,nPings);
         fData.S8_B1_BeamNumber             = (1:maxnBeams)';
         fData.S8_SBP_SampleAmplitudes      = cell(nPings,1); % saving as a cell vector of sparse matrices, per ping
         % true SBP array would be: fData.S8_SBP_SampleAmplitudes = nan(maxnSamples,maxnBeams,nPings);
+        
+        % init a temp array to store EM_SeabedImage89.DetectionInformation
+        % before decoding it
+        tempDetectInfo = nan(maxnBeams,nPings);
         
         % and fill that data ping per ping
         for iPOut = 1:nPings
@@ -720,13 +732,14 @@ for iF = 1:nStruct
                 
                 % store the BP variables
                 fData.S8_BP_SortingDirection(iBOut,iPOut)       = cell2mat(ALLdata.EM_SeabedImage89.SortingDirection(iPIn));
-                fData.S8_BP_DetectionInfo(iBOut,iPOut)          = cell2mat(ALLdata.EM_SeabedImage89.DetectionInfo(iPIn));
                 fData.S8_BP_NumberOfSamplesPerBeam(iBOut,iPOut) = NumberOfSamplesPerBeam;
                 fData.S8_BP_CentreSampleNumber(iBOut,iPOut)     = cell2mat(ALLdata.EM_SeabedImage89.CentreSampleNumber(iPIn));
                 
                 % add head number to allow relating each BP matrix to the
                 % correct head
                 fData.S8_BP_HeadSystemSerialNumber(iBOut,iPOut) = headNumber(iH);
+                
+                tempDetectInfo(iBOut,iPOut) = ALLdata.EM_SeabedImage89.DetectionInfo{iPIn};
                 
                 % get BS time-series samples
                 for iB = 1:length(iBOut)
@@ -742,6 +755,11 @@ for iF = 1:nStruct
             fData.S8_SBP_SampleAmplitudes(iPOut,1) = {sparse(temp)};
             
         end
+        
+        % decoding DetectionInformation
+        [ fData.S8_BP_DetectionValidity,...
+          fData.S8_BP_DetectionInfo,...
+          fData.S8_BP_ReflectivityCorrection ] = CFF_decode_DetectionInfo(tempDetectInfo);
         
     end
     
@@ -1293,3 +1311,112 @@ end
 
 %% end message
 comms.finish('Done');
+
+end
+
+
+
+% decoding the "Detection info(rmation)" field in:
+% * "XYZ 88" datagram (p43, note 4)
+% * "Extra detections" datagram (p47, note 8)
+% * "Raw range and angle 78" datagram (p55, note 3)
+% * "Seabed image data 89" datagram (p60, note 2)
+function [DetectValidity, DetectInfo, ReflectCorr] = CFF_decode_DetectionInfo(data)
+
+% This datagram may contain data for beams with and without a valid
+% detection: 
+%
+% A) If the most significant bit (bit7) is zero, this beam has a valid
+% detection. Bit 0–3 is used to specify how the range for this beam is
+% calculated. 
+% 0= Amplitude detect (0xxx 0000) 
+% 1= Phase detect (0xxx 0001)
+% 2-15= Future use   
+%
+% B) If the most significant bit (bit7) is 1, this beam has an invalid
+% detection. Bit 0–3 is used to specify how the range (and x,y,z
+% parameters) for this beam is calculated 
+% 0= Normal detection (1xxx 0000)
+% 1= Interpolated or extrapolated from neighbour detections (1xxx 0001) 
+% 2= Estimated (1xxx 0010) 
+% 3= Rejected candidate (1xxx 0011) 
+% 4= No detection data is available for this beam (all parameters are set
+% to zero) (1xxx 0100) 
+% 5-15= Future use 
+%
+% The invalid range has been used to fill in amplitude samples in the
+% seabed image datagram. 
+
+% reshape array as vector and turn to 8bit binary strings
+dat = reshape(data,[],1);
+dat = dec2bin(dat,8);
+
+bit7 = reshape(str2num(dat(:,1)),size(data)); % detection validity
+bits0to3 = reshape(bin2dec(dat(:,5:end)),size(data)); % info if invalid
+
+% decoding detection validity
+DetectValidity = categorical(bit7,[0,1],{'valid','invalid'});
+
+% debug display
+dbug=0;
+if dbug
+    figure;
+    image(double(DetectValidity));
+    CFF_add_cat_array_legend(DetectValidity);
+end
+
+% decoding detection info
+DetectInfo = zeros(size(data));
+
+DetectInfoCats = {...
+    'amplitude',... % 1
+    'phase',... % 2
+    'normal detection',... % 3
+    'interpolated or extrapolated from neighbour detections',... % 4
+    'estimated',... % 5
+    'rejected candidate',... % 6
+    'no detection data available'... % 7
+    };
+
+DetectInfo(~bit7 & bits0to3==0) = 1;
+DetectInfo(~bit7 & bits0to3==1) = 2;
+DetectInfo(bit7 & bits0to3==0) = 3;
+DetectInfo(bit7 & bits0to3==1) = 4;
+DetectInfo(bit7 & bits0to3==2) = 5;
+DetectInfo(bit7 & bits0to3==3) = 6;
+DetectInfo(bit7 & bits0to3==4) = 7;
+
+DetectInfo = categorical(DetectInfo,[1:7],DetectInfoCats);
+
+% debug display
+dbug=0;
+if dbug
+    figure;
+    image(double(DetectInfo));
+    CFF_add_cat_array_legend(DetectInfo);
+end
+
+
+%% Additional code for reflectivity
+% in "XYZ 88", "Extra detections", and "Raw range and angle 78", but NOT in
+% "Seabed image data 89" datagram
+
+% Bit 4 Reflectivity (used in Beam intensity display) correction for
+% Lamberts law and for normal incidence: 
+% 0= not compensated (xxx0 xxxx) (to show beam incidence angle dependency) 
+% 1= compensated (xxx1 xxxx) ( uses same correction as for seabed image
+% data) 
+
+bit4 = reshape(str2num(dat(:,4)),size(data)); % reflectivity correction
+
+ReflectCorr = categorical(bit4,[0,1],{'not compensated','compensated'});
+
+% debug display
+dbug=0;
+if dbug
+    figure;
+    image(double(ReflectCorr));
+    CFF_add_cat_array_legend(ReflectCorr);
+end
+
+end

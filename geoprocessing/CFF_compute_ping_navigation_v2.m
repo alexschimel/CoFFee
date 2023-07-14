@@ -157,6 +157,26 @@ posSDN       = posDate(:)'+ posTSMIM/(24*60*60*1000); % serial date number
 
 comms.progress(2,6);
 
+% debug display
+dbug = 0;
+if dbug
+    figure;
+    clear ax
+    dt = datetime(posSDN,'ConvertFrom','datenum');
+    tiledlayout(4,1);
+    ax(1) = nexttile; plot(dt, posLatitude, '.-'); ylabel('latitude'); grid on
+    ax(2) = nexttile; plot(dt, posLongitude, '.-'); ylabel('longitude'); grid on
+    ax(3) = nexttile; plot(dt, posHeading, '.-'); ylabel('heading'); grid on
+    ax(4) = nexttile; plot(dt, posSpeed, '.-'); ylabel('speed'); grid on
+    linkaxes(ax,'x') 
+    figure;
+    plot(posLongitude,posLatitude, '.-'); 
+    xlabel('longitude');
+    ylabel('latitude');
+    grid on
+end
+
+
 %% EXTRACT HEIGHT DATA
 
 comms.step('Extract height data');
@@ -172,6 +192,14 @@ else
 end
 
 comms.progress(3,6);
+
+% debug display
+dbug = 0;
+if dbug
+    figure;
+    dt = datetime(heiSDN,'ConvertFrom','datenum');
+    plot(dt, heiHeight, '.-'); ylabel('height'); grid on
+end
 
 
 %% PROCESS NAVIGATION AND HEADING
@@ -247,14 +275,14 @@ if posHeading(1)==0 && abs(posHeading(2))>5
 end
 
 % initialize new vectors
-pingE        = nan(size(pingTSMIM));
-pingN        = nan(size(pingTSMIM));
-pingGridConv = nan(size(pingTSMIM));
-pingHeading  = nan(size(pingTSMIM));
-pingSpeed    = nan(size(pingTSMIM));
+pingE        = nan(size(pingSDN));
+pingN        = nan(size(pingSDN));
+pingGridConv = nan(size(pingSDN));
+pingHeading  = nan(size(pingSDN));
+pingSpeed    = nan(size(pingSDN));
 
 % interpolate Easting, Northing, Grid Convergence and Heading at ping times
-for jj = 1:length(pingTSMIM)
+for jj = 1:length(pingSDN)
     A = posSDN-pingSDN(jj);
     iA = find (A == 0);
     if A > 0
@@ -263,14 +291,14 @@ for jj = 1:length(pingTSMIM)
         pingN(jj) = posN(2) + (posN(2)-posN(1)).*(pingSDN(jj)-posSDN(2))./(posSDN(2)-posSDN(1));
         pingGridConv(jj) = posGridConv(2) + (posGridConv(2)-posGridConv(1)).*(pingSDN(jj)-posSDN(2))./(posSDN(2)-posSDN(1));
         pingHeading(jj) = posHeading(2) + (posHeading(2)-posHeading(1)).*(pingSDN(jj)-posSDN(2))./(posSDN(2)-posSDN(1));
-        pingSpeed(jj) = posSpeed(2) + (posSpeed(2)-posSpeed(1)).*(pingTSMIM(jj)-posTSMIM(2))./(posTSMIM(2)-posTSMIM(1));
+        pingSpeed(jj) = posSpeed(2) + (posSpeed(2)-posSpeed(1)).*(pingSDN(jj)-posSDN(2))./(posSDN(2)-posSDN(1));
     elseif A < 0
         % the ping time is more recent than any navigation time, extrapolate from the last items in navigation array.
         pingE(jj) = posE(end) + (posE(end)-posE(end-1)).*(pingSDN(jj)-posSDN(end))./(posSDN(end)-posSDN(end-1));
         pingN(jj) = posN(end) + (posN(end)-posN(end-1)).*(pingSDN(jj)-posSDN(end))./(posSDN(end)-posSDN(end-1));
         pingGridConv(jj) = posGridConv(end) + (posGridConv(end)-posGridConv(end-1)).*(pingSDN(jj)-posSDN(end))./(posSDN(end)-posSDN(end-1));
         pingHeading(jj) = posHeading(end) + (posHeading(end)-posHeading(end-1)).*(pingSDN(jj)-posSDN(end))./(posSDN(end)-posSDN(end-1));
-        pingSpeed(jj) = posSpeed(end) + (posSpeed(end)-posSpeed(end-1)).*(pingTSMIM(jj)-posTSMIM(end))./(posTSMIM(end)-posTSMIM(end-1));
+        pingSpeed(jj) = posSpeed(end) + (posSpeed(end)-posSpeed(end-1)).*(pingSDN(jj)-posSDN(end))./(posSDN(end)-posSDN(end-1));
     elseif ~isempty(iA)
         % the ping time corresponds to an existing navigation time, get easting and northing from it.
         pingE(jj) = posE(iA);
@@ -291,7 +319,7 @@ for jj = 1:length(pingTSMIM)
         pingN(jj) = posN(iA(2)) + (posN(iA(2))-posN(iA(1))).*(pingSDN(jj)-posSDN(iA(2)))./(posSDN(iA(2))-posSDN(iA(1)));
         pingGridConv(jj) = posGridConv(iA(2)) + (posGridConv(iA(2))-posGridConv(iA(1))).*(pingSDN(jj)-posSDN(iA(2)))./(posSDN(iA(2))-posSDN(iA(1)));
         pingHeading(jj) = posHeading(iA(2)) + (posHeading(iA(2))-posHeading(iA(1))).*(pingSDN(jj)-posSDN(iA(2)))./(posSDN(iA(2))-posSDN(iA(1)));
-        pingSpeed(jj) = posSpeed(iA(2)) + (posSpeed(iA(2))-posSpeed(iA(1))).*(pingTSMIM(jj)-posTSMIM(iA(2)))./(posTSMIM(iA(2))-posTSMIM(iA(1)));
+        pingSpeed(jj) = posSpeed(iA(2)) + (posSpeed(iA(2))-posSpeed(iA(1))).*(pingSDN(jj)-posSDN(iA(2)))./(posSDN(iA(2))-posSDN(iA(1)));
     end
 end
 
@@ -300,6 +328,27 @@ posHeading  = posHeading - jumps.*360;
 pingHeading = mod(pingHeading,360);
 
 comms.progress(4,6);
+
+% debug display
+dbug = 0;
+if dbug
+    figure;
+    clear ax
+    dt = datetime(pingSDN,'ConvertFrom','datenum');
+    tiledlayout(5,1);
+    ax(1) = nexttile; plot(dt, pingN, '.-'); ylabel('northing'); grid on
+    ax(2) = nexttile; plot(dt, pingE, '.-'); ylabel('easting'); grid on
+    ax(3) = nexttile; plot(dt, pingGridConv, '.-'); ylabel('grid convergence'); grid on
+    ax(4) = nexttile; plot(dt, pingHeading, '.-'); ylabel('heading'); grid on
+    ax(5) = nexttile; plot(dt, pingSpeed, '.-'); ylabel('speed'); grid on
+    linkaxes(ax,'x') 
+    figure;
+    plot(pingE,pingN, '.-'); 
+    xlabel('easting');
+    ylabel('northing');
+    grid on
+end
+
 
 
 %% PROCESS HEIGHT

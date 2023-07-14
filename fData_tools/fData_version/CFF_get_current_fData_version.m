@@ -17,10 +17,11 @@ function ver = CFF_get_current_fData_version()
 %   See also CFF_GET_FDATA_VERSION, CFF_coffee_version.
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2023; Last revision: 09-01-2023
+%   Ladroit (yoann.ladroit@km.kongsberg.com)
+%   2017-2023; Last revision: 14-07-2023
 
-ver = '0.4'; % 09-01-2023. Add more runtime parameters
+ver = '0.5'; % 14-07-2023. More runtime parameters and different detection info fields
+% ver = '0.4'; % 09-01-2023. Add more runtime parameters
 % ver = '0.3'; % DD-MM-YYYY. Changes?
 % ver = '0.2'; % DD-MM-YYYY. Changes?
 % ver = '0.1'; % DD-MM-YYYY. Changes?

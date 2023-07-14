@@ -360,17 +360,20 @@ for iF = 1:nFiles
                     case 'seafloor'
                         dtgsAllRequired = {'#IIP',... % Installation Parameters
                             '#SPO',...                % Position
+                            '#IOP',...                % Runtime Parameters
                             '#MRZ'};                  % Bathy and BS
                         dtgs = sort(unique(dtgsAllRequired));
                     case 'WCD'
                         dtgsAllRequired = {'#IIP',... % Installation Parameters
-                            '#SPO',...                % Position          
+                            '#SPO',...                % Position        
+                            '#IOP',...                % Runtime Parameters
                             '#MWC'};                  % Water-column Data 
                         % USED TO ALSO HAVE '#MRZ',... % Bathy and BS
                         dtgs = sort(unique(dtgsAllRequired));
                     case 'seafloorOrWCD'
                         dtgsAllRequired = {'#IIP',...  % Installation Parameters
-                            '#SPO'};                   % Position
+                            '#SPO',...                 % Position
+                            '#IOP'};                   % Runtime Parameters
                         dtgsAtLeastOneOf = {'#MRZ',... % Bathy and BS
                             '#MWC'};                   % Water-column Data
                         dtgs = sort(unique([dtgsAllRequired, dtgsAtLeastOneOf]));
