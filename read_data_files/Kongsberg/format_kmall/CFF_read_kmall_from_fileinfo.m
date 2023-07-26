@@ -81,10 +81,8 @@ kmallRevWarningFlag = 0;
 % start progress
 comms.progress(0,nDatagsToPars);
 
-
 %% Reading datagrams
 for iDatag = datagToParse'
-    
     % A full kmall datagram is organized as a sequence of:
     % * GH - General Header EMdgmHeader (20 bytes, at least for Rev H)
     % * DB - Datagram Body (variable size)
@@ -498,7 +496,6 @@ for iDatag = datagToParse'
     comms.progress(iDatag,nDatagsToPars);
     
 end
-
 
 %% finalise
 

@@ -24,7 +24,7 @@ if CPO_VERSION>0 && dgmVersion_warning_flag
     warning('#CPO datagram version (%i) unsupported. Continue reading but there may be issues.',CPO_VERSION);
 end
 
-out_struct.cmnPart = CFF_read_EMdgmScommon(fid);
+out_struct.cmnPart = CFF_read_EMdgmScommon(fid,'#CPO');
 
 % number of bytes in the actual CPO data is the total datagram size
 % (need to remove 4 bytes for the final numBytes field) minus what was

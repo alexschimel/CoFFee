@@ -197,38 +197,106 @@ for iF = 1:nStruct
     
     
     %% fData.Po_ (navigation data)
-    % DEV NOTE: There are many entries here but I found a lot of issues in
-    % the heading. Digging in the data revealed that many successive
-    % entries have same values of timeFromSensor_sec, latitude, longitude,
-    % and other values. Yet speed and heading change with every entry...
-    % and heading has errors. I suspect those two values are (badly)
-    % calculated fromt the lat/long. So now we only record one entry per
-    % unique time stamp. Note the time stamp is in seconds so no more than
-    % one record per second. The nanosecond field is wrong. Alex 12 july
-    % 2021
     if ~isfield(fData,'Po_1D_Date')
         if isfield(KMALLdata,'EMdgmSPO')
             comms.step('Parsing navigation data from #SPO datagrams');
             
             % extract data
-            header     = [KMALLdata.EMdgmSPO.header];
+            % header = [KMALLdata.EMdgmSPO.header];
+            cmnPart = [KMALLdata.EMdgmSPO.cmnPart];
             sensorData = [KMALLdata.EMdgmSPO.sensorData];
             
-            % get time vector from header, sort, and remove duplicates
-            dt = CFF_kmall_time_to_datetime([header.time_sec],[header.time_nanosec]);
-            [~,I] = sort(dt);
-            iKeep = [true,diff(dt(I))~=0];
-            ind = I(iKeep);
+            % find all unique sensor systems
+            sensorSystem = [cmnPart.sensorSystem];
+            sensorSystemNumber = [sensorSystem.SensorSystemNumber];
+            uniqueSensorSystems = unique(sensorSystemNumber);
             
-            % get time
-            [fData.Po_1D_Date,fData.Po_1D_TimeSinceMidnightInMilliseconds] =  CFF_datetime_to_all_time(dt(ind));
-            % get the rest from sensorData
-            fData.Po_1D_Latitude                    = [sensorData(ind).correctedLat_deg]; % in decimal degrees
-            fData.Po_1D_Longitude                   = [sensorData(ind).correctedLong_deg]; % in decimal degrees
-            fData.Po_1D_SpeedOfVesselOverGround     = [sensorData(ind).speedOverGround_mPerSec]; % in m/s
-            fData.Po_1D_HeadingOfVessel             = [sensorData(ind).courseOverGround_deg]; % in degrees relative to north
-            fData.Po_1D_MeasureOfPositionFixQuality = [sensorData(ind).posFixQuality_m];
-            fData.Po_1D_PositionSystemDescriptor    = zeros(1,numel(fData.Po_1D_Date)); % dummy values
+            % init total number of entries recorded so far
+            totN = 0;
+            
+            for ii = 1:numel(uniqueSensorSystems)
+                
+                systID = uniqueSensorSystems(ii);
+                
+                % extract all data for this system only
+                indS = sensorSystemNumber == systID;
+                thisSensorData = sensorData(indS);
+                
+                % get time vector from header, sort, and remove duplicates
+                dt = CFF_kmall_time_to_datetime([thisSensorData.timeFromSensor_sec],[thisSensorData.timeFromSensor_nanosec]);
+                [~,I] = sort(dt);
+                iKeep = [true,diff(dt(I))~=0];
+                indK = I(iKeep);
+                if any(~iKeep)
+                    comms.info('Duplicate time entries in Position datagrams (#SPO). You might experience issues with navigation.');
+                end
+                thisSensorData = thisSensorData(indK);
+                curN = numel(thisSensorData);
+                
+                % get time
+                [fData.Po_1D_Date(totN+(1:curN)),fData.Po_1D_TimeSinceMidnightInMilliseconds(totN+(1:curN))] =  CFF_kmall_time_to_all_time([thisSensorData.timeFromSensor_sec],[thisSensorData.timeFromSensor_nanosec]);
+                
+                % get the rest
+                fData.Po_1D_Latitude(totN+(1:curN))                    = [thisSensorData.correctedLat_deg]; % in decimal degrees
+                fData.Po_1D_Longitude(totN+(1:curN))                   = [thisSensorData.correctedLong_deg]; % in decimal degrees
+                fData.Po_1D_SpeedOfVesselOverGround(totN+(1:curN))     = [thisSensorData.speedOverGround_mPerSec]; % in m/s
+                fData.Po_1D_HeadingOfVessel(totN+(1:curN))             = [thisSensorData.courseOverGround_deg]; % in degrees relative to north
+                fData.Po_1D_MeasureOfPositionFixQuality(totN+(1:curN)) = [thisSensorData.posFixQuality_m];
+                fData.Po_1D_PositionSystemDescriptor(totN+(1:curN))    = systID.*ones(1,curN);
+               
+                % update total number of entries recorded so far
+                totN = totN+curN;
+            end
+            % DEV NOTE: entries are not sorted in time but in
+            % sensor-then-time. Keeping it like this for now since
+            % CFF_compute_navigation_v2 only uses the data from one sensor.
+            
+            % debug display
+            dbug = 0;
+            if dbug
+                figure;
+                clear ax
+                dt = CFF_all_time_to_datetime(fData.Po_1D_Date,fData.Po_1D_TimeSinceMidnightInMilliseconds);
+                unIDs = unique(fData.Po_1D_PositionSystemDescriptor);
+                tiledlayout(4,1);
+                ax(1) = nexttile; 
+                for ii = 1:numel(unIDs)
+                    ind = fData.Po_1D_PositionSystemDescriptor == unIDs(ii);
+                    plot(dt(ind), fData.Po_1D_Latitude(ind), '.-'); hold on
+                end
+                ylabel('latitude'); grid on; legend(string(unIDs))
+                
+                ax(2) = nexttile; 
+                for ii = 1:numel(unIDs)
+                    ind = fData.Po_1D_PositionSystemDescriptor == unIDs(ii);
+                    plot(dt(ind), fData.Po_1D_Longitude(ind), '.-'); hold on
+                end
+                ylabel('longitude'); grid on; legend(string(unIDs))
+                
+                ax(3) = nexttile; 
+                for ii = 1:numel(unIDs)
+                    ind = fData.Po_1D_PositionSystemDescriptor == unIDs(ii);
+                    plot(dt(ind), fData.Po_1D_HeadingOfVessel(ind), '.-'); hold on
+                end
+                ylabel('heading'); grid on; legend(string(unIDs))
+                
+                ax(4) = nexttile; 
+                for ii = 1:numel(unIDs)
+                    ind = fData.Po_1D_PositionSystemDescriptor == unIDs(ii);
+                    plot(dt(ind), fData.Po_1D_SpeedOfVesselOverGround(ind), '.-'); hold on
+                end
+                ylabel('speed'); grid on; legend(string(unIDs))
+                
+                linkaxes(ax,'x')
+                
+                figure;
+                for ii = 1:numel(unIDs)
+                    ind = fData.Po_1D_PositionSystemDescriptor == unIDs(ii);
+                    plot(fData.Po_1D_Longitude(ind), fData.Po_1D_Latitude(ind), '.-'); hold on
+                end
+                xlabel('longitude'); ylabel('latitude'); grid on; legend(string(unIDs));
+                
+            end
             
         end
     end
@@ -719,12 +787,69 @@ for iF = 1:nStruct
     % undesirable change in parameters, i.e. for Iskaffe), and SOME runtime
     % parameters are in #MRZ datagrams, namely the receive beamwidth
     % (needed for echo footprint computation) and the transmit power re.
-    % maximum (for for BS level correction)
+    % maximum (for for BS level correction).
+    %
+    % To make matters worth, the #IOP and #MRZ datagrams are not in sync,
+    % aka their time stamps are not strictly comparable. See email from
+    % Torgrim (24 Jul 2023): 
+    %  Hi
+    %  The MRZ and IIP/IOP are not in sync.
+    %  At start of logging (pinging started already) it will log incomming
+    %  data to file and send a request to the PU for Installation and
+    %  Runtime datagrams, then these datagrams are put to the start of the
+    %  file. The IIP is valid as this cannot change while pinging, but the
+    %  Runtime can in theory be different.    
+    %  During the line, the Runtime datagram is sent as a response to
+    %  incoming data and not actually when it is used, so depending on
+    %  pingrate it might be  0-2 pings delayed in MRZ compared to IOP. And
+    %  it is time not sequence in file.   
+    %  To be sure of pulse length/frequency etc you must see in the MRZ
+    %  datagram. 
+    %
+    %  The implications are that:
+    %  1. The first #IOP datagram at the beggining of the file applies
+    %  already to the very first #MRZ, even if its time predates this first
+    %  #IOP datagram. 
+    %  2. Any change in runtime parameters during file recording will be
+    %  logged first in #MRZ data and then later as a new #IOP datagram. We
+    %  would need to match parameter change instead of time. Not ideal.
     if ~isfield(fData,'Ru_1D_Date')
         if isfield(KMALLdata,'EMdgmIOP') && isfield(KMALLdata,'EMdgmMRZ')
             comms.step('Parsing runtime parameters from #IOP and #MRZ datagrams');
             
-            % first, read the info from #IOP
+            % first, read the info from #MRZ
+            clear RuParFromMRZ
+            % read time info
+            RuParFromMRZ.time = CFF_getKM(KMALLdata,'EMdgmMRZ',[],'header',[],'time_sec') ...
+                + CFF_getKM(KMALLdata,'EMdgmMRZ',[],'header',[],'time_nanosec').*10^-9;
+            % read parameters
+            parFieldnamesIn = {'receiveArraySizeUsed_deg','transmitPower_dB'};
+            parFieldnamesOut = {'ReceiveBeamwidth','TransmitPowerReMaximum'};
+            for iP = 1:numel(parFieldnamesIn)
+                RuParFromMRZ.(parFieldnamesOut{iP}) = CFF_getKM(KMALLdata,'EMdgmMRZ',[],'pingInfo',[],parFieldnamesIn{iP});
+            end
+            % sort by time
+            [~,I] = sort(RuParFromMRZ.time);
+            fnames = fieldnames(RuParFromMRZ);
+            for ifn = 1:numel(fnames)
+                val = RuParFromMRZ.(fnames{ifn});
+                RuParFromMRZ.(fnames{ifn}) = val(I);
+            end
+            % remove datagrams where no changes occur
+            if numel(RuParFromMRZ.time)>1
+                fnames = setdiff(fnames,'time');
+                iNoChange = nan(numel(fnames),numel(RuParFromMRZ.time)); % matrix of indices where no change occured, per field
+                for ifn = 1:numel(fnames)
+                    iNoChange(ifn,:) = [false,RuParFromMRZ.(fnames{ifn})(2:end)==RuParFromMRZ.(fnames{ifn})(1:end-1)];
+                end
+                iToRemove = all(iNoChange,1);
+                RuParFromMRZ.time(iToRemove) = [];
+                for ifn = 1:numel(fnames)
+                    RuParFromMRZ.(fnames{ifn})(iToRemove) = [];
+                end
+            end
+            
+            % second, read the info from #IOP
             clear RuParFromIOP
             % read time info
             RuParFromIOP.time = CFF_getKM(KMALLdata,'EMdgmIOP',[],'header',[],'time_sec') ...
@@ -775,38 +900,9 @@ for iF = 1:nStruct
                     RuParFromIOP.(fnames{ifn})(iToRemove) = [];
                 end
             end
-            
-            % second, read the info from #MRZ
-            clear RuParFromMRZ
-            % read time info
-            RuParFromMRZ.time = CFF_getKM(KMALLdata,'EMdgmMRZ',[],'header',[],'time_sec') ...
-                + CFF_getKM(KMALLdata,'EMdgmMRZ',[],'header',[],'time_nanosec').*10^-9;
-            % read parameters
-            parFieldnamesIn = {'receiveArraySizeUsed_deg','transmitPower_dB'};
-            parFieldnamesOut = {'ReceiveBeamwidth','TransmitPowerReMaximum'};
-            for iP = 1:numel(parFieldnamesIn)
-                RuParFromMRZ.(parFieldnamesOut{iP}) = CFF_getKM(KMALLdata,'EMdgmMRZ',[],'pingInfo',[],parFieldnamesIn{iP});
-            end
-            % sort by time
-            [~,I] = sort(RuParFromMRZ.time);
-            fnames = fieldnames(RuParFromMRZ);
-            for ifn = 1:numel(fnames)
-                val = RuParFromMRZ.(fnames{ifn});
-                RuParFromMRZ.(fnames{ifn}) = val(I);
-            end
-            % remove datagrams where no changes occur
-            if numel(RuParFromMRZ.time)>1
-                fnames = setdiff(fnames,'time');
-                iNoChange = nan(numel(fnames),numel(RuParFromMRZ.time)); % matrix of indices where no change occured, per field
-                for ifn = 1:numel(fnames)
-                    iNoChange(ifn,:) = [false,RuParFromMRZ.(fnames{ifn})(2:end)==RuParFromMRZ.(fnames{ifn})(1:end-1)];
-                end
-                iToRemove = all(iNoChange,1);
-                RuParFromMRZ.time(iToRemove) = [];
-                for ifn = 1:numel(fnames)
-                    RuParFromMRZ.(fnames{ifn})(iToRemove) = [];
-                end
-            end
+            % set first #IOP time to zero as it applies from first ping
+            % onwards 
+            RuParFromIOP.time(1) = 0;
             
             % third, merge them
             clear RuParBoth
@@ -845,6 +941,12 @@ for iF = 1:nStruct
                         end
                     end
                 end
+            end
+            % remove the first entry, corresponding to time "zero", since
+            % all the values are copied to the next one anyway
+            fnames = fieldnames(RuParBoth);
+            for ifn = 1:numel(fnames)
+                RuParBoth.(fnames{ifn})(1) = [];
             end
             
             % finally, save back in fData

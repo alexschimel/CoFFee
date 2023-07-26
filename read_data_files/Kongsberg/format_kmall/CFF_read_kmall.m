@@ -139,6 +139,7 @@ if nFiles == 1
 else
     comms.step('Reading datagrams in paired file #1/2');
 end
+
 KMALLdata = CFF_read_kmall_from_fileinfo(KMALLfilename{1}, info);
 
 % communicate progress

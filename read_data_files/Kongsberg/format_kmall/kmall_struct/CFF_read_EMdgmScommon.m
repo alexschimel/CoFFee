@@ -1,4 +1,4 @@
-function out_struct = CFF_read_EMdgmScommon(fid)
+function out_struct = CFF_read_EMdgmScommon(fid, dtgType)
 %CFF_READ_EMDGMSCOMMON  Read common part of Sensor struct of kmall file
 %
 %   Sensor (S) output datagram - common part for all external sensors.
@@ -14,6 +14,19 @@ function out_struct = CFF_read_EMdgmScommon(fid)
 % Size in bytes of current struct.
 out_struct.numBytesCmnPart = fread(fid,1,'uint16');
 
+% sensorSystem
+tmp = fread(fid,1,'uint16');
+out_struct.sensorSystem = CFF_decode_sensorSystem(tmp, dtgType);
+
+% sensorStatus
+tmp = fread(fid,1,'uint16');
+out_struct.sensorStatus = CFF_decode_sensorStatus(tmp, dtgType);
+
+out_struct.padding = fread(fid,1,'uint16');
+
+end
+
+function out_struct = CFF_decode_sensorSystem(dataDec, dtgType)
 % Sensor system number, as indicated when setting up the system in
 % K-Controller installation menu. E.g. position system 0 referes to system
 % POSI_1 in installation datagram #IIP. Check if this sensor system is
@@ -24,8 +37,26 @@ out_struct.numBytesCmnPart = fread(fid,1,'uint16');
 % 0             Time syncronisation from clock data
 % 1             Time syncronisation from active position data
 % 2             1 PPS is used
-out_struct.sensorSystem = fread(fid,1,'uint16');
 
+% init output
+out_struct = struct();
+
+switch dtgType
+    case '#SCL'
+        dataBin = dec2bin(reshape(dataDec,[],1), 16);
+        
+        out_struct.TimeSyncronisationFromClockData          = bin2dec(dataBin(:,end));
+        out_struct.TimeSyncronisationFromActivePositionData = bin2dec(dataBin(:,end-1));
+        out_struct.OnePPSisUsed                             = bin2dec(dataBin(:,end-2));
+
+    otherwise
+        out_struct.SensorSystemNumber = dataDec;
+end
+
+end
+
+
+function out = CFF_decode_sensorStatus(dataDec, dtgType)
 % Sensor status. To indicate quality of sensor data is valid or invalid.
 % Quality may be invalid even if sensor is active and the PU receives data.
 % Bit code vary according to type of sensor.
@@ -61,8 +92,45 @@ out_struct.sensorSystem = fread(fid,1,'uint16');
 % 13            0
 % 14            0
 % 15            0
-out_struct.sensorStatus = fread(fid,1,'uint16');
 
-out_struct.padding = fread(fid,1,'uint16');
+% init output
+out = struct();
+
+dataBin = dec2bin(reshape(dataDec,[],1), 16);
+
+% bit 0
+switch dtgType
+    case '#SCL'
+        out.validDataAndOnePPSoK = bin2dec(dataBin(:,end));
+    otherwise
+        out.activeSensor = bin2dec(dataBin(:,end));
+end
+
+% bit 2
+switch dtgType
+    case '#SCL'
+        out.dataQuality = categorical(bin2dec(dataBin(:,end-2)),[0,1],{'Data OK','Reduced Performance, no time synchronisation of PU'});
+    otherwise
+        out.dataQuality = categorical(bin2dec(dataBin(:,end-2)),[0,1],{'Data OK','Reduced Performance'});
+end
+
+% bit 4
+out.dataValidity = categorical(bin2dec(dataBin(:,end-4)),[0,1],{'Data OK','Invalid data'});
+
+% bit 6
+out.velocitySource = categorical(bin2dec(dataBin(:,end-6)),[0,1],{'Velocity from sensor','Velocity calculated by PU'});
+
+% bits 8-15
+switch dtgType
+    case {'#SPO','#CPO'}
+        % bit 9
+        out.timeSource = categorical(bin2dec(dataBin(:,end-9)),[0,1],{'Time from PU used (system)','Time from datagram used'});
+
+        % bit 10
+        out.motionCorrection = categorical(bin2dec(dataBin(:,end-10)),[0,1],{'No motion correction','With motion correction'});
+        
+        % bit 11
+        out.qualityCheck = categorical(bin2dec(dataBin(:,end-11)),[0,1],{'Normal quality check','Operator quality check. Data always valid'});
+end
 
 end

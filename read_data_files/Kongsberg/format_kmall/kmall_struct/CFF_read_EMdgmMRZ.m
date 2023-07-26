@@ -26,7 +26,6 @@ function out_struct = CFF_read_EMdgmMRZ(fid, dgmVersion_warning_flag)
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
 %   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 20-08-2021
 
 out_struct.header = CFF_read_EMdgmHeader(fid);
 
@@ -437,7 +436,7 @@ out_struct.signalWaveForm = fread(fid,1,'uint8');
 % Byte alignment.
 out_struct.padding1 = fread(fid,1,'uint16');
 
-if MRZ_VERSION > 1
+if MRZ_VERSION > 0
     
     % 20 log(Measured high voltage power level at TX pulse / Nominal high
     % voltage power level). This parameter will also include the effect of user
