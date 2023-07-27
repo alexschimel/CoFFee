@@ -851,35 +851,11 @@ for iF = 1:nStruct
             
             % second, read the info from #IOP
             clear RuParFromIOP
+            % read parameters
+            RuParFromIOP = CFF_decode_IOP(KMALLdata.EMdgmIOP);
             % read time info
             RuParFromIOP.time = CFF_getKM(KMALLdata,'EMdgmIOP',[],'header',[],'time_sec') ...
                 + CFF_getKM(KMALLdata,'EMdgmIOP',[],'header',[],'time_nanosec').*10^-9;
-            % read parameters, one datagram at a time
-            nD = numel(KMALLdata.EMdgmIOP);
-            for iD = 1:nD
-                % read runtime_txt, liny by line
-                lines = strsplit(KMALLdata.EMdgmIOP(iD).runtime_txt,newline);
-                for iL = 1:length(lines)
-                    line = lines{iL};
-                    if ~isempty(line)
-                        % find if line contains ":"
-                        idxSeparator = strfind(line,':');
-                        if isempty(idxSeparator)
-                            % new section starts
-                            % save section name by removing any space from line
-                            newSectionName = regexprep(matlab.lang.makeValidName(line,'ReplacementStyle','delete'),'_','');
-                        else
-                            % new key and value pair
-                            % split line into key and value
-                            key = regexprep(matlab.lang.makeValidName(line(1:idxSeparator-1),'ReplacementStyle','delete'),'_','');
-                            fullKey = [newSectionName key];
-                            val = strtrim(line(idxSeparator+2:end));
-                            % store in fData as a categorical
-                            RuParFromIOP.(fullKey)(iD) = categorical({val});
-                        end
-                    end
-                end
-            end
             % sort by time
             [~,I] = sort(RuParFromIOP.time);
             fnames = fieldnames(RuParFromIOP);
@@ -983,46 +959,7 @@ comms.finish('Done');
 
 end
 
-% DEV NOTE: I hate that I have to code this. Data in KMALLdata are a mess
-% to access because of my initial choice to do arrays of struct. I would
-% need to change a lot to fix this, so in the meantime, here's a function
-% to access data in them.
-function out = CFF_getKM(KMALLdata, L1name, L1range, L2name, L2range, L3name, L3range)
-out = KMALLdata;
 
-% get top field
-if exist('L1name','var') && isfield(out,L1name)
-    out = KMALLdata.(L1name);
-    
-    % limit top field range
-    if exist('L1range','var') && ~isempty(L1range)
-        out = out(L1range);
-    end
-    
-    % get middle field
-    if exist('L2name','var') && isfield(out,L2name)
-        out = [out.(L2name)];
-        
-        % limit middle field range
-        if exist('L2range','var') && ~isempty(L2range)
-            out = out(L2range);
-        end
-        
-        % get bottom field
-        if exist('L3name','var') && isfield(out,L3name)
-            out = [out.(L3name)];
-            
-            % limit bottom field range
-            if exist('L3range','var') && ~isempty(L3range)
-                out = out(L3range);
-            end
-        end
-        
-    end
-    
-end
-
-end
 
 
 % DEV NOTE: I have found occurences of duplicate MRZ datagrams in some test

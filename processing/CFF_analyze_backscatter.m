@@ -77,53 +77,61 @@ for ii = 1:nLines
     
     % criteria 2: a ping whose average backscatter level is abnormally low
     % is a bad ping
-    avgBS = median(fData.X8_BP_ReflectivityBS);
     
-    iKeep = zeros(1,nPings);
-    nBeamsDrop = nan(1,nPings);
-    
+    % algo parameters
     windLen = 10;
     gateLen = 5;
-    
     dropThr = -3; % threshold dB to be considered a drop
     ratDropThr = 0.5; % threhshold ratio of beams that dropped for the entire ping to be considered bad
     
-    iKeep(1:windLen+gateLen) = 1;
-    for jj = windLen+gateLen+1:nPings
+    if nPings > windLen+gateLen
+        % cant run the algo on less pings...
         
-        iWin = (jj-gateLen)+(-windLen:-1);
-        iWin = iWin(logical(iKeep(iWin)));
-        if ~isempty(iWin)
-            % update average from window
-            avgWin = median(fData.X8_BP_ReflectivityBS(:,iWin),2);
-        else
-            % keep previous average
-        end
-        
-        % calculate difference to window average for each beam
-        diffToWin = fData.X8_BP_ReflectivityBS(:,jj) - avgWin;
-        
-        nBeamsDrop(jj) = sum(diffToWin<=dropThr);
-        
-        if nBeamsDrop(jj)./nBeams>=ratDropThr
-            iKeep(jj) = 0;
-        else
-            iKeep(jj) = 1;
-        end
+        % init
+        iKeep = zeros(1,nPings);
+        nBeamsDrop = nan(1,nPings);
+        iKeep(1:windLen+gateLen) = 1;
 
-    end
-    badPings2 = ~iKeep;
-    
-    if DEBUG
-        if any(badPings2)
-            plot(find(badPings2),round(nBeams./2),'m*');
+        for jj = windLen+gateLen+1:nPings
+
+            iWin = (jj-gateLen)+(-windLen:-1);
+            iWin = iWin(logical(iKeep(iWin)));
+            if ~isempty(iWin)
+                % update average from window
+                avgWin = median(fData.X8_BP_ReflectivityBS(:,iWin),2);
+            else
+                % keep previous average
+            end
+
+            % calculate difference to window average for each beam
+            diffToWin = fData.X8_BP_ReflectivityBS(:,jj) - avgWin;
+
+            nBeamsDrop(jj) = sum(diffToWin<=dropThr);
+
+            if nBeamsDrop(jj)./nBeams>=ratDropThr
+                iKeep(jj) = 0;
+            else
+                iKeep(jj) = 1;
+            end
+
         end
-        ax2 = nexttile;
-        plot(nBeamsDrop,'.-'); hold on
-        plot(1:nPings,nBeams.*ratDropThr.*ones(1,nPings),'m--');
-        plot(find(~iKeep),nBeamsDrop(~iKeep),'mo');
-        grid on
-        linkaxes(findall(gcf,'type','axes'),'x');
+        badPings2 = ~iKeep;
+
+        if DEBUG
+            if any(badPings2)
+                plot(find(badPings2),round(nBeams./2),'m*');
+            end
+            ax2 = nexttile;
+            plot(nBeamsDrop,'.-'); hold on
+            plot(1:nPings,nBeams.*ratDropThr.*ones(1,nPings),'m--');
+            plot(find(~iKeep),nBeamsDrop(~iKeep),'mo');
+            grid on
+            linkaxes(findall(gcf,'type','axes'),'x');
+        end
+    
+    else
+        
+        badPings2 = false(1,nPings);
     end
     
     % pur two cirteria together
