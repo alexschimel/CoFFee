@@ -61,6 +61,7 @@ All apps based on *CoFFee*:
 ## References
 
 Articles using *CoFFee*, or apps based on *CoFFee*:
+* Turco, F., Ladroit, Y., Watson, S. J., Seabrook, S., Law, C. S., Crutchley, G. J., Mountjoy, J., Pecher, I. A., Hillman, J. I. T., Woelz, S., & Gorman, A. R. (2022). Estimates of Methane Release From Gas Seeps at the Southern Hikurangi Margin, New Zealand. Frontiers in Earth Science, 10(March), 1–20. https://doi.org/10.3389/feart.2022.834047
 * Nau, A. W., Scoulding, B., Kloser, R. J., Ladroit, Y., & Lucieer, V. (2022). Extended Detection of Shallow Water Gas Seeps From Multibeam Echosounder Water Column Data. Frontiers in Remote Sensing, 3(July), 1–18. https://doi.org/10.3389/frsen.2022.839417
 * Porskamp, P., Schimel, A. C. G., Young, M., Rattray, A., Ladroit, Y., & Ierodiaconou, D. (2022). Integrating multibeam echosounder water‐column data into benthic habitat mapping. Limnology and Oceanography, 1–13. https://doi.org/10.1002/lno.12160
 * Schimel, A. C. G., Brown, C. J., & Ierodiaconou, D. (2020). Automated Filtering of Multibeam Water-Column Data to Detect Relative Abundance of Giant Kelp (Macrocystis pyrifera). Remote Sensing, 12(9), 1371. https://doi.org/10.3390/rs12091371
