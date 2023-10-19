@@ -13,11 +13,18 @@ classdef CFF_Comms < handle
     %   single line. 
     %   'multilines' will display communication as dynamic (changing)
     %   multiple lines. 
-    %   '' (default) will not display any communication.
+    %   '' (default) will not display NOR STORE any communication. NOTE:
+    %   Originally, in this mode, messages were still being recorded so
+    %   they could be inspected. But this recording of message (in
+    %   particular, the call to function DATETIME) could amount to a lot of
+    %   time if there are a lot of messages being recorded. So in this
+    %   updated version, using mode this '' (empty) results in NO messages
+    %   being recorded at all. Eventually, create another mode where there
+    %   is NO display BUT messages are recorded.
 
     %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-    %   Ladroit (NIWA, yoann.ladroit@niwa.co.nz) 
-    %   2021-2022; Last revision: 22-07-2022
+    %   Ladroit (Kongsberg Maritime, yoann.ladroit@km.kongsberg.com) 
+    %   2021-2023; Last revision: 19-10-2023
     
     properties
         Type (1,:) char {mustBeMember(Type,{'', 'disp','textprogressbar','waitbar','oneline','multilines'})} = ''
@@ -40,6 +47,10 @@ classdef CFF_Comms < handle
         function start(obj,str)
             %START Summary of this method goes here
             %   Detailed explanation goes here
+            
+            if isempty(obj.Type)
+                return
+            end
             
             % record start message
             obj.Msgs(end+1,:) = {datetime('now'), 'Start', str};
@@ -73,6 +84,10 @@ classdef CFF_Comms < handle
         function step(obj,str)
             %STEP Summary of this method goes here
             %   Detailed explanation goes here
+            
+            if isempty(obj.Type)
+                return
+            end
             
             % record step message
             obj.Msgs(end+1,:) = {datetime('now'), 'Step', str};
@@ -128,6 +143,10 @@ classdef CFF_Comms < handle
             %INFO Summary of this method goes here
             %   Detailed explanation goes here
             
+            if isempty(obj.Type)
+                return
+            end
+            
             % record info message
             obj.Msgs(end+1,:) = {datetime('now'), 'Info', str};
             
@@ -165,6 +184,10 @@ classdef CFF_Comms < handle
         function error(obj,str)
             %ERROR Summary of this method goes here
             %   Detailed explanation goes here
+            
+            if isempty(obj.Type)
+                return
+            end
             
             % record info message
             obj.Msgs(end+1,:) = {datetime('now'), 'Error', str};
@@ -204,6 +227,10 @@ classdef CFF_Comms < handle
         function finish(obj,str)
             %FINISH Summary of this method goes here
             %   Detailed explanation goes here
+            
+            if isempty(obj.Type)
+                return
+            end
             
             % record finish message
             obj.Msgs(end+1,:) = {datetime('now'), 'Finish', str};
@@ -262,6 +289,10 @@ classdef CFF_Comms < handle
         function progress(obj,ii,N)
             %PROGRESS Summary of this method goes here
             %   Detailed explanation goes here
+            
+            if isempty(obj.Type)
+                return
+            end
             
             % record progress values
             obj.Prog(end+1,:) = {datetime('now'), ii, N};
