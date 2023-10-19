@@ -4,47 +4,43 @@ function KMALLfileinfo = CFF_kmall_file_info(KMALLfilename, varargin)
 %   Records basic info about the datagrams contained in one Kongsberg EM
 %   series binary data file in .kmall format (.kmall or .kmwcd).
 %
-%   KMALLfileinfo = CFF_KMALL_FILE_INFO(KMALLfilename) opens file
-%   KMALLfilename and reads through the start of each datagram to get basic
-%   information about it, and store it all in KMALLfileinfo.
-%
-%   *INPUT VARIABLES*
-%   * |KMALLfilename|: Required. String filename to parse (extension in
-%   .kmall or .kmwcd) 
-%
-%   *OUTPUT VARIABLES*
-%   * |KMALLfileinfo|: structure containing information about datagrams in
-%   KMALLfilename, with fields:
-%     * |file_name|: input file name
-%     * |fileSize|: file size in bytes
-%     * |dgm_num|: number of datagram in file
-%     * |dgm_type_code|: datagram type as string, e.g. '#IIP' (Kongsberg
-%     .kmall format)
-%     * |dgm_type_text|: datagram type description (Kongsberg .kmall
-%     format) 
-%     * |dgm_type_version|: version for this type of datagram, as int
+%   KMALLFILEINFO = CFF_KMALL_FILE_INFO(KMALLFILENAME) opens the file
+%   designated by the string KMALLFILENAME, reads through the start of each
+%   datagram to get basic information about it, and store it all in
+%   structure KMALLFILEINFO. KMALLfileinfo has for fields:
+%     * fileName: input file name (i.e. KMALLFILENAME)
+%     * fileSize: file size in bytes
+%     * dgm_num: number of datagrams in file
+%     * dgm_type_code: datagram type as string, e.g. '#IIP', '#MRZ', etc.
 %     (Kongsberg .kmall format)
-%     * |dgm_counter|: counter for this type and version of datagram
+%     * dgm_type_text: datagram type description (Kongsberg .kmall
+%     format) 
+%     * dgm_type_version: version for this type of datagram, as int
+%     (Kongsberg .kmall format)
+%     * dgm_counter: counter for this type and version of datagram
 %     in the file. There should not be multiple versions of a same type in
 %     a same file, but we never know...
-%     * |dgm_start_pif|: position of beginning of datagram in
+%     * dgm_start_pif: position of beginning of datagram in
 %     file 
-%     * |dgm_size|: datagram size in bytes
-%     * |dgm_sys_ID|: System ID. Parameter used for separating datagrams
+%     * dgm_size: datagram size in bytes
+%     * dgm_sys_ID: System ID. Parameter used for separating datagrams
 %     from different echosounders.
-%     * |dgm_EM_ID|: Echo sounder identity, e.g. 124, 304, 712, 2040,
+%     * dgm_EM_ID: Echo sounder identity, e.g. 124, 304, 712, 2040,
 %     2045 (EM 2040C)
-%     * |sync_counter|: number of bytes found between this datagram and the
-%     previous one (any number different than zero indicates a sync error)
-%     * |date_time|: datagram date in datetime format
-%     * |parsed|: flag for whether the datagram has been parsed. Initiated
-%     at 0 at this stage. To be later turned to 1 for parsing.
+%     * date_time: datagram date in datetime format
+%     * sync_counter: number of bytes found between the beginning of this
+%     datagram and the end of the previous one (any number different than
+%     zero indicates a sync error).
+%     * parsed: flag for whether the datagram has been parsed. Initiated
+%     at 0 at this stage. To be later turned to 1 for parsing using
+%     CFF_READ_KMALL_FROM_FILEINFO
 %
-%   See also CFF_ALL_FILE_INFO, CFF_S7K_FILE_INFO.
+%   See also CFF_ALL_FILE_INFO, CFF_S7K_FILE_INFO,
+%   CFF_READ_KMALL_FROM_FILEINFO.
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
 %   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 20-08-2021
+%   2017-2023; Last revision: 18-10-2023
 
 
 %% Input arguments management
@@ -102,7 +98,7 @@ sync_counter = 0;
 
 %% Start progress
 comms.progress(0,fileSize);
-
+comms.step('Parsing datagrams')
 
 %% Reading datagrams
 next_dgm_start_pif = 0;
@@ -124,51 +120,60 @@ while next_dgm_start_pif < fileSize
     % two datagram size fields, and checking for the hash symbol at the
     % beggining of the datagram type code.
     
-    % parsing general header
+    headerSize = 20;
+    if  dgm_start_pif + headerSize >= fileSize
+       % no room for more than a full header. Exit the loop here to
+       % finalize what we have.
+       break
+    end
+    
+    % parsing presumed header
     header = CFF_read_EMdgmHeader(fid);
     
     % pif of presumed end of datagram
     dgm_end_pif = dgm_start_pif + header.numBytesDgm - 4;
     
-    % get the repeat fileSize at the end of the datagram
+    % get the presumed repeat fileSize at the end of the presumed datagram
     if dgm_end_pif < fileSize
         fseek(fid, dgm_end_pif, -1);
         numBytesDgm_repeat  = fread(fid,1,'uint32'); % Datagram length in bytes
         next_dgm_start_pif = ftell(fid);
     else
         % Being here can be due to two things:
-        % 1) we are in sync but this datagram is incomplete, or 
+        % 1) We are in sync but this datagram is incomplete, or 
         % 2) we are out of sync.
         numBytesDgm_repeat = -1;
     end
     
     
     %% test for synchronization
-    % check for matching datagram size, amd the hash symbol of datagram
-    % type code.
+    % we assume we are synchronized if all following conditions are true:
+    % 1) numBytesDgm is not null
+    flag_numBytesDgm_notNull = header.numBytesDgm ~= 0;
+    % 2) numBytesDgm_repeat matches numBytesDgm
     flag_numBytesDgm_match = (header.numBytesDgm == numBytesDgm_repeat);
+    % 3) dgmType starts with the hash symbol
     flag_hash = strcmp(header.dgmType(1), '#');
-    if ~flag_numBytesDgm_match || ~flag_hash
-        % NOT SYNCHRONIZED
-        % We've either lost sync, or the last datagram is incomplete.
-        % Go back to new record start, advance one byte, and restart
-        % reading
-        fseek(fid, dgm_start_pif+1, -1);
-        next_dgm_start_pif = -1;
-        sync_counter = sync_counter+1; % update sync counter
-        if sync_counter == 1
-            % just lost sync, throw a message just now
-            comms.error('Lost sync while reading datagrams. A datagram may be corrupted. Trying to resync...');
-        end
-        continue
-    else
+    if flag_numBytesDgm_notNull && flag_numBytesDgm_match && flag_hash
         % SYNCHRONIZED
+        % if we had lost sync, warn here we're back in sync
         if sync_counter
-            % if we had lost sync, warn here we're back
             comms.info(sprintf('Back in sync (%i bytes later). Resume process.',sync_counter));
             % reinitialize sync counter
             sync_counter = 0;
         end
+    else
+        % NOT SYNCHRONIZED
+        % we either lost sync, or the datagram is incomplete. Go back to
+        % the record start, advance one byte, and try reading again.
+        fseek(fid, dgm_start_pif+1, -1);
+        next_dgm_start_pif = -1;
+        sync_counter = sync_counter+1; % update sync counter
+        if sync_counter == 1
+            % We only just lost sync, throw a message just now
+            comms.error('Lost sync while reading datagrams. A datagram may be corrupted. Trying to resync...');
+        end
+        continue
     end
 
     
@@ -227,6 +232,8 @@ end
 
 
 %% finalizing
+comms.step('Finalizing')
+comms.progress(fileSize-1,fileSize);
 
 % adding lists
 KMALLfileinfo.list_dgm_type = list_dgmType;
