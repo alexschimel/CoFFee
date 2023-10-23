@@ -40,7 +40,7 @@ function KMALLfileinfo = CFF_kmall_file_info(KMALLfilename, varargin)
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
 %   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2023; Last revision: 18-10-2023
+%   2017-2023; Last revision: 23-10-2023
 
 
 %% Input arguments management
@@ -137,6 +137,9 @@ while next_dgm_start_pif < fileSize
     if dgm_end_pif < fileSize
         fseek(fid, dgm_end_pif, -1);
         numBytesDgm_repeat  = fread(fid,1,'uint32'); % Datagram length in bytes
+        if isempty(numBytesDgm_repeat)
+            numBytesDgm_repeat = -1;
+        end
         next_dgm_start_pif = ftell(fid);
     else
         % Being here can be due to two things:
@@ -154,7 +157,8 @@ while next_dgm_start_pif < fileSize
     flag_numBytesDgm_match = (header.numBytesDgm == numBytesDgm_repeat);
     % 3) dgmType starts with the hash symbol
     flag_hash = strcmp(header.dgmType(1), '#');
-    if flag_numBytesDgm_notNull && flag_numBytesDgm_match && flag_hash
+    syncTest = flag_numBytesDgm_notNull && flag_numBytesDgm_match && flag_hash;
+    if syncTest
         % SYNCHRONIZED
         % if we had lost sync, warn here we're back in sync
         if sync_counter

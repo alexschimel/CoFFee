@@ -9,7 +9,7 @@ function out_struct = CFF_decode_IOP(EMdgmIOP)
 %   CFF_READ_KMALL.
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no)
-%   2022-2023; Last revision: 16-10-2023
+%   2022-2023; Last revision: 23-10-2023
 
 % initalize output
 out_struct = struct();
@@ -84,7 +84,7 @@ fns = fieldnames(out_struct);
 for iF = 1:numel(fns) 
     fn = fns{iF};
     nEntr = numel(out_struct.(fn));
-    out_struct.(fn)(nEntr+1:2) = categorical({''});
+    out_struct.(fn)(nEntr+1:nD) = categorical({''});
 end
 
 
