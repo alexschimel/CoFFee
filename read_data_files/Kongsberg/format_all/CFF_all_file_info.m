@@ -4,53 +4,57 @@ function ALLfileinfo = CFF_all_file_info(ALLfilename, varargin)
 %   Records basic info about the datagrams contained in one Kongsberg EM
 %   series binary data file in .all format (.all or .wcd)
 %
-%   ALLfileinfo = CFF_ALL_FILE_INFO(ALLfilename) opens file ALLfilename and
-%   reads through the start of each datagram to get basic information about
-%   it, and store it all in ALLfileinfo.
-%
-%   *INPUT VARIABLES*
-%   * |ALLfilename|: Required. String filename to parse (extension in .all
-%   or .wcd)
-%
-%   *OUTPUT VARIABLES*
-%   * |ALLfileinfo|: structure containing information about datagrams in
-%   ALLfilename, with fields:
-%     * |ALLfilename|: input file name
-%     * |filesize|: file size in bytes
-%     * |datagsizeformat|: endianness of the datagram size field 'b' or 'l'
-%     * |datagramsformat|: endianness of the datagrams 'b' or 'l'
-%     * |datagNumberInFile|: number of datagram in file
-%     * |datagPositionInFile|: position of beginning of datagram in file
-%     * |datagTypeNumber|: datagram type in decimal (Kongsberg .all format)
-%     * |datagTypeText|: datagram type description (Kongsberg .all format)
-%     * |parsed|: flag for whether the datagram has been parsed. Initiated
-%     at 0 at this stage. To be later turned to 1 for parsing.
-%     * |counter|: counter of this type of datagram in the file (ie
+%   ALLFILEINFO = CFF_ALL_FILE_INFO(ALLfilename) opens the file designated
+%   by the string ALLfilename, reads through the start of each datagram to
+%   get basic information about it, and store it all in structure
+%   ALLFILEINFO. ALLFILEINFO has for fields: 
+%     * ALLfilename: input file name (i.e. ALLFILENAME)
+%     * filesize: file size in bytes
+%     * datagsizeformat: endianness of the datagram size field 'b' or 'l'
+%     * datagramsformat: endianness of the datagrams 'b' or 'l'
+%     * datagNumberInFile: number of datagram in file
+%     * datagTypeNumber: datagram type in decimal (Kongsberg .all format)
+%     * datagTypeText: datagram type description (Kongsberg .all format)
+%     * counter: counter of this type of datagram in the file (ie
 %     first datagram of that type is 1 and last datagram is the total
 %     number of datagrams of that type)
-%     * |number|: the number/counter found in the datagram (usually
+%     * datagPositionInFile: position of beginning of datagram in file
+%     * size: datagram size in bytes
+%     * number: the number/counter found in the datagram (usually
 %     different to counter)
-%     * |size|: datagram size in bytes
-%     * |syncCounter|: number of bytes found between this datagram and the
-%     previous one (any number different than zero indicates a sync error)
-%     * |emNumber|: EM Model number (eg 2045 for EM2040c)
-%     * |systemSerialNumber|: System serial number
-%     * |date|: datagram date in YYYMMDD
-%     * |timeSinceMidnightInMilliseconds|: time since midnight in
+%     * emNumber: EM Model number (eg 2045 for EM2040c)
+%     * systemSerialNumber: System serial number
+%     * date: datagram date in YYYMMDD
+%     * timeSinceMidnightInMilliseconds: time since midnight in
 %     milliseconds
+%     * syncCounter: number of bytes of unrecognized data (e.g. rubbish
+%     data, incomplete datagram, datagram with unexpected information,
+%     etc.) found between the end of the previous datagram and the
+%     beggining of this datagram
+%     * finalSyncCounter: number of bytes of unrecognized data (as above)
+%     at the end of the file. If 0, this means the file ended with the end
+%     of a complete datagram. If more than 0, this means the file ended
+%     with unrecognized data, most likely meaning the file has been clipped
+%     so that the last datagram is incomplete (and could indicate more data
+%     is missing).
+%     * parsed: flag for whether the datagram has been parsed. Initialized
+%     at 0 at this stage. To be later turned to 1 for parsing using
+%     CFF_READ_ALL_FROM_FILEINFO
 %
-%   *DEVELOPMENT NOTES*
+%   DEV NOTES
 %   * The code currently lists the EM model numbers supported as a test for
-%   sync. Add your model number in the list if it is not currently there
-%   (and if the parsing works). It would be better to remove this test and
-%   try to sync on ETX and Checksum instead.
+%   byte ordering. Add your model number in the list if it is not currently
+%   there (and if the parsing works). It would be better to remove this
+%   test and rely only on ETX and Checksum instead.
 %   * Check regularly with Kongsberg doc to keep updated with new
 %   datagrams.
-
+%
+%   See also CFF_KMALL_FILE_INFO, CFF_S7K_FILE_INFO,
+%   CFF_READ_ALL_FROM_FILEINFO. 
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
 %   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 20-08-2021
+%   2017-2023; Last revision: 02-11-2023
 
 
 
@@ -102,7 +106,7 @@ comms.start(sprintf('Listing datagrams in file %s',filename));
 fseek(fid,0,1);
 
 % number of bytes in file
-filesize = ftell(fid);
+fileSize = ftell(fid);
 
 % rewind to start
 fseek(fid,0,-1);
@@ -180,7 +184,7 @@ clear emNumberL emNumberB fid nbDatagL nbDatagB stxDatag datagTypeNumber dgm_sta
 
 % init output info
 ALLfileinfo.ALLfilename     = ALLfilename;
-ALLfileinfo.filesize        = filesize;
+ALLfileinfo.filesize        = fileSize;
 ALLfileinfo.datagsizeformat = datagsizeformat;
 ALLfileinfo.datagramsformat = datagramsformat;
 
@@ -198,14 +202,16 @@ syncCounter = 0;
 
 
 %% Start progress
-comms.progress(0,filesize);
+comms.progress(0,fileSize);
+comms.step('Parsing datagrams')
 
 
 %% Reading datagrams
 next_dgm_start_pif = 0;
-while next_dgm_start_pif < filesize
+while next_dgm_start_pif < fileSize
     
-    %% new datagram begins
+    
+    %% New datagram begins
     dgm_start_pif = ftell(fid);
     
     % .all datagrams are composed of
@@ -223,7 +229,7 @@ while next_dgm_start_pif < filesize
     next_dgm_start_pif = dgm_start_pif + 4 + nbDatag;
     
     % read STX at end of datagram
-    if next_dgm_start_pif <= filesize
+    if next_dgm_start_pif <= fileSize
         fseek(fid,next_dgm_start_pif-3,-1);
         etxDatag = fread(fid,1,'uint8'); % ETX (always H03)
         % checkSum = fread(fid,1,'uint16'); % Check sum of data between STX and ETX
@@ -235,30 +241,36 @@ while next_dgm_start_pif < filesize
         etxDatag = 0;
     end
     
-    %% test for synchronization
-    flag_inSync = ~isempty(stxDatag) && stxDatag==2 && etxDatag==3;
-    if ~flag_inSync
+    
+    %% Test for synchronization
+    % we assume we are synchronized if all following conditions are true:
+    % 1) stxDatag exists and equals 2
+    flag_stxDatagOK = ~isempty(stxDatag) && stxDatag==2;
+    % 2) etxDatag exists and equals 3
+    flag_etxDatagOK = ~isempty(etxDatag) && etxDatag==3;
+    syncTest = flag_stxDatagOK && flag_etxDatagOK;
+    if syncTest
+        % SYNCHRONIZED
+        % if we had lost sync, warn here that we are back in sync
+        if syncCounter
+            comms.info(sprintf('Back in sync (%i bytes later). Resume process.',syncCounter));
+        end
+    else
         % NOT SYNCHRONIZED
-        % trying to re-synchronize: fwd one byte and repeat the above
+        % we either lost sync, or the datagram is incomplete. Go back to
+        % the record start, advance one byte, and try reading again.
         next_dgm_start_pif = dgm_start_pif+1;
         fseek(fid,next_dgm_start_pif,-1);
         syncCounter = syncCounter+1; % update sync counter
         if syncCounter == 1
-            % just lost sync, throw a message just now
+            % We only just lost sync, throw an error message
             comms.error('Lost sync while reading datagrams. A datagram may be corrupted. Trying to resync...');
         end
         continue
-    else
-        % SYNCHRONIZED
-        if syncCounter
-            % if we had lost sync, warn here we're back
-            comms.info(sprintf('Back in sync (%i bytes later). Resume process.',syncCounter));
-            % reinitialize sync counter
-            syncCounter = 0;
-        end
     end
     
-    % read rest of start of datagram
+    
+    %% Read rest of start of datagram
     datagTypeNumber                 = fread(fid,1,'uint8');  % SIMRAD type of datagram
     emNumber                        = fread(fid,1,'uint16'); % EM Model Number
     date                            = fread(fid,1,'uint32'); % date
@@ -405,46 +417,66 @@ while next_dgm_start_pif < filesize
             
     end
     
-    %% write output ALLfileinfo
     
-    % Datagram complete
+    %% Write output ALLfileinfo
+    
+    % datagram complete
     kk = kk+1;
     
-    % Datagram number in file
+    % datagram number in file
     ALLfileinfo.datagNumberInFile(kk,1) = kk;
     
-    % Datagram info
-    ALLfileinfo.datagTypeNumber(kk,1) = datagTypeNumber;
-    ALLfileinfo.datagTypeText{kk,1} = datagTypeText;
-    ALLfileinfo.counter(kk,1) = counter;
+    % datagram info
+    ALLfileinfo.datagTypeNumber(kk,1)     = datagTypeNumber;
+    ALLfileinfo.datagTypeText{kk,1}       = datagTypeText;
+    ALLfileinfo.counter(kk,1)             = counter;
     ALLfileinfo.datagPositionInFile(kk,1) = dgm_start_pif;
-    ALLfileinfo.size(kk,1) = nbDatag;
-    ALLfileinfo.number(kk,1) = number;
-    ALLfileinfo.parsed(kk,1) = 0;
+    ALLfileinfo.size(kk,1)                = nbDatag;
+    ALLfileinfo.number(kk,1)              = number;
     
-    % System info
-    ALLfileinfo.emNumber(kk,1) = emNumber;
-    ALLfileinfo.systemSerialNumber(kk,1)=systemSerialNumber;
+    % system info
+    ALLfileinfo.emNumber(kk,1)           = emNumber;
+    ALLfileinfo.systemSerialNumber(kk,1) = systemSerialNumber;
     
-    % Time info
-    ALLfileinfo.date(kk,1) = date;
+    % time info
+    ALLfileinfo.date(kk,1)                            = date;
     ALLfileinfo.timeSinceMidnightInMilliseconds(kk,1) = timeSinceMidnightInMilliseconds;
     
-    % Report any sync issue in reading
+    % report if re-synchronization was necessary before reading this
+    % datagram
     ALLfileinfo.syncCounter(kk,1) = syncCounter;
     
     
     %% Prepare for reloop
     
+    % reinitialize sync counter
+    syncCounter = 0;
+    
     % go to end of datagram
     fseek(fid,next_dgm_start_pif,-1);
     
     % communicate progress
-    comms.progress(next_dgm_start_pif,filesize);
+    comms.progress(next_dgm_start_pif,fileSize);
 end
 
 
-%% finalizing
+%% Finalizing
+comms.step('End of file reached. Finalizing')
+comms.progress(fileSize-1,fileSize);
+
+% record sync status at the end of file.
+% For each datagram, ALLfileinfo.syncCounter records if resynchronization
+% was necessary between this datagrams and the previous one, so it does not
+% inform if there were issues at the end of the file. Add a field that
+% records this status
+ALLfileinfo.finalSyncCounter = syncCounter;
+if ALLfileinfo.finalSyncCounter
+    % File reading ended out of sync. Inform
+    comms.error('Never recovered sync before end of file. This file may have been clipped.');
+end
+
+% initialize parsing field
+ALLfileinfo.parsed = zeros(size(ALLfileinfo.datagNumberInFile));
 
 % closing file
 fclose(fid);
@@ -452,6 +484,7 @@ fclose(fid);
 % end message
 comms.finish('Done');
 
+end
 
 
 

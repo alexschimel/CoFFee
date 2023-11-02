@@ -28,10 +28,21 @@ function KMALLfileinfo = CFF_kmall_file_info(KMALLfilename, varargin)
 %     * dgm_EM_ID: Echo sounder identity, e.g. 124, 304, 712, 2040,
 %     2045 (EM 2040C)
 %     * date_time: datagram date in datetime format
-%     * sync_counter: number of bytes found between the beginning of this
-%     datagram and the end of the previous one (any number different than
-%     zero indicates a sync error).
-%     * parsed: flag for whether the datagram has been parsed. Initiated
+%     * syncCounter: number of bytes of unrecognized data (e.g. rubbish
+%     data, incomplete datagram, datagram with unexpected information,
+%     etc.) found between the end of the previous datagram and the
+%     beggining of this datagram
+%     * finalSyncCounter: number of bytes of unrecognized data (as above)
+%     at the end of the file. If 0, this means the file ended with the end
+%     of a complete datagram. If more than 0, this means the file ended
+%     with unrecognized data, most likely meaning the file has been clipped
+%     so that the last datagram is incomplete (and could indicate more data
+%     is missing).
+%     * list_dgm_type: list of unique datagram types (in text format) in
+%     this file.
+%     * list_dgm_counter: number of datagrams for each type listed in
+%     list_dgm_type.
+%     * parsed: flag for whether the datagram has been parsed. Initialized
 %     at 0 at this stage. To be later turned to 1 for parsing using
 %     CFF_READ_KMALL_FROM_FILEINFO
 %
@@ -40,7 +51,7 @@ function KMALLfileinfo = CFF_kmall_file_info(KMALLfilename, varargin)
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
 %   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2023; Last revision: 23-10-2023
+%   2017-2023; Last revision: 02-11-2023
 
 
 %% Input arguments management
@@ -91,20 +102,22 @@ list_dgmType_counter = [];
 % intitializing the counter of datagrams in this file
 kk = 0;
 
-% initializing synchronization counter: the number of bytes that needed to
-% be passed before this datagram appeared
-sync_counter = 0;
+% initializing synchronization counter: the number of bytes we are
+% currently out of synchronization since the last complete datagram (0
+% means we are synchronized)
+syncCounter = 0;
 
 
 %% Start progress
 comms.progress(0,fileSize);
 comms.step('Parsing datagrams')
 
+
 %% Reading datagrams
 next_dgm_start_pif = 0;
 while next_dgm_start_pif < fileSize
     
-    %% new datagram begins
+    %% New datagram begins
     dgm_start_pif = ftell(fid);
       
     % A full kmall datagram is organized as a sequence of:
@@ -149,7 +162,7 @@ while next_dgm_start_pif < fileSize
     end
     
     
-    %% test for synchronization
+    %% Test for synchronization
     % we assume we are synchronized if all following conditions are true:
     % 1) numBytesDgm is not null
     flag_numBytesDgm_notNull = header.numBytesDgm ~= 0;
@@ -160,11 +173,9 @@ while next_dgm_start_pif < fileSize
     syncTest = flag_numBytesDgm_notNull && flag_numBytesDgm_match && flag_hash;
     if syncTest
         % SYNCHRONIZED
-        % if we had lost sync, warn here we're back in sync
-        if sync_counter
-            comms.info(sprintf('Back in sync (%i bytes later). Resume process.',sync_counter));
-            % reinitialize sync counter
-            sync_counter = 0;
+        % if we had lost sync, warn here that we are back in sync
+        if syncCounter
+            comms.info(sprintf('Back in sync (%i bytes later). Resume process.',syncCounter));
         end
     else
         % NOT SYNCHRONIZED
@@ -172,16 +183,16 @@ while next_dgm_start_pif < fileSize
         % the record start, advance one byte, and try reading again.
         fseek(fid, dgm_start_pif+1, -1);
         next_dgm_start_pif = -1;
-        sync_counter = sync_counter+1; % update sync counter
-        if sync_counter == 1
-            % We only just lost sync, throw a message just now
+        syncCounter = syncCounter+1; % update sync counter
+        if syncCounter == 1
+            % We only just lost sync, throw an error message
             comms.error('Lost sync while reading datagrams. A datagram may be corrupted. Trying to resync...');
         end
         continue
     end
 
     
-    %% datagram type counter
+    %% Datagram type counter
     
     % index of datagram type in the list
     idx_dgmType = find(cellfun(@(x) strcmp(header.dgmType,x), list_dgmType));
@@ -198,15 +209,15 @@ while next_dgm_start_pif < fileSize
     list_dgmType_counter(idx_dgmType) = list_dgmType_counter(idx_dgmType) + 1;
 
     
-    %% write output KMALLfileinfo
+    %% Write output KMALLfileinfo
     
-    % Datagram complete
+    % datagram complete
     kk = kk + 1;
     
-    % Datagram number in file
+    % datagram number in file
     KMALLfileinfo.dgm_num(kk,1) = kk;
     
-    % Datagram info
+    % datagram info
     KMALLfileinfo.dgm_type_code{kk,1}    = header.dgmType;
     KMALLfileinfo.dgm_type_text{kk,1}    = get_dgm_type_txt(header.dgmType);
     KMALLfileinfo.dgm_type_version(kk,1) = header.dgmVersion;
@@ -214,18 +225,22 @@ while next_dgm_start_pif < fileSize
     KMALLfileinfo.dgm_start_pif(kk,1)    = dgm_start_pif;
     KMALLfileinfo.dgm_size(kk,1)         = header.numBytesDgm;
     
-    % System info
+    % system info
     KMALLfileinfo.dgm_sys_ID(kk,1) = header.systemID;
     KMALLfileinfo.dgm_EM_ID(kk,1)  = header.echoSounderID;
 
-    % Time info
+    % time info
     KMALLfileinfo.date_time(kk,1) = datetime(header.time_sec + header.time_nanosec.*10^-9,'ConvertFrom','posixtime');
     
-    % Report any sync issue in reading
-    KMALLfileinfo.sync_counter(kk,1) = sync_counter;
+    % report if re-synchronization was necessary before reading this
+    % datagram 
+    KMALLfileinfo.syncCounter(kk,1) = syncCounter;
     
     
-    %% prepare for reloop
+    %% Prepare for reloop
+    
+    % reinitialize sync counter
+    syncCounter = 0;
     
     % go to end of datagram
     fseek(fid, next_dgm_start_pif, -1);
@@ -235,9 +250,20 @@ while next_dgm_start_pif < fileSize
 end
 
 
-%% finalizing
-comms.step('Finalizing')
+%% Finalizing
+comms.step('End of file reached. Finalizing')
 comms.progress(fileSize-1,fileSize);
+
+% record sync status at the end of file.
+% For each datagram, KMALLfileinfo.syncCounter records if resynchronization
+% was necessary between this datagrams and the previous one, so it does not
+% inform if there were issues at the end of the file. Add a field that
+% records this status
+KMALLfileinfo.finalSyncCounter = syncCounter;
+if KMALLfileinfo.finalSyncCounter
+    % File reading ended out of sync. Inform
+    comms.error('Never recovered sync before end of file. This file may have been clipped.');
+end
 
 % adding lists
 KMALLfileinfo.list_dgm_type = list_dgmType;
@@ -257,7 +283,7 @@ end
 
 %% subfunctions
 
-%%
+%% get KMALL datagram type from code
 function dgm_type_text = get_dgm_type_txt(dgm_type_code)
 
 list_dgm_type_text = {...

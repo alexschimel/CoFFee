@@ -4,56 +4,57 @@ function S7Kfileinfo = CFF_s7k_file_info(S7Kfilename, varargin)
 %   Records basic info about the datagrams contained in one binary raw data
 %   file in the Teledyne-Reson format .s7k.
 %
-%   S7Kfileinfo = CFF_S7K_FILE_INFO(S7Kfilename) opens file S7Kfilename and
-%   reads through the start of each datagram to get basic information about
-%   it, and store it all in S7Kfileinfo.
-%
-%   *INPUT VARIABLES*
-%   * |S7Kfilename|: Required. String filename to parse (extension in .s7k)
-%
-%   *OUTPUT VARIABLES*
-%   * |S7Kfileinfo|: structure containing information about records in
-%   S7Kfilename, with fields:
-%     * |S7Kfilename|: input file name
-%     * |fileSize|: file size in bytes
-%     * |datagsizeformat|: endianness of the datagram size field. Always
-%     'l' for .s7k files
-%     * |datagramsformat|: endianness of the datagrams 'b' or 'l'. Always
-%     'l' for .s7k files
-%     * |recordNumberInFile|: number of record in file
-%     * |recordTypeIdentifier|: record type in int (Reson .s7k format) 
-%     * |recordTypeText|: record type description (Reson .s7k format)
-%     * |recordTypeCounter|: counter of this type of record in the file (ie
+%   S7KFILEINFO = CFF_S7K_FILE_INFO(S7KFILENAME) opens the file designated
+%   by the string S7KFILENAME, reads through the start of each datagram to
+%   get basic information about it, and store it all in structure
+%   S7KFILEINFO. S7KFILEINFO has for fields:
+%     * fileName: input file name (i.e. S7KFILENAME)
+%     * fileSize: file size in bytes
+%     * recordNumberInFile: number of record in file
+%     * recordTypeIdentifier: record type in int (Reson .s7k format) 
+%     * recordTypeText: record type description (Reson .s7k format)
+%     * recordTypeCounter: counter of this type of record in the file (ie
 %     first record of that type is 1 and last record is the total
 %     number of record of that type)
-%     * |recordStartPositionInFile|: position of beginning of record in
+%     * recordStartPositionInFile: position of beginning of record in
 %     file 
-%     * |recordSize|: record size in bytes
-%     * |DRF_size|: size of the "Data Record Frame" part of the record
+%     * recordSize: record size in bytes
+%     * DRF_size: size of the "Data Record Frame" part of the record
 %     (Reson .s7k format)
-%     * |RTHandRD_size|: combined size of the "Record Type Header" and
+%     * RTHandRD_size: combined size of the "Record Type Header" and
 %     "Record Data" parts of the record (Reson .s7k format)
-%     * |OD_offset|: offset of the "Optional Data" part of the record
+%     * OD_offset: offset of the "Optional Data" part of the record
 %     (Reson .s7k format)
-%     * |OD_size|: size of the "Optional Data" part of the record (Reson
+%     * OD_size: size of the "Optional Data" part of the record (Reson
 %     .s7k format)
-%     * |CS_size|: size of the "Checksum" part of the record (Reson .s7k
+%     * CS_size: size of the "Checksum" part of the record (Reson .s7k
 %     format)
-%     * |syncCounter|: number of bytes found between this record and the
-%     previous one (any number different than zero indicates a sync error)
-%     * |date|: datagram date in YYYMMDD
-%     * |timeSinceMidnightInMilliseconds|: time since midnight in
+%     * date: datagram date in YYYMMDD
+%     * timeSinceMidnightInMilliseconds: time since midnight in
 %     milliseconds
-%     * |parsed|: flag for whether the record has been parsed. Initiated
-%     at 0 at this stage. To be later turned to 1 for parsing.
+%     * syncCounter: number of bytes of unrecognized data (e.g. rubbish
+%     data, incomplete datagram, datagram with unexpected information,
+%     etc.) found between the end of the previous datagram and the
+%     beggining of this datagram
+%     * finalSyncCounter: number of bytes of unrecognized data (as above)
+%     at the end of the file. If 0, this means the file ended with the end
+%     of a complete datagram. If more than 0, this means the file ended
+%     with unrecognized data, most likely meaning the file has been clipped
+%     so that the last datagram is incomplete (and could indicate more data
+%     is missing).
+%     * parsed: flag for whether the datagram has been parsed. Initialized
+%     at 0 at this stage. To be later turned to 1 for parsing using
+%     CFF_READ_S7K_FROM_FILEINFO
 %
-%   *DEVELOPMENT NOTES*
+%   DEV NOTES
 %   * Check regularly with Reson doc to keep updated with new datagrams.
 %
+%   See also CFF_KMALL_FILE_INFO, CFF_ALL_FILE_INFO,
+%   CFF_READ_S7K_FROM_FILEINFO. 
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
 %   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 27-08-2021
+%   2017-2023; Last revision: 02-11-2023
 
 
 %% Input arguments management
@@ -111,6 +112,7 @@ syncCounter = 0;
 
 %% Start progress
 comms.progress(0,fileSize);
+comms.step('Parsing datagrams')
 
 
 %% Reading records
@@ -133,31 +135,37 @@ while pifNextRecordStart < fileSize
     syncPattern     = fread(fid,1,'uint32'); % should be 65535
     
     
-    %% test for synchronization
-    if protocolVersion~=5 || DRF_offset~=60 || syncPattern~=65535
+    %% Test for synchronization
+    % we assume we are synchronized if all following conditions are true:
+    % 1) protocolVersion equals 5
+    flag_protocolVersionOK = protocolVersion==5;
+    % 2) DRF_offset equals 60
+    flag_DRFoffsetOK = DRF_offset==60;
+    % 3) syncPattern equals 65535
+    flag_syncPatternOK = syncPattern==65535;
+    syncTest = flag_protocolVersionOK && flag_DRFoffsetOK && flag_syncPatternOK;
+    if syncTest
+        % SYNCHRONIZED
+        % if we had lost sync, warn here that we are back in sync
+        if syncCounter
+            comms.info(sprintf('Back in sync (%i bytes later). Resume process.',syncCounter));
+        end
+    else
         % NOT SYNCHRONIZED
-        % go back to new record start, advance one byte, and restart
-        % reading
+        % we either lost sync, or the datagram is incomplete. Go back to
+        % the record start, advance one byte, and try reading again.
         fseek(fid, pifRecordStart+1, -1);
         pifNextRecordStart = -1;
         syncCounter = syncCounter+1; % update sync counter
         if syncCounter == 1
-            % just lost sync, throw a message just now
-            comms.error('Lost sync while reading records. A record may be corrupted. Trying to resync...');
+            % We only just lost sync, throw an error message
+            comms.error('Lost sync while reading datagrams. A datagram may be corrupted. Trying to resync...');
         end
-        continue;
-    else
-        % SYNCHRONIZED
-        if syncCounter
-            % if we had lost sync, warn here we're back
-            comms.info(sprintf('Back in sync (%i bytes later)',syncCounter));
-            % reinitialize sync counter
-            syncCounter = 0;
-        end
+        continue
     end
     
     
-    %% read more information from start of record
+    %% Read more information from start of record
     
     % finish parsing DRF
     recordSize             = fread(fid,1,'uint32');
@@ -213,7 +221,7 @@ while pifNextRecordStart < fileSize
     RTHandRD_size = recordSize - ( DRF_size + OD_size + CS_size);
     
     
-    %% record type counter
+    %% Record type counter
     
     % index of record type in the list
     recordType_idx = find(recordTypeIdentifier == listRecordTypeIdentifier);
@@ -231,15 +239,15 @@ while pifNextRecordStart < fileSize
     end
    
     
-    %% write output S7Kfileinfo
+    %% Write output S7Kfileinfo
     
-    % Record complete
+    % record complete
     kk = kk + 1;
     
-    % Record number in file
+    % record number in file
     S7Kfileinfo.recordNumberInFile(kk,1) = kk;
     
-    % Type of record info
+    % type of record info
     S7Kfileinfo.recordTypeIdentifier(kk,1) = recordTypeIdentifier;
     S7Kfileinfo.recordTypeText{kk,1}       = recordTypeText;
     S7Kfileinfo.recordTypeCounter(kk,1)    = recordTypeCounter;
@@ -251,31 +259,45 @@ while pifNextRecordStart < fileSize
     S7Kfileinfo.recordSize(kk,1)    = recordSize;
     S7Kfileinfo.DRF_size(kk,1)      = DRF_size;
     S7Kfileinfo.RTHandRD_size(kk,1) = RTHandRD_size;
-    
     S7Kfileinfo.OD_offset(kk,1)     = optionalDataOffset;
     S7Kfileinfo.OD_size(kk,1)       = OD_size;
     S7Kfileinfo.CS_size(kk,1)       = CS_size;
     
-    % report sync issue if any
-    S7Kfileinfo.syncCounter(kk,1) = syncCounter;
-    
-    % record time info
+    % time info
     S7Kfileinfo.date{kk,1} = datestr(datenum(sevenKTime_year,0,sevenKTime_day),'yyyymmdd');
     S7Kfileinfo.timeSinceMidnightInMilliseconds(kk,1) = (sevenKTime_hours.*3600 + sevenKTime_minutes.*60 + sevenKTime_seconds).*1000;
+
+    % report if re-synchronization was necessary before reading this record
+    S7Kfileinfo.syncCounter(kk,1) = syncCounter;
     
     
-    %% prepare for reloop
+    %% Prepare for reloop
+    
+    % reinitialize sync counter
+    syncCounter = 0;
     
     % go to end of record
     fseek(fid, pifNextRecordStart, -1);
     
     % communicate progress
     comms.progress(pifNextRecordStart,fileSize);
-    
 end
 
 
-%% finalizing
+%% Finalizing
+comms.step('End of file reached. Finalizing')
+comms.progress(fileSize-1,fileSize);
+
+% record sync status at the end of file.
+% For each datagram, S7Kfileinfo.syncCounter records if resynchronization
+% was necessary between this datagrams and the previous one, so it does not
+% inform if there were issues at the end of the file. Add a field that
+% records this status
+S7Kfileinfo.finalSyncCounter = syncCounter;
+if S7Kfileinfo.finalSyncCounter
+    % File reading ended out of sync. Inform
+    comms.error('Never recovered sync before end of file. This file may have been clipped.');
+end
 
 % initialize parsing field
 S7Kfileinfo.parsed = zeros(size(S7Kfileinfo.recordNumberInFile));
