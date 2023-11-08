@@ -7,7 +7,7 @@ function rawfileslist = CFF_list_raw_files_in_dir(folder_init, recursive_flag, f
 %   Optional FILESTYPE only search for specified types. If absent,
 %   returning everything
 %
-%   filesTypes, and rereturned in this grouped order: 
+%   filesTypes, and returned in this grouped order: 
 %   1) ".all/.wcd" - pairs of .all/.wcd, 
 %   2) ".all" - unpaired .all files, 
 %   3) ".wcd" - unpaired .wcd files, 

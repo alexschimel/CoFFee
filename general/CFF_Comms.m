@@ -184,7 +184,7 @@ classdef CFF_Comms < handle
         function error(obj,str)
             %ERROR Summary of this method goes here
             %   Detailed explanation goes here
-            
+
             if isempty(obj.Type)
                 return
             end

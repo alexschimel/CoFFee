@@ -175,7 +175,7 @@ while next_dgm_start_pif < fileSize
         % SYNCHRONIZED
         % if we had lost sync, warn here that we are back in sync
         if syncCounter
-            comms.info(sprintf('Back in sync (%i bytes later). Resume process.',syncCounter));
+            comms.info(sprintf('Back in sync (%i bytes later, approx. %.2f perc into the file). Resume process.',syncCounter,100.*dgm_start_pif./fileSize));
         end
     else
         % NOT SYNCHRONIZED
@@ -186,7 +186,7 @@ while next_dgm_start_pif < fileSize
         syncCounter = syncCounter+1; % update sync counter
         if syncCounter == 1
             % We only just lost sync, throw an error message
-            comms.error('Lost sync while reading datagrams. A datagram may be corrupted. Trying to resync...');
+            comms.error(sprintf('Lost sync while reading datagrams (approx. %.2f perc into the file). A datagram may be corrupted. Trying to resync...',100.*dgm_start_pif./fileSize));
         end
         continue
     end

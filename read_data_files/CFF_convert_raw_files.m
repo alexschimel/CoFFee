@@ -1,4 +1,4 @@
-function fDataGroup = CFF_convert_raw_files(rawFilesList,varargin)
+function [fDataGroup,comms] = CFF_convert_raw_files(rawFilesList,varargin)
 %CFF_CONVERT_RAW_FILES Read raw data file(s) and convert to fData format
 %
 %   Reads contents of one or several multibeam raw data files and convert
