@@ -789,7 +789,7 @@ for iF = 1:nStruct
     % (needed for echo footprint computation) and the transmit power re.
     % maximum (for for BS level correction).
     %
-    % To make matters worth, the #IOP and #MRZ datagrams are not in sync,
+    % To make matters worse, the #IOP and #MRZ datagrams are not in sync,
     % aka their time stamps are not strictly comparable. See email from
     % Torgrim (24 Jul 2023): 
     %  Hi
@@ -801,10 +801,10 @@ for iF = 1:nStruct
     %  Runtime can in theory be different.    
     %  During the line, the Runtime datagram is sent as a response to
     %  incoming data and not actually when it is used, so depending on
-    %  pingrate it might be  0-2 pings delayed in MRZ compared to IOP. And
+    %  pingrate it might be 0-2 pings delayed in MRZ compared to IOP. And
     %  it is time not sequence in file.   
     %  To be sure of pulse length/frequency etc you must see in the MRZ
-    %  datagram. 
+    %  datagram.
     %
     %  The implications are that:
     %  1. The first #IOP datagram at the beggining of the file applies
