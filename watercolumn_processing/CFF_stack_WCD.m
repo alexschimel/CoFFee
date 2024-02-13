@@ -1,54 +1,83 @@
 function [stack,stackX,stackY,params] = CFF_stack_WCD(fData,varargin)
-%CFF_STACK_WCD  Stack WCD in range or depth
+%CFF_STACK_WCD  Stack WCD in a 2D array
 %
-%   This function stacks water-column data in range of in depth. Note this
-%   function requires the bottom samples in input data to have been
-%   previously geoprocessed using CFF_GEOREFERENCE_BOTTOM_DETECT.
+%   This function stacks water-column data (naturally in 3 dimensions
+%   Ping-Beam-Sample) into a 2D array to allow visualization. Stacking
+%   modes supported are "range stacking" (or "R-stack", in which all
+%   samples at a given range across all beams in a ping are averaged,
+%   leading to a Range-by-Ping 2D array), "depth stacking" (or "D-stack",
+%   in which all samples at a given depth in a ping are averaged, leading
+%   to a Depth-by-Ping 2D array), and "fan stacking" (or "F-stack", in
+%   which all samples at a given depth and across-track distance in a ping
+%   are averaged, leading to a Depth-by-Across-track-distance 2D array, aka
+%   a "Fan view"). Note this function requires the bottom samples in input
+%   data to have been previously geoprocessed using
+%   CFF_GEOREFERENCE_BOTTOM_DETECT. 
 %
-%   [STACK,STACKY] = CFF_STACK_WCD(FDATA) stacks all pings and beams of
-%   water-column data from the FDATA field 'WC_SBP_SampleAmplitudes' (i.e.
-%   original data) in range, over the range values going from 0 (sonar
-%   face) to the deepest bottom detect in the data, by increments of the
-%   inter-sample distance. The function returns the stacked data STACK as a
-%   range-by-pings matrix, and the vector STACKY of ranges corresponding to
-%   the rows of that matrix. 
+%   [STACK,STACKX,STACKY] = CFF_STACK_WCD(FDATA) creates a range stack from
+%   all water-column data from the FDATA field 'WC_SBP_SampleAmplitudes'
+%   (i.e. original data), over the range values going from 0 (sonar face)
+%   to the deepest bottom detect in the data, by increments of the
+%   inter-sample distance. The function returns the stacked data STACK as a 
+%   Range-by-Pings matrix, the vector STACKX of pings corresponding to the
+%   columns of that matrix, and the vector STACKY of ranges corresponding
+%   to the rows of that matrix. The resolution in the Y-dimension (ranges)
+%   is the inter-sample distance.
 %
 %   CFF_STACK_WCD(FDATA,PARAMS) uses processing parameters defined as the
-%   fields in the PARAMS structure to modify the default behaviour. 
-%   Possible parameters are: 
-%   'dataField': name of the fData field to use as the (memmaped file) WCD
-%   data to stack. Default is 'WC_SBP_SampleAmplitudes'.
-%   'stackMode': string code for the mode of stacking. Possible values are
-%   'range' (default) or 'depth'.
-%   'angleDegLims': two-values vector of beam angles (in degrees) to which
-%   the stacking is to be limited. Default is [-inf,inf] to conserve all
-%   beams.
-%   'minStackY': minimum range (or depth, depending on stackMode) value for
-%   stacking. Must be zero (default, i.e. stacking starts at sonar face) or
-%   positive. 
-%   'maxStackY': maximum range (or depth, depending on stackMode) value for
-%   stacking. Must be 0 (default) or positive. The value 0 (default) is a
-%   special code to indicate stacking is to go as far as the deepest bottom
-%   detect in the data. Use the value inf to stack as far as data go. 
-%   'resDepthStackY': desired depth resolution when stacking in depth. Must
-%   be 0 (default) or positive. The value 0 (default) is a special code to
-%   indicate the default depth-stacking resolution of twice the
-%   inter-sample distance. Note that this parameter only affects stacking
-%   in depth. When stacking in range, it is not possible to modify the
-%   range resolution (which is the inter-sample distance).
-%   'iPingLims': two-values vector of the indices of pings in FDATA to
+%   fields in the PARAMS structure to modify the default behaviour.
+%   Possible parameters are:
+%       'stackMode': string code for the mode of stacking. Possible values
+%   are 'range' (default), 'depth', or 'fan'. When 'stackMode' is set to
+%   'depth', the function returns the D-stacked data STACK as a
+%   Depth-by-Pings matrix, the vector STACKX of pings corresponding to the
+%   columns of that matrix, and the vector STACKY of depth bins
+%   corresponding to the rows of that matrix. The resolution in the
+%   Y-dimension (depths) is equal to twice the inter-sample distance (see
+%   the param field 'resDepthStackY' to modify this default behaviour).
+%   When 'stackMode' is set to 'fan', the function returns the F-stacked
+%   data STACK as a Depth-by-Across-track-distance matrix, the vector
+%   STACKX of across-track distance bins corresponding to the columns of
+%   that matrix, and the vector STACKY of depth bins corresponding to the
+%   rows of that matrix. The resolution in both the X and Y dimensions is
+%   equal to the distance between two beams at the max depth (see 
+%   the param field 'resFanStack' to modify this default behaviour).
+%       'dataField': name of the fData field to use as the (memmaped file)
+%   WCD data to stack. Default is 'WC_SBP_SampleAmplitudes'.
+%       'angleDegLims': two-values vector of beam angles (in degrees) to
+%   which the stacking is to be limited. Default is [-inf,inf] to conserve
+%   all beam angles. 
+%       'minStackY': starting value for the stack's Y-dimension, aka
+%   minimum range (for range-stacking) or minimum depth (for depth-stacking
+%   and fan-stacking). Must be zero (default, i.e. stacking starts at sonar
+%   face) or positive.
+%       'maxStackY': end value for the stack's Y-dimension. Must be 0
+%   (default) or positive. The value 0 (default) is a special code to
+%   indicate stacking is to go as far as the deepest bottom-detect in the
+%   data. Use the value inf to stack as far as data goes. 
+%       'resDepthStackY': desired depth resolution when depth-stacking.
+%   Must be 0 (default) or positive. The value 0 (default) is a special
+%   code to indicate the default resolution (see previously for default
+%   value). This parameter is ignored in other stacking modes.
+%       'resFanStack': desired resolution in depth and across-track
+%   distance when fan-stacking. Must be 0 (default) or positive. The value
+%   0 (default) is a special code to indicate the default resolution (see
+%   previously for default value). This parameter is ignored in other
+%   stacking modes. 
+%       'iPingLims': two-values vector of the indices of pings in FDATA to
 %   which the stacking is to be limited. Default is [1,inf] to conserve all
-%   pings.
-%   'iBeamLims': two-values vector of the indices of beams in FDATA to
+%   pings. If requested values are outside the range available in the data,
+%   the function will automatically adjust them.
+%       'iBeamLims': two-values vector of the indices of beams in FDATA to
 %   which the stacking is to be limited. Default is [1,inf] to conserve all
-%   beams. This parameter does not over-ride 'angleDegLims'. Both
-%   parameters are taken into account to limit beam contributions to the
-%   stack.
-%   'iSampleLims': two-values vector of the indices of samples in FDATA to
-%   which the stacking is to be limited. Default is [1,inf] to conserve all
-%   samples. This parameter does not over-ride 'minStackY' and 'maxStackY'.
-%   All three parameters are taken into account to limit sample
-%   contributions to the stack.
+%   beams. Note that this parameter does not over-ride 'angleDegLims'.
+%   Instead, both parameters are taken into account to limit beam
+%   contributions to the stack.  
+%       'iSampleLims': two-values vector of the indices of samples in FDATA
+%   to which the stacking is to be limited. Default is [1,inf] to conserve
+%   all samples. Note that this parameter does not over-ride 'minStackY'
+%   and 'maxStackY'. Instead, all three parameters are taken into account
+%   to limit sample contributions to the stack.
 %
 %   CFF_STACK_WCD(...,'comms',COMMS) specifies if and how this function
 %   communicates on its internal state (progress, info, errors). COMMS can
@@ -57,14 +86,13 @@ function [stack,stackX,stackY,params] = CFF_stack_WCD(fData,varargin)
 %   'oneline', 'multilines'. By default, using an empty CFF_COMMS object
 %   (i.e. no communication). See CFF_COMMS for more information.
 %
-%   [STACK,STACKY,PARAMS] = CFF_STACK_WCD(...) also outputs the parameters
-%   used in processing.
+%   [STACK,STACKX,STACKY,PARAMS] = CFF_STACK_WCD(...) also outputs the
+%   parameters PARAMS used in processing.
 %
 %   See also CFF_GEOREFERENCE_BOTTOM_DETECT.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2017-2022; Last revision: 02-09-2022
+%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no)
+%   2017-2023; Last revision: 10-02-2023
 
 
 global DEBUG;
@@ -108,11 +136,16 @@ nTotPings = numel(fData.X_1P_pingCounter);
 
 % get iPingsLims parameter
 if ~isfield(params,'iPingLims'), params.iPingLims = [1 inf]; end % default
-CFF_mustBeTwoPositiveIncreasingIntegers(params.iPingLims); % validate
+CFF_mustBeTwoIncreasingIntegers(params.iPingLims); % validate
 iPingLims = params.iPingLims;
 
-% limit inf to actual max number of pings in file
-if isinf(iPingLims(2))
+% limit iPingLims(1) to 1
+if iPingLims(1)<1
+    iPingLims(1) = 1;
+end
+
+% limit iPingLims(2) to actual max ping number in file
+if iPingLims(2)>nTotPings
     iPingLims(2) = nTotPings;
 end
 
@@ -121,9 +154,9 @@ if iPingLims(1)>nTotPings
     error('iPingLims(1) is outside range of existing pings.');
 end
 
-% if iPingLims(1) exceed total number of pings, restrict to total number
-if iPingLims(2)>nTotPings
-    iPingLims(2) = nTotPings;
+% error if iPingLims(2) is negative
+if iPingLims(2)<1
+    error('iPingLims(2) must be positive.');
 end
 
 % build vector of indices of pings to extract
@@ -150,11 +183,16 @@ subBeamKeep = fData.X_BP_beamPointingAngleRad(:,iPings)>= deg2rad(angleDegLims(1
 
 % get iBeamLims parameter
 if ~isfield(params,'iBeamLims'), params.iBeamLims = [1 inf]; end % default
-CFF_mustBeTwoPositiveIncreasingIntegers(params.iBeamLims); % validate
+CFF_mustBeTwoIncreasingIntegers(params.iBeamLims); % validate
 iBeamLims = params.iBeamLims;
 
-% limit inf to actual max number of beams in file
-if isinf(iBeamLims(2))
+% limit iBeamLims(1) to 1
+if iBeamLims(1)<1
+    iBeamLims(1) = 1;
+end
+
+% limit iBeamLims(2) to actual max beam number in file
+if iBeamLims(2)>size(subBeamKeep,1)
     iBeamLims(2) = size(subBeamKeep,1);
 end
 
@@ -165,14 +203,14 @@ end
 subBeamKeep(1:(iBeamLims(1)-1),:) = false;
 subBeamKeep((iBeamLims(2)+1):end,:) = false;
 
-% calcultate the indices of beams to extract from the memmaped files
+% calculate the indices of beams to extract from the memmaped files
 [indBeamKeep,~] = find(subBeamKeep);
 
 % build vector of indices of beams (per ping) to extract
 iBeams = nanmin(indBeamKeep):nanmax(indBeamKeep);
 
 % number of beams (per ping) to extract
-nBeams = numel(iBeams); 
+nBeams = numel(iBeams);
 
 
 %% Indices of samples to extract from memmapped files
@@ -199,7 +237,7 @@ minStackY = params.minStackY;
 firstSample = max(1,floor(minStackY./interSamplesDistance(1)));
 
 % for the last sample to extract, it depends on maxStackY and also on the
-% type of stacking  
+% type of stacking
 
 % get maxStackY parameter
 if ~isfield(params,'maxStackY'), params.maxStackY = 0; end % default
@@ -211,7 +249,7 @@ maxStackY = params.maxStackY;
 
 % get stackMode parameter
 if ~isfield(params,'stackMode'), params.stackMode = 'range'; end % default
-mustBeMember(params.stackMode,{'range','depth'}); % validate
+mustBeMember(params.stackMode,{'range','depth','fan'}); % validate
 stackMode = params.stackMode;
 
 switch stackMode
@@ -231,7 +269,7 @@ switch stackMode
             % otherwise, we calculate the sample corresponding to maxStackY
             lastSample = ceil(maxStackY./interSamplesDistance(1));
         end
-    case 'depth'
+    case {'depth','fan'}
         % stacking in depth is a bit more complicated. The last sample to
         % extract is the one for the beam with the widest angle to
         % contribute data to the stack's desired max depth
@@ -256,7 +294,7 @@ switch stackMode
             maxStackY = furthestRange.*cos(widestAngleRad);
         else
             % otherwise, calculate the sample corresponding to the furthest
-            % range for maxStackY. First, that range
+            % range for the specified maxStackY. First, that range
             furthestRange = maxStackY./cos(widestAngleRad);
             % then the corresponding sample
             lastSample = ceil(furthestRange./interSamplesDistance(1));
@@ -288,15 +326,19 @@ nSamples = numel(iSamples);
 % data. So the range-stacking resolution is the interSamplesDistance.
 switch stackMode
     case 'range'
-        % for stacking in range, we stack all samples that will be
-        % extracted, that is, iSamples. However, we want the stack to be
-        % defined based on input minStackY and maxStackY, in other words
-        % firstSample and lastSample.
+        % in a range-stack, the Y-axis is range aka samples. So we get the
+        % sample equivalents of minStackY and maxStackY, aka firstSample
+        % and lastSample. The range-stacking resolution is the
+        % interSamplesDistance.
         stackY = (firstSample:1:lastSample)'.*interSamplesDistance(1);
-
+        
+        % in a range-stack, the X-axis are pings
+        stackX = iPings;
+        
     case 'depth'
-        % for stacking in depth, since data are re-gridded, we have to
-        % specify the resolution
+        % in a depth-stack, the Y axis is depth. So we use minStackY and
+        % maxStackY, which were specified in depth. But first, since data
+        % are re-gridded, we have to specify the resolution.
         
         % get resDepthStackY parameter
         if ~isfield(params,'resDepthStackY'), params.resDepthStackY = 0; end % default
@@ -312,13 +354,47 @@ switch stackMode
             resDepthStackY = fact*interSamplesDistance(1);
         end
         
-        % build stack Y vector
+        % build the depth-stack Y-vector
         stackY = (minStackY:resDepthStackY:maxStackY)';
+        
+        % in a depth-stack, the X-axis are pings
+        stackX = iPings;
+        
+    case 'fan'
+        % in a fan-stack, the Y axis is depth. So we use minStackY and
+        % maxStackY, which were specified in depth. But first, since data
+        % are re-gridded, we have to specify the resolution.
+        
+        % get resFanStack parameter
+        if ~isfield(params,'resFanStack'), params.resFanStack = 0; end % default
+        mustBeNonnegative(params.resFanStack); % validate
+        resFanStack = params.resFanStack;
+        % NOTE: resFanStack==0 (default) is used as special code to
+        % indicate we want to use a default resolution.
+        
+        if resFanStack == 0
+            % by default, we use a resolution equal to the distance between
+            % two beams at the max depth
+            medDiffAngleRad = median(abs(diff(angleRad)),'all','omitnan');
+            resFanStack = maxStackY.*sin(medDiffAngleRad);
+        end
+        
+        % build the depth-stack Y-vector
+        stackY = (minStackY:resFanStack:maxStackY)';
+        
+        % in a depth-stack, the X-axis is across-track distance. There is
+        % no possibility of input min/max here (for now), we simply define
+        % the min and max across-track distance from the data extracted
+        maxStackX = furthestRange.*sin(widestAngleRad);
+        
+        % build the depth-stack X-vector
+        stackX = -maxStackX:resFanStack:maxStackX;
+        
 end
-% initialize stack
-stack = nan(numel(stackY),nPings,'single');
-% save iPings as stackX;
-stackX = iPings;
+
+% initialize the stack array
+stack = nan(numel(stackY),numel(stackX),'single');
+
 
 
 %% Processing setup
@@ -338,6 +414,8 @@ switch stackMode
         maxNumBlockVar = 1;
     case 'depth'
         maxNumBlockVar = 4;
+    case 'fan'
+        maxNumBlockVar = 4;
 end
 
 % setup block processing
@@ -347,6 +425,26 @@ end
     'desiredMaxMemFracToUse',0.1,...
     'maxNumBlockVar',maxNumBlockVar);
 % disp(info);
+
+% setup block processing for fan stacking
+switch stackMode
+    case 'fan'
+        % contrary to range and depth stacking where each block of pings
+        % can be processed independently because they contribute to
+        % different parts of the stack, fan stacking requires merging the
+        % results of processing of each block with results from previous
+        % blocks. Initialize here the grids necessary to keep track of past
+        % processing
+        
+        gridWeightedSum  = zeros(size(stack),'single');
+        gridTotalWeight  = zeros(size(stack),'single');
+        
+        if useGpu
+            gridWeightedSum  = gpuArray(gridWeightedSum);
+            gridTotalWeight  = gpuArray(gridTotalWeight);
+        end
+        
+end
 
 
 %% Block processing
@@ -371,8 +469,9 @@ for iB = 1:size(blocks,1)
     switch stackMode
         
         case 'range'
-            
-            % average across beams in natural values, then back to dB
+             
+            % average across beams in natural intensity values, then back
+            % to dB 
             blockStack = 10*log10(squeeze(mean(10.^(blockWCD/10),2,'omitnan')));
             
             % save in stack array
@@ -416,19 +515,87 @@ for iB = 1:size(blocks,1)
             blockWCD(blockIndNaN) = [];
             clear blockIndNaN % clear up memory
             
-            % average level in each stack grid cell, in natural values,
-            % then turn result back to dB
+            % pass block's data level to natural intensity values and sum
+            % these values per grid cell
             blockStackSumVal = accumarray( [blockIndRow(:),blockIndCol(:)],...
                 10.^(blockWCD(:)/10),[],@sum,single(0));
+            clear blockWCD % clear up memory
+            
+            % block's data number of elements that were summed per grid
+            % cell 
             blockStackNumElem = accumarray( [blockIndRow(:),blockIndCol(:)],...
                 single(1),[],@sum);
-            blockStackAvg = 10*log10(blockStackSumVal./blockStackNumElem);
             clear blockIndRow blockIndCol % clear up memory
+            
+            % compute average and convert back to dB
+            blockStackAvg = 10*log10(blockStackSumVal./blockStackNumElem);
             
             % save in stack array
             stack(1:size(blockStackAvg,1),blockPings) = blockStackAvg;
             
+        case 'fan'
+            
+            % convert a couple variables here to gpuArrays so all
+            % computations downstream use the GPU and all variables become
+            % gpuArrays
+            if useGpu
+                iSamples = gpuArray(iSamples);
+                blockPings = gpuArray(blockPings);
+            end
+            
+            % distance upwards from sonar for each sample
+            blockStartSampleNumber = single(fData.(sprintf('%s_BP_StartRangeSampleNumber',datagramSource))(iBeams,iPings(blockPings)));
+            blockSampleRange = CFF_get_samples_range(single(iSamples'),blockStartSampleNumber,single(interSamplesDistance(blockPings)));
+            blockAngle = single(angleRad(:,blockPings));
+            [blockSampleAcrossDist,blockSampleUpDist] = CFF_get_samples_dist(blockSampleRange,blockAngle);
+            clear blockSampleRange % clear up memory
+            
+            % index of each sample in row (depth) and column (across-track)
+            blockIndRow = round((-blockSampleUpDist-stackY(1))/resFanStack+1);
+            clear blockSampleUpDist  % clear up memory
+            blockIndCol = round((blockSampleAcrossDist-stackX(1))/resFanStack+1);
+            clear blockSampleAcrossDist % clear up memory
+            
+            % NaN those samples that fall outside of the desired stack
+            blockIndRow(blockIndRow<1) = NaN;
+            blockIndRow(blockIndRow>numel(stackY)) = NaN;
+            blockIndCol(blockIndCol<1) = NaN;
+            blockIndCol(blockIndCol>numel(stackX)) = NaN;
+            
+            % vectorize and remove any sample where we have NaNs
+            blockIndNaN = isnan(blockIndRow) | isnan(blockIndCol) | isnan(blockWCD);
+            blockIndRow(blockIndNaN) = [];
+            blockIndCol(blockIndNaN) = [];
+            blockWCD(blockIndNaN) = [];
+            clear blockIndNaN % clear up memory
+            
+            % pass block's data level to natural intensity values and sum
+            % these values per grid cell
+            blockStackSumVal = accumarray( [blockIndRow(:),blockIndCol(:)],...
+                10.^(blockWCD(:)/10),size(gridWeightedSum),@sum,single(0));
+            clear blockWCD % clear up memory
+            
+            % block's data number of elements that were summed per grid
+            % cell 
+            blockStackNumElem = accumarray( [blockIndRow(:),blockIndCol(:)],...
+                single(1),size(gridTotalWeight),@sum);
+            clear blockIndRow blockIndCol % clear up memory
+            
+            % update total stack values
+            gridWeightedSum = gridWeightedSum + blockStackSumVal;
+            gridTotalWeight = gridTotalWeight + blockStackNumElem;
+            
     end
+end
+
+% finalize processing in case of fan stacking
+switch stackMode
+    case 'fan'
+        % compute average and convert back to dB
+        stack = 10*log10(gridWeightedSum./gridTotalWeight);
+        if isgpuarray(stack)
+            stack = gather(stack);
+        end
 end
 
 % display results
