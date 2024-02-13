@@ -22,7 +22,8 @@ function ver = CFF_coffee_version()
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
 %   (Kongsberg Maritime, yoann.ladroit@km.kongsberg.com) 
 
-ver = '2.0.0-alpha.13'; % 23/10/2023
+ver = '2.0.0-alpha.14'; % 13/02/2024
+% ver = '2.0.0-alpha.13'; % 23/10/2023
 % ver = '2.0.0-alpha.12'; % 19/10/2023
 % ver = '2.0.0-alpha.11'; % 27/07/2023
 % ver = '2.0.0-alpha.10'; % 26/07/2023

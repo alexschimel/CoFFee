@@ -275,15 +275,18 @@ for iF = 1:nFiles
                 % datagram types to read
                 switch conversionType
                     case 'everything'
-                        % convert every datagrams supported
+                        % request to convert every datagram type supported
                         dtgs = [];
                     case 'seafloor'
+                        % convert only datagram types needed for bathy/bs
+                        % work (i.e. ignore water-column data)
                         dtgsAllRequired = [73, ... % installation parameters (73)
                             80, ...                % position (80)
                             82, ...                % runtime parameters (82)
                             88];                   % X8 depth (88)
                         dtgs = sort(unique(dtgsAllRequired));
                     case 'WCD'
+                        % convert datagram types to visualize WCD
                         dtgsAllRequired = [73, ...   % installation parameters (73)
                             80, ...                  % position (80)
                             82];                     % runtime parameters (82)
