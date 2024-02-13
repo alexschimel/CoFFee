@@ -36,7 +36,7 @@ function [data,params] = CFF_WC_radiometric_corrections_CORE(data, fData, iPings
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
 %   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2017-2022; Last revision: 27-07-2022
+%   2017-2022; Last revision: 27-09-2023
 
 
 %% Input arguments management
@@ -59,6 +59,100 @@ end
 
 % start message
 comms.start('Applying radiometric corrections');
+
+
+% We are reusing mostly here the reasoning and equations of Urban et al.
+% (2017) (DOI: 10.1002/lom3.10138), which match a previous
+% paper Gurshin et al. (2009) (DOI: 10.1093/icesjms/fsp052). The equation
+% of Urban et al. (2017) was reused in Nau et al. (2022) (DOI:
+% 10.3389/frsen.2022.839417)
+%
+% The received echo level for volume backscattering is:
+%       EL = SL - TL + Sv + 10*log(V)                                   (1)
+% , where TL is the transmission loss: 
+%       TL = 40*log(R) + 2*alpha*R                                      (2)
+% , V is the sampling volume typically approximated as:
+%       V ~ 0.5*c*tau*psi*(R^2)                                         (3)
+% (SL is the Source Level, Sv is the volume backscattering strength, R is
+% the range from the sounder, alpha is the attenuation coefficient, c is
+% the sound speed, tau is the pulse length. NOTE: Urban et al (2017)
+% uses "the sampling time (t)" instead of the pulse length (tau), which is
+% not correct.
+%
+% Putting equations (1) to (3) together, we get:
+%       EL = SL + Sv - 20*log(R) -2*alpha*R + 10*log(0.5*c*tau*psi)     (4)
+%
+% The log dependence in "-20*log(R)" is typical of getting to Sv. For
+% surface backscattering (Sa/BS), it is in "-30*log(R)", and for target
+% strength (TS), it is in "-40*log(R)".
+%
+% Continuing with the reasoning of Urban et al. (2017), the issue is that
+% the level recorded in the raw data files is not EL, but rather:
+%       A_WCI = EL + TVG + CF                                           (5)
+% , where TVG is the system's TVG function, specified in the Kongsberg
+% documentation as:
+%       TVG = X*log(R) + 2*alpha*R + OFS + C                            (6)
+% , CF is some assumed constant factor representing aspects out of the
+% control of the system (i.e. an offset due to component aging, biofouling,
+% etc.)
+% As specified in the Kongsberg documentation, X is the "TVG function
+% applied" (in fact a recorded parameter that can be set to 10, 20, 30 or
+% 40 - I think), C is the "TVG offset in dB" (another recorded parameter),
+% and OFS is a "gain offset to compensate for TX Source Level, Received
+% sensitivity, etc." but that is not recorded.
+%
+% Note that Konsberg data also includes in Runtime Parameters a "Transmit
+% Power Re. Maximum" parameter which is a "mammal protection setting" and
+% that is reported in the data, but not in equation (6) above. So instead
+% of using equation (6), we would rather use:
+%       TVG = X*log(R) + 2*alpha*R + OFS + C + TPRM                     (7)
+%
+% Putting equations (4), (5) and (7) together, we get:
+%   Sv = A_WCI - (X-20)*log(R) - 10*log(0.5*c*tau) - 10*log(psi) - TPRM ...
+%        - OFS - C - CF - SL                                            (8)
+%
+% So this is the full equation to obtain Sv from the recorded level A_WCI.
+% Problem is that a lot of those terms are unknown. Let's look at them in
+% turn: 
+%   (X-20)*log(R) is known and must be corrected otherwise the level is not
+% consistent down the range.
+%   10*log(0.5*c*tau) is known (sort-of.. we should use effective pulse
+% length instead of pulse length). Not sure if it needs correcting since
+% those terms are constant. Well, sound speed c might vary along the line.
+% All papers cited above chose to correct for this term. But what if this
+% term is already a part of the unknown OFS? At least the magnitude of this
+% term should be somehow reduced. Considering a sound speed of 1500 m/s and
+% typical pulse lengths (0.0001-0.001 m), this term should be around -11 to
+% -1 dB.
+%   10*log(psi) can also be approximated since we know the beamwidths in Tx
+% and Rx. Yet none of the papers cited above chose to correct it. That's
+% probably because its magnitude is large. Considering a cone with apex
+% angle theta (i.e. approx the beamwidth, say theta=0.5deg), the equation
+% for the solid angle psi is psi = 2*pi*(1-cos(0.5*theta)), aka 10*log(psi)
+% here would be -42 dB!!!!
+%   TPRM is recorded in the files, but ignored in the previous papers. It
+% should probably be corrected though, since this parameter can be changed
+% while recording the data!
+%   OFS is not recorded. We can assume it is a constant value throughout a
+% file, but we have no evidence. 
+%   C is recorded... but ignored in the papers cited.
+%   CF is unknown by definition, but considered constant.
+%   SL is unknown, but supposedly corrected by OFS, along with other
+%   constant terms ignored in this entire reasoning (i.e. transducer
+%   sensitivity, etc.)
+%
+% So what do we do?
+%   Gurshin et al. (2009) and Urban et al. (2017) corrected the recorded
+%   level as:
+%       A_WCI - (X-20)*log(R) - 10*log(0.5*c*tau)
+%   Nau et al. (2022) corrected the recorded level as:
+%       A_WCI - (X-20)*log(R) - 10*log(0.5*c*tau) - C
+%   What I had been doing so far is correcting the recorded level as:
+%       A_WCI + (20-X)*log(R) + TPRM 
+%   (notice I add TPRM here while in the equations above, it was
+%   subtracted. That's because I don't even know how Kongsberg applies it,
+%   or whether it compensates for it in OFS) 
+
 
 
 %% Transmit Power level reduction
