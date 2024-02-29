@@ -4,9 +4,43 @@ function [maxNSamples_groups,ping_group_start,ping_group_end] = CFF_group_pings(
 %   Makes groups of pings based on the max number of samples in each ping.
 
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 30-08-2021
+%   Authors: Alex Schimel and Yoann Ladroit
+%   2017-2024; Last revision: 20-02-2024
+
+
+
+%% BUG FIX
+% Getting errors in the final calculation ("calculate the max number of samples
+% in a ping, per group") when ping counter wraps down from 65535 back to 1. We
+% had a last bit of code to modify ping_group_start and ping_group_end (now
+% commented) to avoid such errors downstream, but recent examples show this
+% wrapping does break this code too. So best solution is to unwrap ping counters
+% right here at the begginning.
+
+% unwrap ping counter
+indexWrapInPingCounter = find(diff(ping_counter)<0)+1;
+nWraps = numel(indexWrapInPingCounter);
+unwrappedPingCounter = ping_counter;
+for iWrap = 1:nWraps
+    thisIndex = indexWrapInPingCounter(iWrap);
+    unwrappedPingCounter(thisIndex:end) = unwrappedPingCounter(thisIndex:end) + unwrappedPingCounter(thisIndex-1) + 1;
+end
+
+dbug = 0;
+if dbug
+    figure;
+    plot(ping_counter,'.-'); ylabel('ping counter'); hold on
+    plot(unwrappedPingCounter,'ro-'); grid on; legend({'wrapped','unwrapped'})
+end
+
+% modify dtgrm_ping_number to match new ping counters
+datagramUnwrappedPingCounter = arrayfun(@(x) unwrappedPingCounter(ping_counter==x), dtgrm_ping_number);
+
+% save results back into original variables to as to not change the rest of the
+% code
+ping_counter = unwrappedPingCounter;
+dtgrm_ping_number = datagramUnwrappedPingCounter;
+%% END BUG FIX
 
 % get the maximum number of samples for each ping
 if iscell(num_samp_per_dtgrm)
@@ -69,7 +103,8 @@ end
 
 % because ping counters often wrap around (i.e. max ping counter is 65536
 % then it goes back to 1), this can trip up later code, so Yoann here
-% changes the ping groups back to 1.
+% changed the ping groups back to 1. After the bug fix above, this is now just
+% bringing numbers back to 1.
 for ui = 1:num_groups
     ping_group_start(ui) = find(ping_counter==ping_group_start(ui),1);
     ping_group_end(ui) = find(ping_counter==ping_group_end(ui),1);
