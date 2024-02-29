@@ -50,9 +50,10 @@ function KMALLfileinfo = CFF_kmall_file_info(KMALLfilename, varargin)
 %   CFF_READ_KMALL_FROM_FILEINFO.
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2023; Last revision: 02-11-2023
+%   Ladroit (Kongsberg, yoann.ladroit@km.kongsberg.com)
+%   2017-2024; Last revision: 29-02-2024
 
+debugFlag = 0;
 
 %% Input arguments management
 p = inputParser;
@@ -75,7 +76,9 @@ if ischar(p.Results.comms)
 else
     comms = p.Results.comms;
 end
-
+if debugFlag
+    comms = CFF_Comms('oneline');
+end
 
 %% Start message
 filename = CFF_file_name(KMALLfilename,1);
@@ -95,104 +98,104 @@ fseek(fid,0,-1);
 KMALLfileinfo.fileName = KMALLfilename;
 KMALLfileinfo.fileSize = fileSize;
 
-% initialize list of datagram types and counter
-list_dgmType = {};
-list_dgmType_counter = [];
+% common datagram info for reading and checking
+% A complete kmall datagram is organized as a sequence of:
+% * GH - General Header EMdgmHeader (20 bytes), which starts with:
+%     * The datagram size (uint32, aka 4 bytes)
+%     * The datagram type code (4 char, aka 4 bytes), e.g. '#IIP'
+% * DB - Datagram Body (variable size)
+% * DS - Datagram size (uint32, aka 4 bytes)
+headerSize = 20;
+datagramCodePattern = "#" + characterListPattern("A","Z") ...
+                          + characterListPattern("A","Z") ...
+                          + characterListPattern("A","Z");
 
-% intitializing the counter of datagrams in this file
-kk = 0;
-
-% initializing synchronization counter: the number of bytes we are
-% currently out of synchronization since the last complete datagram (0
-% means we are synchronized)
-syncCounter = 0;
-
-
-%% Start progress
+% start progress
 comms.progress(0,fileSize);
 comms.step('Parsing datagrams')
 
 
 %% Reading datagrams
-next_dgm_start_pif = 0;
-while next_dgm_start_pif < fileSize
+list_dgmType = {}; % list of datagram types recorded
+list_dgmType_counter = []; % counter of datagram types recorded
+kk = 0; % counter of datagrams in file
+continueReading = 1; % reading flag for while loop
+syncCounter = 0; % synchronization counter
+resyncAborted = 0; % flag if resync/reading was aborted
+while continueReading
     
-    %% New datagram begins
-    dgm_start_pif = ftell(fid);
-      
-    % A full kmall datagram is organized as a sequence of:
-    % * GH - General Header EMdgmHeader (20 bytes, at least for Rev H)
-    % * DB - Datagram Body (variable size)
-    % * DS - Datagram size (uint32, aka 4 bytes)
-    %
-    % The General Header is read here. It starts with:
-    % * The datagram size (uint32, aka 4 bytes)
-    % * The datagram type code (4 char, aka 4 bytes), e.g. '#IIP'
-    %
-    % We will test for both datagram completeness and sync by matching the
-    % two datagram size fields, and checking for the hash symbol at the
-    % beggining of the datagram type code.
-    
-    headerSize = 20;
-    if  dgm_start_pif + headerSize >= fileSize
-       % no room for more than a full header. Exit the loop here to
-       % finalize what we have.
-       break
+    if debugFlag
+        fprintf('Position in file: %i/%i bytes (%.2f%%). sync counter: %i\n', ftell(fid),fileSize,100.* ftell(fid)./fileSize,syncCounter);
     end
     
-    % parsing presumed header
+    % record current position in file, normally at the start of a new datagram 
+    dgm_start_pif = ftell(fid);
+
+    
+    %% Checks
+    
+    % check if there is room to read a header. Exit loop if not.
+    if dgm_start_pif + headerSize >= fileSize
+       continueReading = 0;
+       continue
+    end
+    
+    % parse presumed header
     header = CFF_read_EMdgmHeader(fid);
     
-    % pif of presumed end of datagram
-    dgm_end_pif = dgm_start_pif + header.numBytesDgm - 4;
-    
-    % get the presumed repeat fileSize at the end of the presumed datagram
-    if dgm_end_pif < fileSize
-        fseek(fid, dgm_end_pif, -1);
-        numBytesDgm_repeat  = fread(fid,1,'uint32'); % Datagram length in bytes
-        if isempty(numBytesDgm_repeat)
-            numBytesDgm_repeat = -1;
-        end
-        next_dgm_start_pif = ftell(fid);
-    else
-        % Being here can be due to two things:
-        % 1) We are in sync but this datagram is incomplete, or 
-        % 2) we are out of sync.
-        numBytesDgm_repeat = -1;
-    end
-    
-    
-    %% Test for synchronization
-    % we assume we are synchronized if all following conditions are true:
+    % check header. Assume header is OK if all following conditions are true.
+    % Add conditions if you encounter cases where these are not sufficient to
+    % assert header is OK.
     % 1) numBytesDgm is not null
-    flag_numBytesDgm_notNull = header.numBytesDgm ~= 0;
-    % 2) numBytesDgm_repeat matches numBytesDgm
-    flag_numBytesDgm_match = (header.numBytesDgm == numBytesDgm_repeat);
-    % 3) dgmType starts with the hash symbol
-    flag_hash = strcmp(header.dgmType(1), '#');
-    syncTest = flag_numBytesDgm_notNull && flag_numBytesDgm_match && flag_hash;
-    if syncTest
-        % SYNCHRONIZED
-        % if we had lost sync, warn here that we are back in sync
-        if syncCounter
-            comms.info(sprintf('Back in sync (%i bytes later, approx. %.2f perc into the file). Resume process.',syncCounter,100.*dgm_start_pif./fileSize));
-        end
-    else
-        % NOT SYNCHRONIZED
-        % we either lost sync, or the datagram is incomplete. Go back to
-        % the record start, advance one byte, and try reading again.
+    isDatagramSizeBytesPositive = header.numBytesDgm > 0;
+    % 2) dgmType has pattern of hash symbol followed by 3 upper case letters
+    isDatagramCodeOk = matches(header.dgmType,datagramCodePattern);
+    isHeaderOK = isDatagramSizeBytesPositive && isDatagramCodeOk;
+    
+    if ~isHeaderOK
+        % We are not at the beggining of a new datagram (ie out of sync). Go
+        % back to the presumed datagram start, advance one byte, and try reading
+        % again
         fseek(fid, dgm_start_pif+1, -1);
-        next_dgm_start_pif = -1;
         syncCounter = syncCounter+1; % update sync counter
         if syncCounter == 1
-            % We only just lost sync, throw an error message
-            comms.error(sprintf('Lost sync while reading datagrams (approx. %.2f perc into the file). A datagram may be corrupted. Trying to resync...',100.*dgm_start_pif./fileSize));
+            % we only just lost sync, throw an error message
+            comms.error(sprintf('Lost sync while reading datagrams (approx. %.2f perc into the file). Trying to resync...',100.*dgm_start_pif./fileSize));
+            tStart = tic;
+        end
+        % put a time and size limit to synchronizing
+        nSecondsLimit = 20;
+        if isfield(KMALLfileinfo,'dgm_size')
+            syncCounterLimit = 2.*max(KMALLfileinfo.dgm_size);
+        else
+            syncCounterLimit = 0;
+        end
+        if toc(tStart)>nSecondsLimit && syncCounter>syncCounterLimit
+            comms.error(sprintf('Limit for resync was reached (approx. %.2f perc into the file). Abort reading.',100.*dgm_start_pif./fileSize));
+            resyncAborted = 1;
+            continueReading = 0;
+            continue
         end
         continue
     end
-
     
-    %% Datagram type counter
+    % header is OK, message that we are in sync if we had lost it
+    if syncCounter
+        comms.info(sprintf('Back in sync (%i bytes later, approx. %.2f perc into the file). Resume reading.',syncCounter,100.*dgm_start_pif./fileSize));
+    end
+    
+    % pif of presumed end of datagram and start of next one
+    next_dgm_start_pif = dgm_start_pif + header.numBytesDgm;
+    
+    % check if datagram is complete (ie, does not overshoot file size)
+    isDatagramComplete = next_dgm_start_pif <= fileSize;
+    if ~isDatagramComplete
+        continueReading = 0;
+        continue
+    end
+    
+    
+    %% Datagram is complete. Get addditional info
     
     % index of datagram type in the list
     idx_dgmType = find(cellfun(@(x) strcmp(header.dgmType,x), list_dgmType));
@@ -205,25 +208,31 @@ while next_dgm_start_pif < fileSize
         list_dgmType_counter(idx_dgmType,1) = 0;
     end
     
-    % increment counter
+    % increment datagram type counter
     list_dgmType_counter(idx_dgmType) = list_dgmType_counter(idx_dgmType) + 1;
-
     
-    %% Write output KMALLfileinfo
+    % check that repeat datagram size matches
+    fseek(fid, next_dgm_start_pif-4, -1);
+    numBytesDgm_repeat  = fread(fid,1,'uint32'); % Datagram length in bytes
+    if isempty(numBytesDgm_repeat)
+        numBytesDgm_repeat = -1;
+    end
+    datagramSizeRepeatMatch = header.numBytesDgm==numBytesDgm_repeat;
     
-    % datagram complete
-    kk = kk + 1;
+    
+    %% Record datagram info for output
     
     % datagram number in file
+    kk = kk + 1;
     KMALLfileinfo.dgm_num(kk,1) = kk;
     
     % datagram info
-    KMALLfileinfo.dgm_type_code{kk,1}    = header.dgmType;
-    KMALLfileinfo.dgm_type_text{kk,1}    = get_dgm_type_txt(header.dgmType);
-    KMALLfileinfo.dgm_type_version(kk,1) = header.dgmVersion;
-    KMALLfileinfo.dgm_counter(kk,1)      = list_dgmType_counter(idx_dgmType);
-    KMALLfileinfo.dgm_start_pif(kk,1)    = dgm_start_pif;
-    KMALLfileinfo.dgm_size(kk,1)         = header.numBytesDgm;
+    KMALLfileinfo.dgm_type_code{kk,1}           = header.dgmType;
+    KMALLfileinfo.dgm_type_text{kk,1}           = get_dgm_type_txt(header.dgmType);
+    KMALLfileinfo.dgm_type_version(kk,1)        = header.dgmVersion;
+    KMALLfileinfo.dgm_counter(kk,1)             = list_dgmType_counter(idx_dgmType);
+    KMALLfileinfo.dgm_start_pif(kk,1)           = dgm_start_pif;
+    KMALLfileinfo.dgm_size(kk,1)                = header.numBytesDgm;
     
     % system info
     KMALLfileinfo.dgm_sys_ID(kk,1) = header.systemID;
@@ -232,9 +241,9 @@ while next_dgm_start_pif < fileSize
     % time info
     KMALLfileinfo.date_time(kk,1) = datetime(header.time_sec + header.time_nanosec.*10^-9,'ConvertFrom','posixtime');
     
-    % report if re-synchronization was necessary before reading this
-    % datagram 
-    KMALLfileinfo.syncCounter(kk,1) = syncCounter;
+    % issues info
+    KMALLfileinfo.datagramSizeRepeatMatch(kk,1) = datagramSizeRepeatMatch;
+    KMALLfileinfo.syncCounter(kk,1) = syncCounter; % sync needed before record
     
     
     %% Prepare for reloop
@@ -251,18 +260,23 @@ end
 
 
 %% Finalizing
-comms.step('End of file reached. Finalizing')
+comms.step('Finished reading file. Finalizing')
 comms.progress(fileSize-1,fileSize);
 
-% record sync status at the end of file.
+% report errors
+
+% sync status at the end of file.
 % For each datagram, KMALLfileinfo.syncCounter records if resynchronization
 % was necessary between this datagrams and the previous one, so it does not
 % inform if there were issues at the end of the file. Add a field that
 % records this status
 KMALLfileinfo.finalSyncCounter = syncCounter;
 if KMALLfileinfo.finalSyncCounter
-    % File reading ended out of sync. Inform
-    comms.error('Never recovered sync before end of file. This file may have been clipped.');
+    if resyncAborted
+        comms.error('Reading was aborted as resync reached limit. This file has major corruption issues.');
+    else
+        comms.error('End of file occured during resync. This file may have been clipped.');
+    end
 end
 
 % adding lists
@@ -270,7 +284,11 @@ KMALLfileinfo.list_dgm_type = list_dgmType;
 KMALLfileinfo.list_dgm_counter = list_dgmType_counter;
 
 % initialize parsing field
-KMALLfileinfo.parsed = zeros(size(KMALLfileinfo.dgm_num));
+if isfield(KMALLfileinfo,'dgm_num')
+    KMALLfileinfo.parsed = zeros(size(KMALLfileinfo.dgm_num));
+else
+    KMALLfileinfo.parsed = [];
+end
 
 % closing file
 fclose(fid);
