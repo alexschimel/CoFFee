@@ -5,17 +5,21 @@ function out_struct = CFF_read_EMdgmHeader(fid)
 %
 %   Verified correct for kmall format revisions F-I
 %
+%   Dev notes - tried to accelerate code with block reading and typecasting but
+%   just this series of fread calls is faster.
+%
 %   See also CFF_READ_KMALL_FROM_FILEINFO.
 
 %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
 %   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 20-08-2021
+%   2017-2024; Last revision: 29-02-2024
+
 
 % Datagram length in bytes. The length field at the start (4 bytes) and end
 % of the datagram (4 bytes) are included in the length count.
 out_struct.numBytesDgm = fread(fid,1,'uint32');
 
-% Multi beam datagram type definition, e.g. #AAA
+% Multi beam datagram type definition, e.g. #AAA (4 bytes)
 out_struct.dgmType = fscanf(fid,'%c',4);
 
 % Datagram version.
@@ -35,5 +39,6 @@ out_struct.time_sec = fread(fid,1,'uint32');
 % Nano seconds remainder. time_nanosec part to be added to time_sec for
 % more exact time.
 out_struct.time_nanosec = fread(fid,1,'uint32');
+
 
 end
