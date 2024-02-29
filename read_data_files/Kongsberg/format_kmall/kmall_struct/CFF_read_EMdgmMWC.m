@@ -12,7 +12,9 @@ function out_struct = CFF_read_EMdgmMWC(fid, dgmVersion_warning_flag)
 %   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
 %   2017-2021; Last revision: 20-08-2021
 
+pifStartOfDatagram = ftell(fid);
 out_struct.header = CFF_read_EMdgmHeader(fid);
+pifEndOfDatagram = pifStartOfDatagram + out_struct.header.numBytesDgm + 4;
 
 MWC_VERSION = out_struct.header.dgmVersion;
 if MWC_VERSION>2 && dgmVersion_warning_flag
@@ -49,7 +51,7 @@ out_struct.rxInfo = CFF_read_EMdgmMWCrxInfo(fid);
 % 2             numBytesPerBeamEntry + numSampleData* size(sampleAmplitude05dB_p) + numSampleData* size(EMdgmMWCrxBeamPhase2_def)
 phaseFlag = out_struct.rxInfo.phaseFlag;
 Nrx = out_struct.rxInfo.numBeams;
-out_struct.beamData_p = CFF_read_EMdgmMWCrxBeamData(fid, phaseFlag, Nrx, MWC_VERSION);
+out_struct.beamData_p = CFF_read_EMdgmMWCrxBeamData(fid, phaseFlag, Nrx, MWC_VERSION, pifEndOfDatagram);
 
 end
 
@@ -144,10 +146,20 @@ out_struct.soundVelocity_mPerSec = fread(fid,1,'float');
 end
 
 
-function out_struct = CFF_read_EMdgmMWCrxBeamData(fid, phaseFlag, Nrx, MWC_VERSION)
+function out_struct = CFF_read_EMdgmMWCrxBeamData(fid, phaseFlag, Nrx, MWC_VERSION, pifEndOfDatagram)
 % #MWC - data block 2: receiver, specific info for each beam.
 %
 % Verified correct for kmall format revisions F-I
+
+% initialize output array
+out_struct = struct(...
+    'beamPointAngReVertical_deg',nan(1,Nrx),...
+    'startRangeSampleNum',nan(1,Nrx),...
+    'detectedRangeInSamples',nan(1,Nrx),...
+    'beamTxSectorNum',nan(1,Nrx),...
+    'numSampleData',nan(1,Nrx),...
+    'detectedRangeInSamplesHighResolution',nan(1,Nrx),...
+    'sampleDataPositionInFile',nan(1,Nrx));
 
 for iRx = 1:Nrx
     
@@ -175,9 +187,6 @@ for iRx = 1:Nrx
         % set to zero when the beam has no bottom detection.
         out_struct.detectedRangeInSamplesHighResolution(iRx) = fread(fid,1,'float');
     end
-    
-    Ns = out_struct.numSampleData(iRx);
-    
     
     % ------------------ OPTION 1: ACTUALLY READ DATA ---------------------
     %
@@ -218,10 +227,18 @@ for iRx = 1:Nrx
     out_struct.sampleDataPositionInFile(iRx) = pif;
     
     % we still need to fast-forward to the end of the data section so that
-    % reading can continue from there
+    % reading can continue from there in the next loop iteration. 
+    % BUT we first have a quick check gainst corruption, namely we check that 
+    % the expected data block will not offshot the expected datagram size.
+    Ns = out_struct.numSampleData(iRx);
     dataBlockSizeInBytes = Ns.*(1+phaseFlag);
-    fseek(fid,dataBlockSizeInBytes,0);
-    
+    if pifEndOfDatagram-(pif+dataBlockSizeInBytes) >= 0
+        fseek(fid,dataBlockSizeInBytes,0);
+    else
+        % datagram is corrupted. Exit here or we will run into errors at some
+        % point in this loop
+        return
+    end
     % ------------------ END OF OPTION 2 ----------------------------------
     
 end
