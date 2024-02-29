@@ -701,28 +701,34 @@ if isfield(KMALLdata,'EMdgmMWC')
                 % data size
                 sR = BD.startRangeSampleNum(iB_src(iB)); % start range sample number
                 nS = BD.numSampleData(iB_src(iB)); % number of samples in this beam
-                nS_sub = ceil(nS/dr_sub); % number of samples we're going to record
                 
-                % get to start of amplitude block
-                dpif = BD.sampleDataPositionInFile(iB_src(iB));
-                fseek(fid,dpif,-1);
-                
-                % amplitude block is nS records of 1 byte each.
-                Mag_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int8=>int8',dr_sub-1); % read with decimation
-                
-                if phaseFlag
-                    % go to start of phase block
-                    fseek(fid,dpif+nS,-1);
+                % continue only if data is valid
+                if ~isnan(sR) && ~isnan(nS)
+                    % number of samples we're going to record
+                    nS_sub = ceil(nS/dr_sub); 
                     
-                    if phaseFlag == 1
-                        % phase block is nS records of 1 byte each.
-                        Ph_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int8=>int8',dr_sub-1); % read with decimation
-                    else
-                        % phase block is nS records of 2 bytes each. XXX1
-                        % case not tested yet. Find suitable data files
-                        Ph_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int16=>int16',2*dr_sub-2); % read with decimation
+                    % get to start of amplitude block
+                    dpif = BD.sampleDataPositionInFile(iB_src(iB));
+                    fseek(fid,dpif,-1);
+                    
+                    % amplitude block is nS records of 1 byte each.
+                    Mag_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int8=>int8',dr_sub-1); % read with decimation
+                    
+                    if phaseFlag
+                        % go to start of phase block
+                        fseek(fid,dpif+nS,-1);
+                        
+                        if phaseFlag == 1
+                            % phase block is nS records of 1 byte each.
+                            Ph_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int8=>int8',dr_sub-1); % read with decimation
+                        else
+                            % phase block is nS records of 2 bytes each. XXX1
+                            % case not tested yet. Find suitable data files
+                            Ph_tmp(sR+1:sR+nS_sub,iB_dst(iB)) = fread(fid, nS_sub, 'int16=>int16',2*dr_sub-2); % read with decimation
+                        end
                     end
                 end
+                
             end
             
             % update variables before reading next datagram, if necessary
@@ -748,7 +754,7 @@ if isfield(KMALLdata,'EMdgmMWC')
         
         % finished reading this swath's WC data. Store the data in the
         % appropriate binary file, at the appropriate ping, through the
-        % memory mapping
+        % memory mapping    
         fData.WC_SBP_SampleAmplitudes{iG}.Data.val(:,:,iS-ping_group_start(iG)+1) = Mag_tmp;
         if phaseFlag
             fData.WC_SBP_SamplePhase{iG}.Data.val(:,:,iS-ping_group_start(iG)+1) = Ph_tmp;
