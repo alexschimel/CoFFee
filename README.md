@@ -99,8 +99,8 @@ A careful sequence to develop an app is the following:
 9. If *CoFFee* was modified, push it up on git. Add a version tag.
 10. If you wish to compile/release this new version of the app:
     * Double-click on the app's `*.prj` file to run the application compiler with existing settings:
-      * Remove the app's `*.mlapp` main file and add it again for the application compiler to find all dependencies.
-      * Update the version number in the 'runtime downloaded from web', the 'application information', and the default installation folder.
+      * Remove the app's main file (the `*.mlapp` file if using the app designer) and add it again for the application compiler to find all files required for the application to run. This might take a few seconds.
+      * Update the version number in the 'runtime downloaded from web', the 'application information', and the 'default installation folder' fields.
       * Save.
       * Click on `Package`.
     * Test that the compiled version works correctly.
