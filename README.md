@@ -98,11 +98,21 @@ A careful sequence to develop an app is the following:
 8. Push the app up on git. Add a version tag.
 9. If *CoFFee* was modified, push it up on git. Add a version tag.
 10. If you wish to compile/release this new version of the app:
-    * Double-click on the app's `*.prj` file to run the application compiler with existing settings:
-      * Remove the app's main file (the `*.mlapp` file if using the app designer) and add it again for the application compiler to find all files required for the application to run. This might take a few seconds.
-      * Update the version number in the 'runtime downloaded from web', the 'application information', and the 'default installation folder' fields.
-      * Save.
-      * Click on `Package`.
+    * Compile:
+      * Double-click on the app's `*.prj` file to start the Application Compiler with existing settings.
+      * Reset dependencies:
+        * Remove the app's "main file" (the `*.mlapp` file if using the app designer) to remove all the files required. This might take a few seconds.
+        * Remove any remaining files and folders in the list of files required.
+        * Add the "main file" again and wait for the application compiler to find all required files. This might take a few seconds.
+        * Add any other files and folders in the list of files required.
+      * Update the version number:
+        * In the setup file name ("Packaging Options" panel, "Runtime downloaded from web" field)
+        * In the "application information" panel
+        * In the "Default installation folder" field.
+      * Details:
+        * All paths in "Settings" should be in the "Espresso\bin" folder.
+      * Click on "Save".
+      * Click on "Package".
     * Test that the compiled version works correctly.
       * Uninstall any previous version of the app, and delete the user folder.
       * Install the new executable with the setup file.
