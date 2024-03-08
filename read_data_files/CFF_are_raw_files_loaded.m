@@ -83,7 +83,7 @@ for nF = 1:n_rawfiles
         
         % extract the common filename
         [~,onerawfilename,~] = fileparts(CFF_onerawfileonly(rawfile));
-        onerawfilename = {onerawfilename};
+        % onerawfilename = {onerawfilename};
         
         % and compare to those loaded
         idxLoaded(nF) = ismember(onerawfilename, loaded_files_pair_rootfilename);
