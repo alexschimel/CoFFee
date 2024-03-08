@@ -47,13 +47,13 @@ There is no documentation yet. Contact the authors.
 
 ## License
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Distributed under the MIT License. See `LICENSE` file for details.
 
 ## See Also
 
 All apps based on *CoFFee*:
 * [*Grounds*](https://github.com/alexschimel/Grounds): Elevation Change Analysis
-* *Espresso*: Water-column data viewing and processing (private)
+* [*Espresso*](https://github.com/alexschimel/Espresso): Multibeam water-column data visualization and processing (private)
 * [*Iskaffe*](https://github.com/alexschimel/Iskaffe): Multibeam backscatter quality control
 * [*Kopp*](https://github.com/alexschimel/Kopp): Tracking Multibeam raw data parameter changes
 
@@ -61,6 +61,8 @@ All apps based on *CoFFee*:
 ## References
 
 Articles using *CoFFee*, or apps based on *CoFFee*:
+
+* Lucieer, V., Flukes, E., Keane, J. P., Ling, S. D., Nau, A. W., & Shelamoff, V. (2023). Mapping warming reefs — An application of multibeam acoustic water column analysis to define threatened abalone habitat. Frontiers in Remote Sensing, 4(April), 1–15. https://doi.org/10.3389/frsen.2023.1149900
 * Turco, F., Ladroit, Y., Watson, S. J., Seabrook, S., Law, C. S., Crutchley, G. J., Mountjoy, J., Pecher, I. A., Hillman, J. I. T., Woelz, S., & Gorman, A. R. (2022). Estimates of Methane Release From Gas Seeps at the Southern Hikurangi Margin, New Zealand. Frontiers in Earth Science, 10(March), 1–20. https://doi.org/10.3389/feart.2022.834047
 * Nau, A. W., Scoulding, B., Kloser, R. J., Ladroit, Y., & Lucieer, V. (2022). Extended Detection of Shallow Water Gas Seeps From Multibeam Echosounder Water Column Data. Frontiers in Remote Sensing, 3(July), 1–18. https://doi.org/10.3389/frsen.2022.839417
 * Porskamp, P., Schimel, A. C. G., Young, M., Rattray, A., Ladroit, Y., & Ierodiaconou, D. (2022). Integrating multibeam echosounder water‐column data into benthic habitat mapping. Limnology and Oceanography, 1–13. https://doi.org/10.1002/lno.12160
@@ -131,5 +133,5 @@ A careful sequence to develop an app is the following:
 
 ## License
 
-The source code license specified in the "LICENSE" file at the root folder applies to all contents of the repository, excepts for the reused code located in the "toolboxes" folder, which have their own respective licenses, specified in their respective "license.txt" files.
+The source code license specified in the "LICENSE" file at the root folder applies to all contents of the repository EXCEPT for the code of the various toolboxes located in the "toolboxes" folder, which have their own respective license, specified in their respective "license.txt" files.
 
