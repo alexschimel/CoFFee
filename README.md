@@ -6,7 +6,7 @@ Matlab toolbox for multibeam sonar data processing.
 
 ## Description
 
-*CoFFee* is a free and open-source MATLAB toolbox (libary of functions) for reading multibeam sonar raw data files, visualizing their contents, and applying various processsing algorithms. It serves as the engine for several apps/GUIs designed for specific applications.
+*CoFFee* is a free and open-source MATLAB toolbox (i.e., a libary of functions) for reading multibeam sonar raw data files, visualizing their contents, and applying various processsing algorithms. It serves as the engine for several apps/GUIs designed for specific applications.
 
 **IMPORTANT NOTE: This is a pre-release (v2), that is, still clunky. Use at your peril!**
 
@@ -33,7 +33,15 @@ addpath(genpath(coffeeFolder));
 
 ## Help
 
-There is no documentation yet. Contact the authors.
+There is no documentation yet. Contact the [authors](#authors).
+
+## Past versions and updates
+
+See the [releases](https://github.com/alexschimel/CoFFee/releases) page for past released versions. 
+
+If you want to receive notifications of future releases (recommended), you may create a github account, and on this repository click on 'Watch', then 'Custom', and choose 'Releases'. Verify in your GitHub settings that you are set to receive 'Watching' notifications.
+
+## License
 
 ## Authors
 
@@ -41,24 +49,25 @@ There is no documentation yet. Contact the authors.
 * Yoann Ladroit (NIWA)
 * Amy Nay (CSIRO)
 
-## Version History
+### Copyright
 
-[See the releases page](https://github.com/alexschimel/CoFFee/releases)
+2007-2024
+* Alexandre Schimel (The Geological Survey of Norway)
 
-## License
+### License
 
-Distributed under the MIT License. See `LICENSE` file for details.
+*CoFFee* is distributed under the MIT License. See `LICENSE` file for details.
+
+*CoFFee* uses several pieces of third-party code, each being distributed under its own license. Each piece of code is contained in a separate sub-folder of the 'toolboxes' folder and includes the corresponding license file.
 
 ## See Also
 
-All apps based on *CoFFee*:
+### Apps based on CoFFee
 * [*Grounds*](https://github.com/alexschimel/Grounds): Elevation Change Analysis
-* [*Espresso*](https://github.com/alexschimel/Espresso): Multibeam water-column data visualization and processing (private)
+* [*Espresso*](https://github.com/alexschimel/Espresso): Multibeam water-column data visualization and processing
 * [*Iskaffe*](https://github.com/alexschimel/Iskaffe): Multibeam backscatter quality control
-* [*Kopp*](https://github.com/alexschimel/Kopp): Tracking Multibeam raw data parameter changes
 
-
-## References
+### References
 
 Articles using *CoFFee*, or apps based on *CoFFee*:
 
@@ -71,7 +80,6 @@ Articles using *CoFFee*, or apps based on *CoFFee*:
 * Nau, A. W., Lucieer, V. L., & Alexandre Schimel, C. G. (2018). Modeling the along-track sidelobe interference artifact in multibeam sonar water-column data. OCEANS 2018 MTS/IEEE Charleston, 1–5. https://doi.org/10.1109/OCEANS.2018.8604866
 * Schimel, A. C. G., Ierodiaconou, D., Hulands, L., & Kennedy, D. M. (2015). Accounting for uncertainty in volumes of seabed change measured with repeat multibeam sonar surveys. Continental Shelf Research, 111, 52–68. https://doi.org/10.1016/j.csr.2015.10.019
 * Schimel, A. C. G., Healy, T. R., McComb, P., & Immenga, D. (2010). Comparison of a self-processed EM3000 multibeam echosounder dataset with a QTC view habitat mapping and a sidescan sonar imagery, Tamaki Strait, New Zealand. Journal of Coastal Research, 26(4). https://doi.org/10.2112/08-1132.1
-
 
 ## For developers
 
