@@ -8,7 +8,9 @@ Matlab toolbox for multibeam sonar data processing.
 
 *CoFFee* is a free and open-source MATLAB toolbox (i.e., a libary of functions) for reading multibeam sonar raw data files, visualizing their contents, and applying various processsing algorithms. It serves as the engine for several apps/GUIs designed for specific applications.
 
-**IMPORTANT NOTE: This is a pre-release (v2), that is, still clunky. Use at your peril!**
+## Disclaimer
+
+*CoFFee* is the (messy) repository of functions written and edited over the authors' career, which started before they used git. As a result, many functions are obsolete, or don't work with newer functions, or even work at all. This is why this toolbox is noted as in pre-release and will remain so until the authors can clean it all up. Expect headaches if you try to use the less commonly-used functions!
 
 ## Getting Started
 
