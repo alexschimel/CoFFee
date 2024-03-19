@@ -33,7 +33,7 @@ addpath(genpath(coffeeFolder));
 
 ## Help
 
-Head over to the [wiki](https://github.com/alexschimel/CoFFee/wiki) for documentation (in progress as of 18 March 2024).
+Head over to the [wiki](https://github.com/alexschimel/CoFFee/wiki) for documentation (in progress).
 
 For more information, contact the [authors](#authors).
 
