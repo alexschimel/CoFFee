@@ -26,9 +26,8 @@ function fDataGroup = CFF_load_converted_files(rawFilesList, varargin)
 %
 %   See also CFF_CONVERT_RAW_FILES, CFF_COMPUTE_PING_NAVIGATION_V2
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2022; Last revision: 25-07-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% Input arguments management

@@ -103,9 +103,9 @@ function [fDataGroup,comms] = CFF_convert_raw_files(rawFilesList,varargin)
 %   CFF_READ_KMALL, CFF_CONVERT_ALLDATA_TO_FDATA,
 %   CFF_CONVERT_S7KDATA_TO_FDATA, CFF_CONVERT_KMALLDATA_TO_FDATA, CFF_COMMS
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2021; Last revision: 11-11-2021
+%   Copyright 2021-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
+
 
 
 %% Input arguments management

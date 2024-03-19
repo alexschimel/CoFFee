@@ -18,9 +18,8 @@ function rawfileslist = CFF_list_raw_files_in_dir(folder_init, recursive_flag, f
 %   
 %   In each group, files are listed by alphabetical fullpathname.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (Kongsberg Maritime, yoann.ladroit@km.kongsberg.com)
-%   2017-2023; Last revision: 14-07-2023
+%   Copyright 2017-2023 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if isempty(folder_init)
     rawfileslist = {};
