@@ -33,7 +33,9 @@ addpath(genpath(coffeeFolder));
 
 ## Help
 
-There is no documentation yet. Contact the [authors](#authors).
+Head over to the [wiki](https://github.com/alexschimel/CoFFee/wiki) for documentation (in progress as of 18 March 2024).
+
+For more information, contact the [authors](#authors).
 
 ## Past versions and updates
 
@@ -138,8 +140,3 @@ A careful sequence to develop an app is the following:
       * Test that the download links are correct
     * Update the link of the "Download Latest release installer" button on the app's README.md
       * Tese that the new download link works
-
-## License
-
-The source code license specified in the "LICENSE" file at the root folder applies to all contents of the repository EXCEPT for the code of the various toolboxes located in the "toolboxes" folder, which have their own respective license, specified in their respective "license.txt" files.
-
