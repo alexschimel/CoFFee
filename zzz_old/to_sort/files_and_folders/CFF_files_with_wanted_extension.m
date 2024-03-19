@@ -1,43 +1,16 @@
-%% CFF_files_with_wanted_extension.m
-%
-% files = CFF_files_with_wanted_extension(folder, extension) returns a cell
-% array of char strings listing the files in "folder" with the wanted
-% "extension" (case insensitive). "extension" is optional: if not in 
-% input, the function returns all files in "folder". Using extension '.*'
-% produces the same result.
-%
-%% Help
-%
-% *USE*
-%
-% TODO: write longer description of function
-%
-% *INPUT VARIABLES*
-%
-% * |input_variable_1|: TODO: write description and info on variable
-%
-% *OUTPUT VARIABLES*
-%
-% * |output_variable_1|: TODO: write description and info on variable
-%
-% *RESEARCH NOTES*
-%
-% TODO: write research notes
-%
-% *NEW FEATURES*
-%
-% * 2017-06-19: first version (Alex Schimel)
-%
-% *EXAMPLE*
-%
-% TODO: write examples
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
-
-%% Function
 function [files,fpath] = CFF_files_with_wanted_extension(folder, extension)
+%CFF_FILES_WITH_WANTED_EXTENSION  One-line description
+%
+%   FILES = CFF_FILES_WITH_WANTED_EXTENSION(FOLDER, EXTENSION) returns a
+%   cell array of char strings listing the files in FOLDER with the wanted
+%   EXTENSION (case insensitive). EXTENSION is optional: if not in input,
+%   the function returns all files in FOLDER. Using extension '.*' produces
+%   the same result. 
+%
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2017-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if nargin == 1
     extension = '.*';

@@ -1,59 +1,28 @@
-%% CFF_weightgrid.m
-%
-% Weight gridding of 2D points.
-%
-% IMPORTANT NOTE: This function is now obsolete. Use CFF_weightgrid_2D.m
-% instead.
-%
-% function for weighted gridding of (x,y,v,w) data (v=value, w=weight) on
-% (xi,yi) grid. Returns vi and total weight wi. xi & yi must be three
-% elements vectors describing (1) the first value,(2) the step (resolution)
-% and (3) the total number of elements.
-% If weight is constant (=1), the calculation is a simple averaging and
-% the returned weight is the density of points that contributed to the cell
-% value.
-%
-%% Help
-%
-% *USE*
-%
-% TODO: write longer description of function
-%
-% *INPUT VARIABLES*
-%
-% * |input_variable_1|: TODO: write description and info on variable
-%
-% *OUTPUT VARIABLES*
-%
-% * |output_variable_1|: TODO: write description and info on variable
-%
-% *RESEARCH NOTES*
-%
-% to avoid using "find" in gridding (which slows down the code
-% considerably), this function requires the gridded vectors to be linearly
-% spaced (ie have a constant space between each element). But issues in
-% floating-point accuracy makes this complicated. So instead, the code
-% requests not the grid points of xi, yi but simply the defining parameters
-% (first value, step, number of elements).
-%
-% NEW FEATURES
-%
-% - 2017-10-03: Function not superseded by CFF_weightgrid_2D.m (Alex Schimel)
-% - 2017-10-03: Header modified (Alex Schimel)
-% - 2016-12-01: Adding the part where we remove all input data that are not
-% within the grid limits
-% - 2014-04-30: First version.
-%
-% *EXAMPLE*
-%
-% TODO: write examples
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
-
-%% Function
 function [vi,wi] = CFF_weightgrid(x,y,v,xi,yi,w)
+%CFF_WEIGHTGRID  Weight gridding of 2D points
+%
+%   IMPORTANT NOTE: This function is now obsolete. Use CFF_weightgrid_2D.m
+%   instead. 
+%   Function for weighted gridding of (x,y,v,w) data (v=value, w=weight) on
+%   (xi,yi) grid. Returns vi and total weight wi. xi & yi must be three
+%   elements vectors describing (1) the first value,(2) the step
+%   (resolution) and (3) the total number of elements.
+%   If weight is constant (=1), the calculation is a simple averaging and
+%   the returned weight is the density of points that contributed to the
+%   cell value.
+%
+%   To avoid using "find" in gridding (which slows down the code
+%   considerably), this function requires the gridded vectors to be
+%   linearly spaced (ie have a constant space between each element). But
+%   issues in floating-point accuracy makes this complicated. So instead,
+%   the code requests not the grid points of xi, yi but simply the defining
+%   parameters (first value, step, number of elements).
+%
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2014-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
+
 
 warning('IMPORTANT NOTE: This function is now obsolete. Use CFF_weightgrid_2D.m instead.');
 

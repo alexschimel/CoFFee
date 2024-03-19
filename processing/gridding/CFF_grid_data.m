@@ -29,9 +29,8 @@ function [vg,wg] = CFF_grid_data(x,y,v,xg,yg,varargin)
 %
 %   See also CFF_GRID_LINES, CFF_INIT_GRID
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2021-2021; Last revision: 06-04-2022
+%   Copyright 2021-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % TODOs: 
 % 1. check that this function also works with gpuArrays

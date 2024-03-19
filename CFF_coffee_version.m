@@ -19,8 +19,8 @@ function ver = CFF_coffee_version()
 %
 %   See also CFF_GET_CURRENT_FDATA_VERSION.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (Kongsberg Maritime, yoann.ladroit@km.kongsberg.com) 
+%   Copyright 2022-2024 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 ver = '2.0.0-alpha.15'; % 01/03/2024
 % ver = '2.0.0-alpha.14'; % 13/02/2024

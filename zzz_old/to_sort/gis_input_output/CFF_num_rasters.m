@@ -5,36 +5,8 @@ function nIN = CFF_num_rasters(IN)
 %
 % number of rasters in IN
 %
-% USE
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   Copyright 2013-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % get number of rasters. The only way I can think I could have several
 % rasters in input is as a cell array of strings, or a cell array of 3D

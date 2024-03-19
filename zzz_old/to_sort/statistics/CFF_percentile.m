@@ -1,4 +1,7 @@
 function [P] = CFF_percentile(X,V)
+% Calculates percentile
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 X = X(:);
 X = X(~isnan(X));

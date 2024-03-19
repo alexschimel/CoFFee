@@ -91,8 +91,8 @@ function [stack,stackX,stackY,params] = CFF_stack_WCD(fData,varargin)
 %
 %   See also CFF_GEOREFERENCE_BOTTOM_DETECT.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no)
-%   2017-2023; Last revision: 10-02-2023
+%   Copyright 2017-2023 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 global DEBUG;

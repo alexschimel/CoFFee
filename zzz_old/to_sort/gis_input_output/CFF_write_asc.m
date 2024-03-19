@@ -5,37 +5,8 @@ function CFF_write_asc(MAP,X,Y,filename)
 %
 % function to save esri asc format
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 2015-05-21: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   Copyright 2013-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 [pathstr,name,ext] = fileparts(filename);
 if isempty(ext)

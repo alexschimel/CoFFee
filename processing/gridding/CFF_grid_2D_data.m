@@ -26,9 +26,8 @@ function [gridV, gridX, gridY, interpolant] = CFF_grid_2D_data(x,y,v,res,interpo
 %
 %   See also CFF_CREATE_BLANK_GRID.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2021-2021; Last revision: 24-11-2021
+%   Copyright 2021-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% Input management

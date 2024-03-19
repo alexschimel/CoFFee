@@ -88,9 +88,8 @@ function [fData] = CFF_filter_watercolumn(fData,varargin)
 % - 2016-11-06: adding option to remove data outside of input polygon
 % - 2014-02-26: first version. Code adapted from old processing scripts
 %
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   Copyright 2014-2016 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % random comment
 

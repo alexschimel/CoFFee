@@ -18,9 +18,8 @@ function data_tot = CFF_get_WC_data(fData,fieldN,varargin)
 %   * |output_format|: Optional. Description (Information). 'raw' or 'true'
 %   (default)
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 11-11-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % input parser
 p = inputParser;

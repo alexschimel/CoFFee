@@ -34,9 +34,8 @@ function [data,params] = CFF_WC_radiometric_corrections_CORE(data, fData, iPings
 %   See also CFF_WC_RADIOMETRIC_CORRECTIONS,
 %   CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE, CFF_MASK_WC_DATA_CORE.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2017-2022; Last revision: 27-09-2023
+%   Copyright 2017-2023 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% Input arguments management

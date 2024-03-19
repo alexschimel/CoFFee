@@ -1,44 +1,14 @@
 function [Z2,X2,Y2] = CFF_clip_raster(Z,X,Y,xv,yv)
-% [Z2,X2,Y2] = CFF_clip_raster(Z,X,Y,xv,yv)
+%CFF_CLIP_RASTER  Clip raster
 %
-% DESCRIPTION
+%   Clip raster Z with coordinates X,Y to the polygon of vertices xv,yv.
+%   All grid points outside the polygon are set to NaN and then remove
+%   unnecessary rows and columns.
 %
-% clip raster Z with coordinates X,Y to the polygon of vertices xv,yv. All
-% grid points outside the polygon are set to NaN and then remove
-% unnecessary rows and columns.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_COREGISTER_RASTERS.
+
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % build mask
 mask = nan(size(Z));

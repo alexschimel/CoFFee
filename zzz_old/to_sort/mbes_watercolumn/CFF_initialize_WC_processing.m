@@ -1,9 +1,8 @@
-%% CFF_initialize_WC_processing.m
+function [fData] = CFF_initialize_WC_processing(fData,varargin)
+% CFF_initialize_WC_processing.m
 %
 % Initialize (or re-initialize) a fData structure for water-column data
 % processing. 
-%
-%% Help
 %
 % *USE*
 %
@@ -35,43 +34,9 @@
 %
 % * |fData|: fData structure updated with "X_SBP_WaterColumnProcessed"
 % field that memmaps the processed data binary file.
-%
-% *DEVELOPMENT NOTES*
-%
-% _This section describes what features are temporary, needed future
-% developments and paper references. Example below to replace. Delete these
-% lines XXX._ 
-%
-% * research point 1. XXX
-% * research point 2. XXX
-%
-% *NEW FEATURES*
-%
-% _This section contains dates and descriptions of major updates. Example
-% below to replace. Delete these lines XXX._
-%
-% * 2018-10-11: updated header before adding to Coffee v3
-% * 2018-10-08: first version inspired from Yoann's Espresso code.
-%
-% *EXAMPLE*
-%
-% _This section contains examples of valid function calls. Note that
-% example lines start with 3 white spaces so that the publish function
-% shows them correctly as matlab code. Example below to replace. Delete
-% these lines XXX._ 
-%
-%   example_use_1; % comment on what this does. XXX
-%   example_use_2: % comment on what this line does. XXX
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, Yoann Ladroit, NIWA.
 
-
-%% Function
-function [fData] = CFF_initialize_WC_processing(fData,varargin)
-
-
+%   Copyright 2017-2018 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% input parsing
 

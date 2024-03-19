@@ -1,45 +1,15 @@
 function FPBS = CFF_get_soundings(FPBS)
-% FPBS = CFF_get_soundings(FPBS)
+%CFF_GET_SOUNDINGS  One-line description
 %
-% DESCRIPTION
+%   Calculates soundings projected position (Easting,Northing) from the
+%   sonar projected position (Easting,Northing), ship heading and grid
+%   convergence. This function adds fields Easting and Northing to
+%   FPBS.Beam.
 %
-% Calculates soundings projected position (Easting,Northing) from the sonar
-% projected position (Easting,Northing), ship heading and grid convergence.
-% This function adds fields Easting and Northing to FPBS.Beam
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 201-09-30: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2010-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % get beam data for calculations
 AlongtrackDistanceX  = FPBS.Beam.AlongtrackDistanceX;

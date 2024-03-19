@@ -8,38 +8,8 @@ function [polygons,vq] = CFF_create_polygons_along_line(pline,interval,offset,p_
 % the first vertex, and having "p_length" length along the line and
 % "p_width" width across the line. "display_flag" set to 1 forces display.
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - vq: polygons center
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   Copyright 2013-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 % distance of each line vertex along line

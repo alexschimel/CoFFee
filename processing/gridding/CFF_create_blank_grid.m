@@ -8,9 +8,8 @@ function [gridX,gridY,gridNaN] = CFF_create_blank_grid(x,y,res)
 %
 %   See also CFF_GRID_2D_DATA.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2021-2021; Last revision: 15-11-2021
+%   Copyright 2021-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % calculate grid coordinates
 idxKeep = ~isnan(x(:)) & ~isnan(y(:));

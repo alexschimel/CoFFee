@@ -1,4 +1,8 @@
 function [L, L_lead, L_trail] = CFF_exact_pulse_footprint(R,c,tau,beta)
+
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
+
 % the common equation for the pulse footprint is a function of sound
 % celerity (c), the pulse duration (tau) and the angle of incidence beta
 % (depression from seafloor normal, in rad)

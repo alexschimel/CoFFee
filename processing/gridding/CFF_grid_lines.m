@@ -22,9 +22,8 @@ function fDataGroup = CFF_grid_lines(fDataGroup,varargin)
 %
 %   See also CFF_INIT_GRID, CFF_GRID_DATA
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2021-2021; Last revision: 06-04-2022
+%   Copyright 2021-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % input parser
 p = inputParser;

@@ -41,8 +41,8 @@ function mosaic = CFF_mosaic_lines(fDataGroup,fieldname,varargin)
 %
 %   See also CFF_INIT_MOSAIC_V2, CFF_ADD_TO_MOSAIC, CFF_FINALIZE_MOSAIC
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no)
-%   2017-2022; Last revision: 06-04-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % input parser
 p = inputParser;

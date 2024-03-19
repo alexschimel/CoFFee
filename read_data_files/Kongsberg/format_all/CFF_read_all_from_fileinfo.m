@@ -50,11 +50,9 @@ function ALLdata = CFF_read_all_from_fileinfo(ALLfilename, ALLfileinfo, varargin
 %   to Rev Q. Need to be checked though.
 %   * The parsing code for some datagrams still need to be coded. To
 %   update.
-%
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 20-08-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% Input arguments management

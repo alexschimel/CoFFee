@@ -18,9 +18,8 @@ function [fData, flagPathsFixed] = CFF_fix_fData_paths(fData,rawFile)
 %
 %   See also CFF_LOAD_CONVERTED_FILES.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2017-2022; Last revision: 25-07-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 % path to converted data on disk

@@ -6,28 +6,6 @@ function CFF_inputparser_test(filename,varargin)
 % Simple function to illustrate how inputParser works. Check comments
 % inside function for details.
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
 % NEW FEATURES
 %
 % 2015-09-29: first version.
@@ -53,10 +31,9 @@ function CFF_inputparser_test(filename,varargin)
 % CFF_inputparser_test('myfile.jpg','color','CMYK','finish','satin') % The value of 'finish' is invalid. 
 % CFF_inputparser_test('myfile.jpg','color','CMYK','finish','matte',5) % Arg name not given
 % CFF_inputparser_test('myfile.jpg','color','CMYK',5) % Arg name not given
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+
+%   Copyright 2015-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% 1. Create an InputParser object.

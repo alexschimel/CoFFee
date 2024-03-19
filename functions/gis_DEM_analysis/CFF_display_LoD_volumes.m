@@ -1,43 +1,10 @@
 function CFF_display_LoD_volumes(factors,fixedLOD,variableLOD,displayStruct)
-% CFF_display_LoD_volumes(factors,fixedLODvolume,variableLoDvolume,displayStruct)
+%CFF_DISPLAY_LOD_VOLUMES  Display/print LoD volumes on same graph
 %
-% DESCRIPTION
-%
-% disaply and or print, LoD volumes (fixed and variable) on same graph
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_CALCULATE_DOD.
 
+%   Copyright 2015-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % get the data
 fixedVolumeNetChange = [fixedLOD(:).volumeNetChange];

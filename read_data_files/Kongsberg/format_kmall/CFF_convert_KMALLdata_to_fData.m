@@ -47,9 +47,8 @@ function fData = CFF_convert_KMALLdata_to_fData(KMALLdata,varargin)
 %   to be some issues with location of bottom on some dual head data. To
 %   fix eventually XXX1.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (Kongsberg, yoann.ladroit@km.kongsberg.com)
-%   2017-2024; Last revision: 13-02-2024
+%   Copyright 2017-2024 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% Input arguments management

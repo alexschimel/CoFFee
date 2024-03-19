@@ -3,11 +3,9 @@ function data = CFF_get_fData_wc_grid(fData, field, d_lim_sonar_ref, d_lim_botto
 %
 %   If 3D grid, option possible to only take data within specified vertical
 %   bounds.
-%
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 27-07-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if ~iscell(field)
     field = {field};

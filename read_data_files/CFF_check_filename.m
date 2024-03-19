@@ -10,9 +10,8 @@ function out = CFF_check_filename(rawFileName,extension)
 %
 %   See also CFF_CHECK_ALLFILENAME, CFF_CHECK_KMALLFILENAME.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 20-08-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if ischar(rawFileName)
     % single file. 

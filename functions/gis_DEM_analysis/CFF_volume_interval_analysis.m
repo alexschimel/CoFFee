@@ -1,43 +1,13 @@
 function volumes = CFF_volume_interval_analysis(DEM1,DEM2,polygon,intervals,displayStruct)
-% volumes = CFF_volume_interval_analysis(DEM1,DEM2,polygon,intervals,displayStruct)
+%CFF_VOLUME_INTERVAL_ANALYSIS  Colume interval analysis
 %
-% DESCRIPTION
+%   Calculate volumes from the difference between two DEMs, per interval as
+%   specified.
 %
-% calculate volumes from the difference between two DEMs, per interval as
-% specified.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_CALCULATE_DOD.
+
+%   Copyright 2015-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % load DEM1 and DEM2
 [Z1,Z1_easting,Z1_northing] = CFF_load_raster(DEM1);

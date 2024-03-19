@@ -1,52 +1,30 @@
-%% CFF_check_file.m
-%
-% [out_file] = CFF_check_file(in_file, noprompt_flag) checks if
-% "in_file" is an existing file or set of files. If it/they does/do, return the absolute path of
-% the input file(s), with correct filesep. If it isn't,
-% "noprompt_flag" controls the resulting behaviour. If "noprompt_flag" is
-% the string of characters 'noprompt', the function returns an error.
-% Anything else and the function will prompt for valid file(s) as close as possible to the (invalid)
-% input file(s).
-%
-%% Help
-%
-% *USE*
-%
-% TODO: write longer description of function
-%
-% *INPUT VARIABLES*
-%
-% * |in_file|: required. char string or cell array of char strings. The
-% file(s) to test for existence. 
-% * |noprompt_flag|: optional. char string. If 'noprompt' is called as
-% second input, this function will return an error is the file(s) don't
-% exist. If |noprompt_flag| is not called (or is anything else but
-% 'noprompt', then the function will throw an UI interface to prompt for
-% file(s).
-%
-% *OUTPUT VARIABLES*
-%
-% * |out_file|: TODO: write description and info on variable
-%
-% *RESEARCH NOTES*
-%
-% TODO: write research notes
-%
-% *NEW FEATURES*
-%
-% * 2017-06-19: added noprompt flag. Not tested. (Alex Schimel)
-% * 2017-06-06: first version (Alex Schimel)
-%
-% *EXAMPLE*
-%
-% TODO: write examples
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
-
-%% Function
 function [out_file] = CFF_check_file(in_file, noprompt_flag)
+%CFF_CHECK_FILE  One-line description
+%
+%   out_file = CFF_CHECK_FILE(IN_FILE, NOPROMPT_FLAG) checks if IN_FILE
+%   is an existing file or set of files. If it/they does/do, return the
+%   absolute path of the input file(s), with correct filesep. If it isn't,
+%   NOPROMPT_FLAG controls the resulting behaviour. If NOPROMPT_FLAG is the
+%   string of characters 'noprompt', the function returns an error.
+%   Anything else and the function will prompt for valid file(s) as close
+%   as possible to the (invalid) input file(s).
+%
+%   *INPUT VARIABLES*
+%   * |in_file|: required. char string or cell array of char strings. The
+%   file(s) to test for existence. 
+%   * |noprompt_flag|: optional. char string. If 'noprompt' is called as
+%   second input, this function will return an error is the file(s) don't
+%   exist. If |noprompt_flag| is not called (or is anything else but
+%   'noprompt', then the function will throw an UI interface to prompt for
+%   file(s).
+%
+%   *OUTPUT VARIABLES*
+%   * |out_file|: TODO: write description and info on variable
+%
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2017-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % first off, replace wrong fileseps if any
 file = CFF_correct_filesep(in_file);

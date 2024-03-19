@@ -1,35 +1,8 @@
 function [nanmedian,nanstd] = CFF_nanmedian3(M,dim)
-% [nanmean,nanstd] = CFF_nanstat3(M,dim)
-%
-% DESCRIPTION
 %
 % computes mean and standard deviation of M in the chosen dimension dim,
 % discounting the NaN values. Works with matrices M with up to 3
 % dimensions.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - M
-% - dim
-%
-% OUTPUT VARIABLES
-%
-% - nanmean
-% - nanstd
-%
-% RESEARCH NOTES
-%
-% ...
 %
 % NEW FEATURES
 %
@@ -40,10 +13,9 @@ function [nanmedian,nanstd] = CFF_nanmedian3(M,dim)
 % M = rand(5,6,4); % create a 5x6x4 matrix full of random values
 % M(1,[1,4,5],[1:3]) = NaN; % add some nans
 % [nanmean,nanstd] = CFF_nanstat3(M,3); % compute mean and std depsite the NaNs.
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 [m,n,p] = size(M);
 

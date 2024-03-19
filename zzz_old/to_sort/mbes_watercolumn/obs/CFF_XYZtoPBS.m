@@ -6,40 +6,9 @@ function PBS = CFF_XYZtoPBS(fData,ENH)
 % function to find in a MB dataset the closest ping/beam/sample to any
 % given data point in easting/northing/height. Used for display of
 % watercolumn targets
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
 
+%   Copyright 2014-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % data sizes
 [nPings,nBeams,nSamples] = size(fData.X_PBS_sampleEasting);

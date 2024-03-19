@@ -1,46 +1,21 @@
 function volumes = CFF_LOD_analysis(DEM1,DEM2,polygon,uncertainty,factors,volume_uncertainty_method,displayStruct)
-% volumes = CFF_LOD_analysis(DEM1,DEM2,polygon,uncertainty,factors,volume_uncertainty_method,displayStruct)
+%CFF_LOD_ANALYSIS  Compute DOD volumes using Limit of Detection analysis.
 %
-% DESCRIPTION
+%   - Z1, Z2: input DSMs. Can be file names to be loaded or data as, cells,
+%   structures or 3D arrays. See CFF_load_raster for more info. 
+%   - polygon: vertices of the polygon to constrain the analysis to. If
+%   empty (polygon = []), the whole DSMs are used.
+%   - uncertainty: single value to be used or a cell of two DEMs as Z1 and
+%   Z2 
+%   - factors: the factors of uncertainty to be used as LOD in volume
+%   calculations. Possible to use 0 to prevent use of LOD and use all data
+%   instead. Use 1 to use the uncertainty value as LOD. Use vectors (eg
+%   [0:0.1:3] to produce multi LOD analysis 
 %
-% compute DOD volumes using Limit of Detection analysis.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% INPUT VARIABLES
-%
-% - Z1, Z2: input DSMs. Can be file names to be loaded or data as, cells,
-% structures or 3D arrays. See CFF_load_raster for more info.
-% - polygon: vertices of the polygon to constrain the analysis to. If empty
-% (polygon = []), the whole DSMs are used.
-% - uncertainty: single value to be used or a cell of two DEMs as Z1 and Z2
-% - factors: the factors of uncertainty to be used as LOD in volume
-% calculations. Possible to use 0 to prevent use of LOD and use all data
-% instead. Use 1 to use the uncertainty value as LOD. Use vectors (eg
-% [0:0.1:3] to produce multi LOD analysis
-%
-% OUTPUT VARIABLES
-%
-% - volumes
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 2017-08-23: accepting shapefiles as polygon (not tested) (Alex Schimel)
-% 2015-03-10: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_CALCULATE_DOD.
+
+%   Copyright 2015-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % load DEM1 and DEM2
 [Z1,Z1_easting,Z1_northing] = CFF_load_raster(DEM1);

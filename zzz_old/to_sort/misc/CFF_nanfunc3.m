@@ -1,35 +1,8 @@
 function out = CFF_nanfunc3(func,M,dim)
-% out = CFF_nanfunc3(func,M,dim)
-%
-% DESCRIPTION
 %
 % Applies function func to array M in chosen dimension dim,
 % discounting the NaN values. Works with matrices M with up to 3
 % dimensions.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - func
-% - M
-% - dim
-%
-% OUTPUT VARIABLES
-%
-% - out
-%
-% RESEARCH NOTES
-%
-% ...
 %
 % NEW FEATURES
 %
@@ -43,10 +16,9 @@ function out = CFF_nanfunc3(func,M,dim)
 % nanmean = CFF_nanfunc3('mean',M,3); % compute mean depsite the NaNs.
 % nanstd = CFF_nanfunc3('std',M,3); % compute std depsite the NaNs.
 % nanmedian = CFF_nanfunc3('median',M,3); % compute median depsite the NaNs.
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+
+%   Copyright 2014-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % get size of M
 [m,n,p] = size(M);

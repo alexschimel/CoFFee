@@ -1,24 +1,7 @@
-%% CFF_grid_WC_bottom_detect.m
+function fData = CFF_grid_WC_bottom_detect(fData,res)
+% CFF_grid_WC_bottom_detect.m
 %
 % Grids the bottom detect data in water column data.
-%
-%% Help
-%
-% *USE*
-%
-% TODO: write longer description of function
-%
-% *INPUT VARIABLES*
-%
-% * |input_variable_1|: TODO: write description and info on variable
-%
-% *OUTPUT VARIABLES*
-%
-% * |output_variable_1|: TODO: write description and info on variable
-%
-% *RESEARCH NOTES*
-%
-% TODO: write research notes
 %
 % *NEW FEATURES*
 %
@@ -27,19 +10,9 @@
 % one CFF_weightgrid_2D BUT NOT TESTED YET (Alex Schimel).
 % * 2017-07-11: First version. Taken from CFF_grid_watercolumn (Alex
 % Schimel).
-%
-% *EXAMPLE*
-%
-% TODO: write examples
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
 
-
-%% Function
-function fData = CFF_grid_WC_bottom_detect(fData,res)
-
+%   Copyright 2013-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% get bottom coordinates
 botE = reshape(fData.X_PB_bottomEasting,1,[]);

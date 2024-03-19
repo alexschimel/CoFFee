@@ -49,9 +49,8 @@ function KMALLfileinfo = CFF_kmall_file_info(KMALLfilename, varargin)
 %   See also CFF_ALL_FILE_INFO, CFF_S7K_FILE_INFO,
 %   CFF_READ_KMALL_FROM_FILEINFO.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (Kongsberg, yoann.ladroit@km.kongsberg.com)
-%   2017-2024; Last revision: 29-02-2024
+%   Copyright 2017-2024 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 debugFlag = 0;
 

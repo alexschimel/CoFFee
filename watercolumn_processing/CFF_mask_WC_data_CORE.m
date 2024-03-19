@@ -49,9 +49,8 @@ function [data,params] = CFF_mask_WC_data_CORE(data, fData, iPings, varargin)
 %   See also CFF_MASK_WC_DATA, CFF_WC_RADIOMETRIC_CORRECTIONS_CORE,
 %   CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2017-2022; Last revision: 28-07-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 global DEBUG;

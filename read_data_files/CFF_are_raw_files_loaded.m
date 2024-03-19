@@ -5,10 +5,8 @@ function idxLoaded = CFF_are_raw_files_loaded(rawFilesList, fData)
 %   available only if the pair .all/.wcd exists. Also returns whether these
 %   pairs have been converted to .mat format.
 
-
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 27-07-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % exit if no input
 if isempty(rawFilesList)

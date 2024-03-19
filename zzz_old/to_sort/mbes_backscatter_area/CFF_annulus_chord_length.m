@@ -11,6 +11,9 @@ function L = CFF_annulus_chord_length(r1,r2,theta)
 % (2) it intersects the outer circle twice while remaining outside the
 % inner circle.
 
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
+
 % test data 1:
 % r1 = [10;9;8];
 % r2 = [5;6;7];

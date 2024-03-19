@@ -20,9 +20,8 @@ function [sampleAcrossDist,sampleUpDist] = CFF_get_WC_coordinates(fData,iPing,nS
 %   See also CFF_GET_WC_DATA, CFF_INTER_SAMPLE_DISTANCE,
 %   CFF_GET_SAMPLES_RANGE, CFF_GET_SAMPLES_DIST, CFF_GEOREFERENCE_SAMPLE
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2022-2022; Last revision: 20-07-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % get source datagram
 datagramSource = CFF_get_datagramSource(fData);

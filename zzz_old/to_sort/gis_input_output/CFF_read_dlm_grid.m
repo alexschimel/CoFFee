@@ -24,19 +24,9 @@
 % calculated in case the data is very sparse. Added a catch error in case
 % this happens.
 %
-% *NEW FEATURES*
-%
-% * 2017-08-30: first version. Using CFF_weight_grid as inspiration (Alex Schimel).
-%
-% *EXAMPLE*
-%
-% TODO: write examples
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
+%   Copyright 2013-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
-%% Function
 function [M,easting,northing] = CFF_read_dlm_grid(file,varargin)
 
 % dlmread the file

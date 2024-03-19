@@ -5,46 +5,15 @@ function B = CFF_imdilate(A,H,varargin)
 %
 % Image dilation
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 2014-10-13: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
-
 % In dilation, the output pixel value is the maximum value of all pixels
 % covered by the strel. For a binary image, if a single pixel covered is
 % 1, the result is 1. If all pixels covered are 0, the result is 0.
 % For a greyscale image, we simply take the maximum value. For a raster
 % image, values could be negative so it's still good to remove 0s from the
 % strel so that they don't get taken into account in the computations.
+%
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 H=double(H);
 H(H==0)=NaN;

@@ -29,10 +29,9 @@ function [fData] = CFF_process_watercolumn(fData)
 % - 2016-12-01: Removed the bottom detect part and put it in its own
 % function (CFF_process_WC_bottom_detect.m)
 % - 2014-02-26: First version. Code adapted from old processing scripts
-%
-%%%
-% Alex Schimel, Deakin University / Schimel Marine Sc. Serv. / NIWA
-%%%
+
+%   Copyright 2014-2016 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% Extract needed data

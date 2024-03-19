@@ -1,59 +1,41 @@
 function [FPBS] = CFF_get_nav(FPBS,MATfiles,varargin)
-% function [FPBS] = CFF_get_nav(FPBS,MATfiles,varargin)
+%CFF_GET_NAV  One-line description
 %
-% DESCRIPTION
+%   Interpolates navigation data from ancillary sensors (i.e. Easting,
+%   Northing, Height, Grid Convergence, Heading) in MAT file to ping time
+%   in FPBS Data.
 %
-% Interpolates navigation data from ancillary sensors (i.e. Easting,
-% Northing, Height, Grid Convergence, Heading) in MAT file to ping time in
-% FPBS Data.
+%   INPUT VARIABLES
 %
-% USE
+%   - FPBS: File/Ping/Beam/Sample Data structure for the storage of
+%   multibeam data, as created by CFF_convert_mat_to_fpbs
 %
-% ...
+%   - MATfiles: List of MAT files containing the ancillary sensors data, as
+%   created by CFF_convert_all_to_mat
 %
-% PROCESSING SUMMARY
+%   - varargin{1}: navLat (optional): navigation latency to introduce, in
+%   milliseconds. If not specified, function will use navLat = 0;
 %
-% ...
+%   OUTPUT VARIABLES
 %
-% INPUT VARIABLES
+%   - FPBS: File/Ping/Beam/Sample Data structure updated with navigation
+%   data (in Ping table)
 %
-% - FPBS: File/Ping/Beam/Sample Data structure for the storage of multibeam
-% data, as created by CFF_convert_mat_to_fpbs
+%   RESEARCH NOTES
 %
-% - MATfiles: List of MAT files containing the ancillary sensors data, as
-% created by CFF_convert_all_to_mat
+%   new developments needed:
+%   this function is to obtain best info on sonar location (E,N,H) and
+%   orientation (azimuth, depression, heading) at time of ping. In the
+%   future, maybe develop here to accept SBET.
 %
-% - varargin{1}: navLat (optional): navigation latency to introduce, in
-% milliseconds. If not specified, function will use navLat = 0;
+%   This function uses CFF_unwrap_heading and CFF_interpolate_nav
 %
-% OUTPUT VARIABLES
+%   add a possible datum conversion in varargin
 %
-% - FPBS: File/Ping/Beam/Sample Data structure updated with navigation data
-% (in Ping table)
-%
-% RESEARCH NOTES
-%
-% new developments needed:
-% this function is to obtain best info on sonar location (E,N,H) and
-% orientation (azimuth, depression, heading) at time of ping. In the
-% future, maybe develop here to accept SBET.
-%
-% This function uses CFF_unwrap_heading and CFF_interpolate_nav
-%
-% add a possible datum conversion in varargin
-%
-% NEW FEATURES
-%
-% 2014-09-25: first version. Code adapted from CFF_process_ping
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_OTHER_FUNCTION_NAME.
 
+%   Copyright 2010-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% 1. VARARGIN CHECKS
 % varargin{1}: navigation latency

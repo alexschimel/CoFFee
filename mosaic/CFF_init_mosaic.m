@@ -7,9 +7,8 @@ function mosaic = CFF_init_mosaic(E_lim,N_lim,res,varargin)
 %   the resolution, all of them in m. The optional input mode, is either
 %   "blend" (default) or "stitch".
 
-%   Authors: Yoann Ladroit (NIWA, yoann.ladroit@niwa.co.nz) and Alex
-%   Schimel (NGU, alexandre.schimel@ngu.no)
-%   2017-2021; Last revision: 25-02-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % input parser
 p = inputParser;

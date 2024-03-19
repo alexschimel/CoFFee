@@ -97,9 +97,8 @@ function [fData,update_flag] = CFF_convert_ALLdata_to_fData(ALLdataGroup,varargi
 %   * |update_flag|: 1 if a fData was given in input and was modified with
 %   this function
 %
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 27-07-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% input parsing
 

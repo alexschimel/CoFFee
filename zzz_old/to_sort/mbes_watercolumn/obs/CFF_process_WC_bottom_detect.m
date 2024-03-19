@@ -27,10 +27,9 @@ function [fData] = CFF_process_WC_bottom_detect(fData)
 % NEW FEATURES
 %
 % - 2016-12-01: First version. Code taken from CFF_process_watercolumn.m
-%
-%%%
-% Alex Schimel, Schimel Marine Sciences Services. / NIWA
-%%%
+
+%   Copyright 2014-2016 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% Extract needed data

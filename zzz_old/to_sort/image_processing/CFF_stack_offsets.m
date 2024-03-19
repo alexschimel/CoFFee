@@ -6,39 +6,8 @@ function B = CFF_stack_offsets(A,H,varargin)
 % Create copies of A, offseted using the structural element H and stack
 % them in 3rd dimension in order to apply 2D filters, typically median.
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 2014-10-13: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % turn zeros to NaN in H
 H=double(H);
@@ -50,7 +19,8 @@ H(H==0)=NaN;
 nel = numel(find(~isnan(H)));
 
 % pad input array with padel
-% using NaNs by default, these extras borders don't get used in the calculation
+% using NaNs by default, these extras borders don't get used in the
+% calculation 
 padel = NaN; % 0 or 1 or NaN or inf or min(A(:)) or max(A(:))
 A2 = padel.*ones(nrA+nrH-1,ncA+ncH-1);
 A2( 1+(nrH-1)/2:end-(nrH-1)/2 , 1+(ncH-1)/2:end-(ncH-1)/2 ) = A;

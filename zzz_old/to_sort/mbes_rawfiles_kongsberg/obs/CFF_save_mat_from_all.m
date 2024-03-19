@@ -1,8 +1,7 @@
-%% CFF_save_mat_from_all.m
+function ALLfileinfo = CFF_save_mat_from_all(ALLdata, MATfilename)
+% CFF_save_mat_from_all.m
 %
 % Saves the data that is stored in structure ALLdata into a .MAT file.
-%
-%% Help
 %
 % *USE*
 %
@@ -56,12 +55,8 @@
 % ALLdata = CFF_read_all_from_fileinfo(ALLfilename, info);
 % ALLfileinfo = CFF_save_mat_from_all(ALLdata, MATfilename);
 %
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
-
-%% Function
-function ALLfileinfo = CFF_save_mat_from_all(ALLdata, MATfilename)
+%   Copyright 2007-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 save(MATfilename, '-struct', 'ALLdata','-v7.3');
 

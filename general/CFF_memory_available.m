@@ -18,9 +18,8 @@ function mem = CFF_memory_available(varargin)
 %
 %   See also CFF_IS_PARALLEL_COMPUTING_AVAILABLE.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2022; Last revision: 03-08-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % input parser
 p = inputParser;

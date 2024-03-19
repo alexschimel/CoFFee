@@ -1,9 +1,8 @@
-%% CFF_all_file_info.m
+function ALLfileinfo = CFF_all_file_info(ALLfilename)
+% CFF_all_file_info.m
 %
 % Records basic info about the datagrams contained in one Kongsberg EM
 % series binary .all or .wcd data file.
-%
-%% Help
 %
 % *USE*
 %
@@ -56,13 +55,9 @@
 %
 % ALLfilename = '.\data\EM2040c\0001_20140213_052736_Yolla.all';
 % ALLfileinfo = CFF_all_file_info(ALLfilename);
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
 
-%% Function
-function ALLfileinfo = CFF_all_file_info(ALLfilename)
+%   Copyright 2015-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% supported systems:
 % see help for info

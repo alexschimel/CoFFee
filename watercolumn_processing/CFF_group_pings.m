@@ -1,11 +1,10 @@
 function [maxNSamples_groups,ping_group_start,ping_group_end] = CFF_group_pings(num_samp_per_dtgrm, ping_counter, dtgrm_ping_number)
 %CFF_GROUP_PINGS  Makes groups of pings based on number of samples
 %
-%   Makes groups of pings based on the max number of samples in each ping.
+%   Make groups of pings based on the max number of samples in each ping.
 
-
-%   Authors: Alex Schimel and Yoann Ladroit
-%   2017-2024; Last revision: 20-02-2024
+%   Copyright 2017-2024 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 

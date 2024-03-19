@@ -1,32 +1,7 @@
 function Mout = CFF_nanindexable(M,ind)
-% Mout = CFF_nanindexable(M,ind)
-%
-% DESCRIPTION
 %
 % Exactly same as "Mout = M(ind)" except that ind can contains NaNs, then
 % M(NaN) returns NaN.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
 %
 % NEW FEATURES
 %
@@ -43,10 +18,10 @@ function Mout = CFF_nanindexable(M,ind)
 % ind2 = [1 4; NaN 2]
 % sprintf('What should be data2(ind2) but written M2=CFF_nanindexable(data2,ind2):')
 % M2 = CFF_nanindexable(data2,ind2)
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
+
 
 indtemp = ind;
 indtemp(isnan(indtemp)) = 1;

@@ -23,10 +23,9 @@ function fData = CFF_grid_watercolumn(fData,varargin)
 %
 % - 2016-12-01: Also gridding bottom detect
 % - 2014-04-30: First version
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+
+%   Copyright 2014-2016 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% get field to grid

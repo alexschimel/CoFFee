@@ -52,9 +52,8 @@ function S7Kdata = CFF_read_s7k_from_fileinfo(S7Kfilename,S7Kfileinfo,varargin)
 %
 %   See also CFF_READ_S7K.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2017-2022; Last revision: 21-07-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% Input arguments management
 p = inputParser;

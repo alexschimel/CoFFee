@@ -1,23 +1,8 @@
 function [M,S] = CFF_compute_watercolumn_energy(fData,method,varargin)
 % [fData] = CFF_compute_watercolumn_energy(fData,method,varargin)
-%
-% DESCRIPTION
-%
-% INPUT VARIABLES
-%
-% OUTPUT VARIABLES
-%
-% RESEARCH NOTES
-%
-% NEW FEATURES
-%
-% - v0.1:
-%   - first version.
-%
-%%%
-% Alex Schimel, Deakin University
-% Version 0.1 (23-Apr-2014)
-%%%
+
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 switch method
     

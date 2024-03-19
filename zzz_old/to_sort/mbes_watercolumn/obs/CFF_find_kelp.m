@@ -1,10 +1,13 @@
 function kelp = CFF_find_kelp(fData,method)
-
+%
 % create algorithms to find kelp in the watercolumn here
-
+%
 % method:
 %   0: per ping basis
 %   1: per horizontal slice
+
+%   Copyright 2014-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 display_flag = 0;
 

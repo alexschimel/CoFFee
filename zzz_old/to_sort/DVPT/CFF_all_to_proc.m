@@ -1,55 +1,27 @@
-%% CFF_all_to_proc.m
+function CFF_all_to_proc(raw_folder, proc_folder)
+%CFF_ALL_TO_PROC  One-line description
 %
-% CFF_all_to_proc(raw_folder, proc_folder) processes all Kongsberg ".all"
-% raw files that are in "raw_folder" and creates one corresponding "Proc"
-% file for each, then stored into "proc_folder". 
+%   CFF_ALL_TO_PROC(raw_folder, proc_folder) processes all Kongsberg ".all"
+%   raw files that are in "raw_folder" and creates one corresponding "Proc"
+%   file for each, then stored into "proc_folder".
 %
-% IMPORTANT NOTE: temporary function, in development. See research notes.
+%   IMPORTANT NOTE: temporary function, in development. See research notes.
 %
-%% Help
-%
-% *USE*
-%
-% TODO: write longer description of function
-%
-% *INPUT VARIABLES*
-%
-% * |raw_folder|: TODO: write description and info on variable
-% * |proc_folder|: TODO: write description and info on variable
-%
-% *OUTPUT VARIABLES*
-%
-% NA
-%
-% *RESEARCH NOTES*
-%
-% quick dirty function so just temporary:
-% * using the FPBS format because functions are readily available but might
-% be overkill and too long processing for big files
-% * recording variables with same name as Proc file, but not fully
-% processed variables, just simple equivalents:
+%   Quick dirty function so just temporary:
+%   * using the FPBS format because functions are readily available but
+%   might be overkill and too long processing for big files 
+%   * recording variables with same name as Proc file, but not fully
+%   processed variables, just simple equivalents: 
 %   * "ThetaCor" should be angle of incidence but here it's just beam
 %   pointing angle, aka no vessel attitude, ray bending, seafloor slope,
-%   etc.  
+%   etc.
 %   * "SSCE" should be BS level with full radiometric corrections but
-%   here's its just the raw level from the files.
-%
-% *NEW FEATURES*
-%
-% * 2017-06-21: first version (Alex Schimel)
-%
-% *EXAMPLE*
-%
-% raw_folder = './data/EM2040C/';
-% proc_folder = './proc/';
-% CFF_all_to_proc(raw_folder, proc_folder);
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
+%   here's its just the raw level from the files. 
 
-%% Function
-function CFF_all_to_proc(raw_folder, proc_folder)
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2007-2011 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % create output folder
 mkdir(proc_folder);

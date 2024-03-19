@@ -87,8 +87,8 @@ function [E, N, gridConv, pointScaleFactor, utmzone] = CFF_ll2tm(lon, lat, ellip
 %   * UTM is only defined between 80°S and 84°N but this function ignores
 %   these limits.
 
-%   Authors: Alex Schimel (NGU)
-%   2010-2022; Last revision: 29-04-2022
+%   Copyright 2010-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% ellipsoid parameters:

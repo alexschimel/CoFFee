@@ -111,11 +111,9 @@ function [XTFfileinfo] = CFF_convert_xtf_to_all(XTFfilename, ALLfilename, SVPfil
 %   - Now recording heave in attitude data packets (Hypack requirement).
 %   Even though dvpt code showed that the value in Position datagrams are
 %   probably better to use.
-% 
-%%%
-% Alex Schimel, University of Waikato
-% Version 1.0 (06-Jan-2011)
-%%%
+
+%   Copyright 2011-2011 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% tests on input variables 
 

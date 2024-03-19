@@ -6,9 +6,8 @@ function out = CFF_decode_RuntimeParameters(EM_Runtime)
 
 %   See also CFF_READ_ALL_FROM_FILEINFO, CFF_CONVERT_ALLDATA_TO_FDATA.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2021-2022; Last revision: 15-12-2022
+%   Copyright 2021-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 % A lot is dependent on EM number (model)

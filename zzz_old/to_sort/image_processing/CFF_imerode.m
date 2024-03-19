@@ -5,48 +5,19 @@ function B = CFF_imerode(A,H,varargin)
 %
 % Image erosion
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 2014-10-13: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
-
 % In erosion, the output pixel value is the minimum value of all pixels
 % covered by the strel. For a binary image, if a single pixel covered is
 % zero, the result is zero. If all pixels covered are 1, the result is 1.
 % For a greyscale image, we simply take the minimum value.
-
+%
 % The strel are constructed as binary as 0s and 1s with 0s standing for
 % pixels "that are not part of the strel". So we need to remove them so
 % that these 0 don't influence the "min" computation
+%
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
+
+
 
 H=double(H);
 H(H==0)=NaN;

@@ -3,9 +3,8 @@ function flags = CFF_get_R7012_flags(flag_dec)
 %
 %   See also CFF_READ_S7K_FROM_FILEINFO.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 27-08-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if isnumeric(flag_dec)
     flag_bin = dec2bin(flag_dec, 16);

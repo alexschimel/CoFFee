@@ -9,32 +9,6 @@ function B = CFF_spikefilt2(A,n,k,p,varargin)
 % strel. k=1 removes a lot while k=3 removes only the most conspicuous
 % spikes. n = 1 removes most peaks, any larger value removes less.
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 2014-10-13: first version.
-%
 % EXAMPLE
 %
 % Z1_file = '.\DATA\WH1_Z_50cm_UTM54S_LAT_p1.tif';
@@ -63,9 +37,8 @@ function B = CFF_spikefilt2(A,n,k,p,varargin)
 % end
 % figure; imagesc(Z1)
 %
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % create structural element
 H = CFF_disk(n); % disk of radius n

@@ -42,9 +42,8 @@ function [sampleEasting, sampleNorthing, sampleHeight] = CFF_get_samples_ENH_v2(
 %
 %   See also CFF_GET_SAMPLES_DIST, CFF_GEOREFERENCE_SAMPLE
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2017-2022; Last revision: 19-07-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % permute dimensions of input to get everything as SBP matrices
 sonE  = permute(sonE,[3,1,2]);

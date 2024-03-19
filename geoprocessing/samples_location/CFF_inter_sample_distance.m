@@ -16,9 +16,8 @@ function interSamplesDistance = CFF_inter_sample_distance(fData, varargin)
 %
 %   See also CFF_GET_SAMPLES_RANGE
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2022; Last revision: 28-07-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % input parsing
 p = inputParser;

@@ -1,44 +1,14 @@
 function out = CFF_LOD_volumes(DOD,X,Y,LOD,UNC)
-% out = CFF_LOD_volumes(DOD,X,Y,LOD,UNC)
+%CFF_LOD_VOLUMES  LOD volumes
 %
-% DESCRIPTION
+%   Calculate volumes eroded and deposited from the difference between two
+%   DEMS (DOD), using a threhsold or Limit Of Detection (LOD). Also use
+%   uncertainty (UNC) to output intervals of confidence.
 %
-% Calculate volumes eroded and deposited from the difference between two
-% DEMS (DOD), using a threhsold or Limit Of Detection (LOD). Also use
-% uncertainty (UNC) to output intervals of confidence. 
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_CALCULATE_DOD.
+
+%   Copyright 2015-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % cell resolutions in X and Y and area
 Xres = X(1,2)-X(1,1);

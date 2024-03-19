@@ -20,8 +20,8 @@ function CFF_add_cat_array_legend(varargin)
 %   nexttile; image(double(A)); colorbar
 %   nexttile; image(double(A)); CFF_add_cat_array_legend(A);
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no)
-%   2022-2022; Last revision: 14-07-2022
+%   Copyright 2022-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % input parsing
 A = varargin{end};

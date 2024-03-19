@@ -9,46 +9,8 @@ function T = CFF_readtable(filename)
 % ID,Name,Height,Quote
 % 0,'John',1.75,"normal text, with coma inside that makes readtable fail"
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-% filename = 'G:\temp1\01_Alex_Schimel\GIS\temp\Beach_polygon_vertices.txt';
-% T1 = CFF_readtable(filename);
-% filename = 'G:\temp1\01_Alex_Schimel\GIS\temp\test.txt';
-% T2 = CFF_readtable(filename);
-%
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
-
-
+%   Copyright 2013-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 try
     

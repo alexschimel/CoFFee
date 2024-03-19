@@ -1,42 +1,16 @@
 function str = CFF_nice_sprintf(num)
-% str = CFF_nice_sprintf(num)
-%
-% DESCRIPTION
 %
 % the sprintf people really wants. The one that turns 0.57 in '0.57', and
 % not '0.5700' or '5.7E-1' etc.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
 %
 % NEW FEATURES
 %
 % 2015-05-21: first version.
 %
 % EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+
+%   Copyright 2015-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 % output as a floating point with way more accuracy than needed

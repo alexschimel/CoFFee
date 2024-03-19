@@ -16,19 +16,14 @@ function [fData] = CFF_filter_WC_bottom_detect(fData,varargin)
 %
 % - fData
 %
-% RESEARCH NOTES
-%
 % NEW FEATURES
 %
 % - 2016-12-01: Using the new "X_PB_bottomSample" field in fData rather
 % than "b1"
 % - 2016-11-07: First version. Code taken from CFF_filter_watercolumn.m
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
 
-
+%   Copyright 2016-2016 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% INPUT PARSER
 

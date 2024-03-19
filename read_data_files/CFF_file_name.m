@@ -20,9 +20,8 @@ function name = CFF_file_name(filename, varargin)
 %   CFF_file_extension({'C:\my_file.bin','C:\my_other_file.jpg'},1) returns
 %   {'my_file.bin','my_other_file.jpg'}
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2021-2022; Last revision: 25-07-2022
+%   Copyright 2021-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % input parser
 p = inputParser;

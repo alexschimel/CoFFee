@@ -1,9 +1,8 @@
-%% CFF_convert_all_to_mat_v2.m
+function ALLfileinfo = CFF_convert_all_to_mat_v2(ALLfilename, varargin)
+% CFF_convert_all_to_mat_v2.m
 %
 % Converts one Kongsberg EM series binary .all or .wcd data file to a .mat
 % file, allowing choice on which type of datagrams to parse.
-% 
-%% Help
 %
 % *USE*
 %
@@ -99,13 +98,8 @@
 % ALLfileinfo = CFF_convert_all_to_mat_v2(ALLfilename, 'MATfilename', 'temp1.mat', 'datagrams', [65,80]); % same, but using proper input variable names
 % ALLfileinfo = CFF_convert_all_to_mat_v2(ALLfilename, 'datagrams', 88); % convert xyz88 datagrams into default mat file
 %
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, Deakin University, NIWA.
-
-%% Function
-function ALLfileinfo = CFF_convert_all_to_mat_v2(ALLfilename, varargin)
-
+%   Copyright 2007-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% Input arguments management using inputParser
 

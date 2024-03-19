@@ -38,6 +38,9 @@ function R = CFF_3Drotmat(rotAngle,varargin)
 %
 % https://en.wikipedia.org/wiki/Rotation_matrix
 
+%   Copyright 2017-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
+
 % parsing inputs
 p = inputParser;
 addRequired(p,'rotAngle',@CFF_mustBeVector);

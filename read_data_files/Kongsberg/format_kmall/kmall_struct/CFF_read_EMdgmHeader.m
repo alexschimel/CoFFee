@@ -10,10 +10,8 @@ function out_struct = CFF_read_EMdgmHeader(fid)
 %
 %   See also CFF_READ_KMALL_FROM_FILEINFO.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2024; Last revision: 29-02-2024
-
+%   Copyright 2017-2024 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % Datagram length in bytes. The length field at the start (4 bytes) and end
 % of the datagram (4 bytes) are included in the length count.

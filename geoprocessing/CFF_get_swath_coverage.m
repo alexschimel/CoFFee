@@ -1,16 +1,19 @@
 function pgonFinal = CFF_get_swath_coverage(fData, Nstart)
+%CFF_GET_SWATH_COVERAGE  One-line description
+%
+%   To get the swath coverage we need to simplify the BP bottom location
+%   into a nice-looking polygon. This may not be simple depending on the
+%   complexity of the soundings location. We run a routine where the
+%   polygon is increasingly simplified until it's "nice-looking". The level
+%   of simplification is defined by the number (N) of vertices we which to
+%   set along the first and last swathes. It must be at least 2 and at
+%   most, the number of beams. In the routine, we start with this number
+%   set to N and halve it until the polygon is "nice-looking".
 
-% to get the swath coverage we need to simplify the BP bottom location into
-% a nice-looking polygon. This may not be simple depending on the
-% complexity of the soundings location. 
+%   See also CFF_OTHER_FUNCTION_NAME.
 
-% we run a routine where the polygon is increasingly simplified until it's
-% "nice-looking".
-
-% the level of simplification is defined by the number (N) of vertices we
-% which to set along the first and last swathes. It must be at least 2 and
-% at most, the number of beams. In the routine, we start with this number
-% set to N and halve it until the polygon is "nice-looking"
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 nBeams = size(fData.X_BP_bottomEasting,1);
 nPings = numel(fData.X_1P_pingE);

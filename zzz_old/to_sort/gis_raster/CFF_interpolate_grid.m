@@ -5,24 +5,6 @@ function Zout = CFF_interpolate_grid(X,Y,Z,strel_size)
 %
 % Interpolate depth image
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
 % RESEARCH NOTES
 %
 % - Using inpaint_nans (from John d'Erico, found on Mathworks).
@@ -35,17 +17,8 @@ function Zout = CFF_interpolate_grid(X,Y,Z,strel_size)
 % - For later, build here my second approach idea of filling in cells with
 % 8 neighbours, then 7, etc.
 %
-% NEW FEATURES
-%
-% 2014-10-13: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   Copyright 2013-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % small grids parameters
 nNo = 10;   % number of northing (rows) splits

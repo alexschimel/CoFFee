@@ -1,39 +1,14 @@
 function CFF_nice_easting_northing(varargin)
-% CFF_nice_easting_northing(varargin)
+%CFF_NICE_EASTING_NORTHING  Improve easting/northing tick labels format
 %
-% DESCRIPTION
+%   INPUT VARIABLES
+%   - varargin{1} (optional): maximum number of digits for the string
+%   representation (typically 10 or more).
 %
-% turn easting/northing tick labels into proper format
-%
-% USE
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varargin{1} (optional): maximum number of digits for the string representation
-% (typically 10 or more)
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% NEW FEATURES
-%
-% 2014-07-22: first version. taken from /2008-11-01 - Tapuae MBES new
-% processing code/script_ProcessData_3_map_processing1_!!!.m
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2007-2012 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if nargin > 0
     precision = varargin{1};

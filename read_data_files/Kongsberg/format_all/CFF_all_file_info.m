@@ -52,9 +52,8 @@ function ALLfileinfo = CFF_all_file_info(ALLfilename, varargin)
 %   See also CFF_KMALL_FILE_INFO, CFF_S7K_FILE_INFO,
 %   CFF_READ_ALL_FROM_FILEINFO. 
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2023; Last revision: 02-11-2023
+%   Copyright 2017-2023 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 

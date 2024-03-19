@@ -1,22 +1,11 @@
-%% CFF_georeference_sample.m
+function [sampleEasting, sampleNorthing, sampleHeight,sampleAcrossDistance,sampleUpwardsDistance,sampleRange] = CFF_georeference_sample(idxSamples, startRangeSampleNumber, interSamplesDistance, beamPointingAngle, sonarEasting, sonarNorthing, sonarHeight, sonarHeading)
+% CFF_georeference_sample.m
 %
 % Get range, swathe coordinates (across and upwards distance from sonar),
 % and projected coordinates (easting, northing, height) of any sample based
 % on the sample number, sample number offset, inter-samples distance, beam
 % pointing angle and the sonar's [projected coordinates and orientation
 % (heading)
-%
-%% Help
-%
-% *USE*
-%
-% _This section contains a more detailed description of what the function
-% does and how to use it, for the interested user to have an overall
-% understanding of its function. Example below to replace. Delete these
-% lines XXX._  
-%
-% This is a text file containing the basic comment template to add at the
-% start of any new ESP3 function to serve as function help. XXX 
 %
 % *INPUT VARIABLES*
 %
@@ -52,40 +41,8 @@
 % * |sampleRange|: A SBP matrix (or SB for 1 ping) of each sample's range
 % (in m) from the sonar.
 %
-% *DEVELOPMENT NOTES*
-%
-% _This section describes what features are temporary, needed future
-% developments and paper references. Example below to replace. Delete these
-% lines XXX._ 
-%
-% * research point 1. XXX
-% * research point 2. XXX
-%
-% *NEW FEATURES*
-%
-% _This section contains dates and descriptions of major updates. Example
-% below to replace. Delete these lines XXX._
-%
-% * 2018-10-11: first version. Combining code so that georeferencing of
-% bottom sample and WC samples are now using the same code at all times
-%
-% *EXAMPLE*
-%
-% _This section contains examples of valid function calls. Note that
-% example lines start with 3 white spaces so that the publish function
-% shows them correctly as matlab code. Example below to replace. Delete
-% these lines XXX._ 
-%
-%   example_use_1; % comment on what this does. XXX
-%   example_use_2: % comment on what this line does. XXX
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, Yoann Ladroit, NIWA.
-
-%% Function
-function [sampleEasting, sampleNorthing, sampleHeight,sampleAcrossDistance,sampleUpwardsDistance,sampleRange] = CFF_georeference_sample(idxSamples, startRangeSampleNumber, interSamplesDistance, beamPointingAngle, sonarEasting, sonarNorthing, sonarHeight, sonarHeading)
-
+%   Copyright 2017-2018 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% Calculate range for the sample(s). 
 % For water column, you need to take

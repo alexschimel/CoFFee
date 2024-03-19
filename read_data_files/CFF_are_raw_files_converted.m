@@ -18,9 +18,8 @@ function idxConverted = CFF_are_raw_files_converted(rawFilesList,flagCheckVersio
 %
 %   See also CFF_CONVERTED_DATA_FOLDER, CFF_IS_FDATA_VERSION_CURRENT.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2023; Last revision: 11-01-2023
+%   Copyright 2017-2023 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % exit if no input raw file list
 if isempty(rawFilesList)

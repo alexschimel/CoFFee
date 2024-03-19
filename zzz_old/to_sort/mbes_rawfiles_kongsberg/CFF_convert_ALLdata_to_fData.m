@@ -1,9 +1,8 @@
-%% CFF_convert_ALLdata_to_fData.m
+function [fData,update_flag] = CFF_convert_ALLdata_to_fData(ALLdataGroup,varargin)
+% CFF_convert_ALLdata_to_fData.m
 %
 % Converts the Kongsberg EM series data files in ALLdata format (containing
 % the KONGSBERG datagrams) to the fData format used in processing.
-%
-%% Help
 %
 % *USE*
 %
@@ -136,13 +135,8 @@
 % ALLdata = CFF_read_all_from_fileinfo(ALLfilename, info);
 % fData = CFF_convert_ALLdata_to_fData(ALLdata);
 %
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel,Deakin University, NIWA.
-% Yoann Ladroit, NIWA.
-
-%% Function
-function [fData,update_flag] = CFF_convert_ALLdata_to_fData(ALLdataGroup,varargin)
+%   Copyright 2007-2018 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% input parsing
 

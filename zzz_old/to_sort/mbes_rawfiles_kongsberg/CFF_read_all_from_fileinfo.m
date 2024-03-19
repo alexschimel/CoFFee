@@ -1,9 +1,8 @@
-%% CFF_read_all_from_fileinfo.m
+function ALLdata = CFF_read_all_from_fileinfo(ALLfilename, ALLfileinfo,varargin)
+% CFF_read_all_from_fileinfo.m
 %
 % Reads contents of one Kongsberg EM series binary .all or .wcd data file,
 % using ALLfileinfo to indicate which datagrams to be parsed.
-%
-%% Help
 %
 % *USE*
 %
@@ -70,14 +69,9 @@
 % info = CFF_all_file_info(ALLfilename);
 % info.parsed(:)=1; % to save all the datagrams
 % ALLdata = CFF_read_all_from_fileinfo(ALLfilename, info);
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, Waikato University, Deakin University, NIWA.
 
-%% Function
-function ALLdata = CFF_read_all_from_fileinfo(ALLfilename, ALLfileinfo,varargin)
-
+%   Copyright 2015-2018 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% Input arguments management using inputParser
 p = inputParser;

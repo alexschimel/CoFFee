@@ -23,9 +23,8 @@ function fData = CFF_georeference_bottom_detect(fData,varargin)
 %   See also CFF_COMPUTE_PING_NAVIGATION_V2, CFF_FILTER_BOTTOM_DETECT_V2,
 %   CFF_GROUP_PROCESSING. 
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2017-2022; Last revision: 27-07-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% Input arguments management

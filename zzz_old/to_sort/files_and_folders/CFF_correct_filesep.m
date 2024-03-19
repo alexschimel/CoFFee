@@ -1,43 +1,17 @@
-%% CFF_correct_filesep.m
-%
-% The path or file separator symbol is different between windows-based
-% system ("\") and unix-based systems, including mac ("/").
-% out = CFF_correct_filesep(in) corrects file, folder and path names "in"
-% with the appropriate filesep. Takes single input entries (string of
-% characters) as well as multiple entries (cell arrays of characters).
-%
-%% Help
-%
-% *USE*
-%
-% TODO: write longer description of function
-%
-% *INPUT VARIABLES*
-%
-% * |input_variable_1|: TODO: write description and info on variable
-%
-% *OUTPUT VARIABLES*
-%
-% * |output_variable_1|: TODO: write description and info on variable
-%
-% *RESEARCH NOTES*
-%
-% TODO: write research notes
-%
-% *NEW FEATURES*
-%
-% * 2017-06-06: first version (Alex Schimel)
-%
-% *EXAMPLE*
-%
-% TODO: write examples
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
-
-%% Function
 function out = CFF_correct_filesep(in)
+%CFF_CORRECT_FILESEP  One-line description
+%
+%   The path or file separator symbol is different between windows-based
+%   system ("\") and unix-based systems, including mac ("/"). 
+%
+%   OUT = CFF_CORRECT_FILESEP(IN) corrects file, folder and path names IN
+%   with the appropriate filesep. Takes single input entries (string of
+%   characters) as well as multiple entries (cell arrays of characters). 
+%
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2017-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 correct_filesep = @(x) regexprep(x,'[/\\]',filesep);
 

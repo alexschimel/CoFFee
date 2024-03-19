@@ -1,22 +1,9 @@
 function heading = CFF_unwrap_heading(heading,varargin)
-% heading = CFF_unwrap_heading(heading,varargin)
-%
-% DESCRIPTION
 %
 % This function unwraps heading values superior to allow them going over
 % 360 or inferior to 0 (because every time the vessel crossed the NS
 % line, the heading jumps from 0 to 360 (or from 360 to 0) and this
 % causes a problem for following interpolation)
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
 %
 % INPUT VARIABLES
 %
@@ -30,20 +17,15 @@ function heading = CFF_unwrap_heading(heading,varargin)
 %
 % RESEARCH NOTES
 %
-% To rewrap the data (i.e. bringing heading back in the [0:360] interval, do:
-% heading = mod(heading,360);
+% To rewrap the data (i.e. bringing heading back in the [0:360] interval,
+% do: heading = mod(heading,360);
 % 
 % NEW FEATURES
 %
 % 2014-09-29: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if nargin<3
     cutoff = varargin{1};

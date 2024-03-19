@@ -1,50 +1,29 @@
 function [PB,ID] = CFF_pingbeamarray(FPBS,fields)
-% [PB,ID] = CFF_pingbeamarray(FPBS,fields)
+%CFF_PINGBEAMARRAY  One-line description
 %
-% DESCRIPTION
-%
-% Turns desired fields from FPBS.Beam into Ping-Beam arrays (for
-% visualization or ping/beam processing.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - FPBS: Multibeam data in FPBS format
-% - fields: can be one string of characters or cells of strings for several
+%   Turns desired fields from FPBS.Beam into Ping-Beam arrays (for
+%   visualization or ping/beam processing.
+
+%   INPUT VARIABLES
+%   - FPBS: Multibeam data in FPBS format
+%   - fields: can be one string of characters or cells of strings for several
 %
 % OUTPUT VARIABLES
+%   - PB: ping/beam matrix of the desired field. Will be returned as a cell
+%   array of matrices if several fields were requested.
+%   - ID: ping/beam matrix of corresponding ID. Needed to write back into
+%   FPBS.
 %
-% - PB: ping/beam matrix of the desired field. Will be returned as a cell
-% array of matrices if several fields were requested.
-% - ID: ping/beam matrix of corresponding ID. Needed to write back into
-% FPBS.
+%   RESEARCH NOTES
 %
-% RESEARCH NOTES
+%   Note the output as pings for rows, going 1 to M where M is the maximum
+%   FPBS.Beam.Index. Beams go from 1 to N where N is the maximum
+%   FPBS.Beam.Rank.
 %
-% Note the output as pings for rows, going 1 to M where M is the maximum
-% FPBS.Beam.Index. Beams go from 1 to N where N is the maximum
-% FPBS.Beam.Rank.
-%
-% NEW FEATURES
-%
-% 2013-10-02: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2017-20XX Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% Get a ping/beam matrix of ID fields for indexing
 iping=FPBS.Beam.Index;

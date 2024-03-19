@@ -1,43 +1,13 @@
 function [Z1out,Z2out,Xout,Yout] = CFF_coregister_rasters(Z1,X1,Y1,Z2,X2,Y2,varargin)
-% [Z1out,Z2out,Xout,Yout] = CFF_coregister_rasters(Z1,X1,Y1,Z2,X2,Y2,varargin)
+%CFF_COREGISTER_RASTERS  Coregister two rasters
 %
-% DESCRIPTION
+%   This function is to register two grids (X1,Y1,Z1) and (X1,Y1,Z1) on the
+%   same X,Y by extending the X,Y grids and/or interpolating.
 %
-% This function is to register two grids (X1,Y1,Z1) and (X1,Y1,Z1) on the
-% same X,Y by extending the X,Y grids and/or interpolating.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_CLIP_RASTER.
+
+%   Copyright 2015-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % first thing first, if datasets are already coregistered, get out of here:
 if all(size(X1)==size(X2)) && all(all(X1==X2)) && all(all(Y1==Y2))

@@ -20,9 +20,8 @@ function [gpuAvail,info] = CFF_is_parallel_computing_available()
 %
 %   See also CFF_MEMORY_AVAILABLE.
 
-%	Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2022; Last revision: 03-08-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 % Each new release of MATLAB requires updated CUDA toolkit, with a driver

@@ -5,16 +5,6 @@ function [XX,YY,ZZ] = CFF_grid(x,y,z,res,w)
 %
 % Grid data points (x,y,z) with weights w, at resolution res.
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
 % INPUT VARIABLES
 %
 % - x,y,z: data vectors to be gridded
@@ -26,21 +16,8 @@ function [XX,YY,ZZ] = CFF_grid(x,y,z,res,w)
 %
 % - XX,YY,ZZ: gridded data
 %
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 2014-10-13: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   Copyright 2013-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if nargin<5
     w = ones(size(x));

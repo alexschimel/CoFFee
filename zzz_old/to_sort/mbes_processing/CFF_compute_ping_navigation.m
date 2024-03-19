@@ -1,9 +1,8 @@
-%% CFF_compute_ping_navigation.m
+function [fData] = CFF_compute_ping_navigation(fData,varargin)
+% CFF_compute_ping_navigation.m
 %
 % Interpolates navigation data from ancillary sensors to ping time (i.e.
 % Easting, Northing, Height, Grid Convergence, Heading, Speed).
-%
-%% Help
 %
 % *USE*
 %
@@ -45,30 +44,8 @@
 % of ping. In the future, maybe develop here to accept SBET.
 % * function formerly named CFF_process_ping.m
 %
-% *NEW FEATURES*
-%
-% * 2018-10-11: Added speed. Updated header before adding to Coffee v3
-% * 2017-10-06: new header update
-% * 2017-10-06: saving as new version (v2) because change in order of
-% dimensions
-% * 2014-02-28: first version Code adapted from old processing scripts
-%
-% *EXAMPLE*
-%
-% _This section contains examples of valid function calls. Note that
-% example lines start with 3 white spaces so that the publish function
-% shows them correctly as matlab code. Example below to replace. Delete
-% these lines XXX._
-%
-%   example_use_1; % comment on what this does. XXX
-%   example_use_2: % comment on what this line does. XXX
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, Waikato University, Deakin University, NIWA.
-
-%% Function
-function [fData] = CFF_compute_ping_navigation(fData,varargin)
+%   Copyright 2014-2018 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% 1. VARARGIN CHECKS

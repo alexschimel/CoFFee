@@ -1,3 +1,5 @@
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% 1. testing my functions for exact footprints compared to equations commonly used

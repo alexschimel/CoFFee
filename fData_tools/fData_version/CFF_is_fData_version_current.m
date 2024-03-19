@@ -5,9 +5,8 @@ function bool = CFF_is_fData_version_current(fdata_input)
 %   structure. 
 %
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 24-05-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % version if the fData file
 fdata_ver = CFF_get_fData_version(fdata_input);

@@ -1,9 +1,15 @@
 function out = CFF_getKM(KMALLdata, L1name, L1range, L2name, L2range, L3name, L3range)
-% DEV NOTE: I hate that I have to code this. Data in KMALLdata are a mess
-% to access because of my initial choice to do arrays of struct. I would
-% need to change a lot to fix this, so in the meantime, here's a function
-% to access data in them.
+%CFF_GETKM  One-line description
+%
+%   DEV NOTE: I hate that I have to code this. Data in KMALLdata are a mess
+%   to access because of my initial choice to do arrays of struct. I would
+%   need to change a lot to fix this, so in the meantime, here's a function
+%   to access data in them.
+%
+%   See also CFF_OTHER_FUNCTION_NAME.
 
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 out = KMALLdata;
 

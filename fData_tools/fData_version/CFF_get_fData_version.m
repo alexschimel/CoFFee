@@ -28,9 +28,8 @@ function fDataVersionList = CFF_get_fData_version(fDataInputList)
 %
 %   See also CFF_GET_CURRENT_FDATA_VERSION.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2017-2022; Last revision: 19-07-2022
+%   Copyright 2017-202 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % single input
 if ~iscell(fDataInputList)

@@ -1,42 +1,10 @@
 function DOD = CFF_calculate_DOD(Z1,Z2)
-% DOD = CFF_calculate_DOD(Z1,Z2)
+%CFF_CALCULATE_DOD  Output the difference between two co-registered DEMs
 %
-% DESCRIPTION
-%
-% Simply output the difference between two co-registered DEMs
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_CALCULATE_DOD.
+
+%   Copyright 2015-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if any(size(Z1)~=size(Z2))
     error('DEMs are not co-registered')

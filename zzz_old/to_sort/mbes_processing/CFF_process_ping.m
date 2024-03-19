@@ -37,19 +37,8 @@ function [fData] = CFF_process_ping(fData,varargin)
 % orientation (azimuth, depression, heading) at time of ping. In the
 % future, maybe develop here to accept SBET.
 %
-% NEW FEATURES
-%
-% - v0.1:
-%   - first version. Code adapted from old processing scripts
-%
-%%%
-% Alex Schimel, Deakin University
-% Version 1.0 (28-Feb-2014)
-%%%
-
-
-
-
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% 1. VARARGIN CHECKS
 

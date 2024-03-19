@@ -10,11 +10,9 @@ function ext = CFF_file_extension(filename)
 %   *EXAMPLE*
 %   ext = CFF_file_extension('f.mat'); % returns 'mat'
 %   ext = CFF_file_extension({'f.mat', 'g.bin'}); % returns {'mat','bin'}
-%
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 27-07-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if ischar(filename)
     [~,~,ext] = fileparts(filename);

@@ -60,9 +60,8 @@ function [fData,params] = CFF_filter_bottom_detect_v2(fData,varargin)
 %
 %   See also CFF_GEOREFERENCE_BOTTOM_DETECT, CFF_GROUP_PROCESSING.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2022; Last revision: 27-07-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 global DEBUG
 % DEBUG = 1;

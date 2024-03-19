@@ -1,12 +1,7 @@
-%% CFF_watercolumn_display.m
+function [h,F] = CFF_watercolumn_display(fData, varargin)
+% CFF_watercolumn_display.m
 %
 % Displays Multibeam watercolumn data in various ways.
-%
-%% Help
-%
-% *USE*
-%
-%
 %
 % *INPUT VARIABLES*
 %
@@ -87,14 +82,9 @@
 % CFF_watercolumn_display(fData,'data','processed','displayType','flat','bottomDetectDisplay','yes','waterColumnTargets',kelp);
 % CFF_watercolumn_display(fData,'data','processed','displayType','wedge','bottomDetectDisplay','yes','waterColumnTargets',kelp);
 % CFF_watercolumn_display(fData,'data','processed','displayType','projected','bottomDetectDisplay','yes','waterColumnTargets',kelp);
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, Deakin University, NIWA.
 
-%% Function
-function [h,F] = CFF_watercolumn_display(fData, varargin)
-
+%   Copyright 2014-2018 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% INPUT PARSER
 

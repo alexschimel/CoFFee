@@ -1,81 +1,8 @@
-%% CFF_grid_WC_data.m
-%
-% _This section contains a very short description of the function, for the
-% user to know this function is part of the software and what it does for
-% it. Example below to replace. Delete these lines XXX._ 
-%
-% Template of ESP3 function header. XXX
-%
-%% Help
-%
-% *USE*
-%
-% _This section contains a more detailed description of what the function
-% does and how to use it, for the interested user to have an overall
-% understanding of its function. Example below to replace. Delete these
-% lines XXX._  
-%
-% This is a text file containing the basic comment template to add at the
-% start of any new ESP3 function to serve as function help. XXX 
-%
-% *INPUT VARIABLES*
-%
-% _This section contains bullet points of input variables with description
-% and information. Put input variable and other valid entries or defaults
-% between | symbols so it shows as monospace. Information section to
-% contain, in order: requirement (i.e. Required/Optional/Paramter), valid
-% type (e.g. Num, Positive num, char, 1xN cell array, etc.) and default
-% value if there is one (e.g. Default: '10'). Example below to replace.
-% Delete these lines XXX._
-% 
-% * |fData|: Required. Structure for the storage of kongsberg EM series
-% multibeam data in a format more convenient for processing. The data is
-% recorded as fields coded "a_b_c" where "a" is a code indicating data
-% origing, "b" is a code indicating data dimensions, and "c" is the data
-% name. See the help of function CFF_convert_ALLdata_to_fData.m for
-% description of codes. 
-% * |res|: Description (Information). Default: 1 XXX
-% * |vert_res|: Description (Information). Default: 1 XXX
-% * |dim|: Description (Information). '2D' or '3D' (default) XXX
-% * |dr_sub|: Description (Information). Default: 4 XXX
-% * |db_sub|: Description (Information). Default: 2 XXX
-% * |e_lim|: Description (Information). Default: [] XXX
-% * |n_lim|: Description (Information). Default: [] XXX
-%
-% *OUTPUT VARIABLES*
-%
-% * |fData|: fData structure updated with fields for gridded data
-%
-% *DEVELOPMENT NOTES*
-%
-% * function formerly named CFF_grid_watercolumn.m
-%
-% *NEW FEATURES*
-%
-% _This section contains dates and descriptions of major updates. Example
-% below to replace. Delete these lines XXX._
-%
-% * 2018-10-11: Updated header before adding to Coffee v3
-% * YYYY-MM-DD: first version. XXX
-%
-% *EXAMPLE*
-%
-% _This section contains examples of valid function calls. Note that
-% example lines start with 3 white spaces so that the publish function
-% shows them correctly as matlab code. Example below to replace. Delete
-% these lines XXX._ 
-%
-%   example_use_1; % comment on what this does. XXX
-%   example_use_2: % comment on what this line does. XXX
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, Deakin University, NIWA. 
-% Yoann Ladroit, NIWA.
-
-
-%% Function
 function fData = CFF_grid_WC_data(fData,varargin)
+% CFF_grid_WC_data.m
+
+%   Copyright 2017-2018 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % XXX: check that gridding uses processed data if it exists, original data
 % if not (instead of using the checkboxes)

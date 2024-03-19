@@ -3,6 +3,8 @@ function L = CFF_footprint_intersection(pulse_lead, pulse_trail, beam_lead, beam
 % footprints on the seafloor, do they intersect, and if so, what is the
 % distance of the intersection?
 
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % pulse and beam vector size are the same.
 % They must have been calculated on the same time/angle

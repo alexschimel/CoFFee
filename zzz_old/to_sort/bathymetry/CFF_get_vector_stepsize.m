@@ -1,42 +1,10 @@
 function stepsize = CFF_get_vector_stepsize(vector)
-% stepsize = CFF_get_vector_stepsize(vector)
+%CFF_GET_VECTOR_STEPSIZE  Find stepsize of a vector
 %
-% DESCRIPTION
-%
-% find stepsize of a vector
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2017-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 [C,ia,ic] = unique(diff(vector));
 

@@ -10,9 +10,8 @@ function wc_dir = CFF_converted_data_folder(rawfileslist)
 %
 %   See also CFF_CONVERT_RAW_FILES, CFF_LOAD_CONVERTED_FILES.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2022-2022; Last revision: 25-07-2022
+%   Copyright 2022-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if isempty(rawfileslist)
     wc_dir = [];

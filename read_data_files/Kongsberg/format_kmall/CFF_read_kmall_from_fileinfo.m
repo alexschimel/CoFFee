@@ -8,11 +8,9 @@ function KMALLdata = CFF_read_kmall_from_fileinfo(KMALLfilename,KMALLfileinfo,va
 %   KMALLdata = CFF_READ_KMALL_FROM_FILEINFO(KMALLfilename, KMALLfileinfo)
 %   reads all datagrams in KMALLfilename for which KMALLfileinfo.parsed
 %   equals 1, and store them in KMALLdata.
-%
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 20-08-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 global DEBUG;
 

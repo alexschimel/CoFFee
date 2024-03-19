@@ -1,31 +1,15 @@
 function FPBS = CFF_project_nav(FPBS,ellips,tmproj)
-% FPBS = CFF_project_nav(FPBS,ellips,tmproj)
+%CFF_PROJECT_NAV  One-line description
 %
-% DESCRIPTION
+%   Project Ping lat/long to desired projection. Also corrects heading for
+%   grid convergence.
 %
-% Project Ping lat/long to desired projection. Also corrects heading for
-% grid convergence.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - FPBS: Ping must have fields Lat and Long
-%
-% - ellips: code string for the input coordinates' ellipsoid.
+%   INPUT VARIABLES
+%   - FPBS: Ping must have fields Lat and Long
+%   - ellips: code string for the input coordinates' ellipsoid.
 %              supported codes: 'wgs84', 'grs80'
-%
-% - tmproj: code string for the ouptut transverse mercator projection.
+%   - tmproj: code string for the ouptut transverse mercator projection.
 %              supported codes:
-%
 %       'utm' -> Universal Transvere Mercator projection without zone
 %       specified. The function computes the longitudinal zone for input
 %       coordinates and returns the result in variable utmzone. Note: UTM
@@ -37,25 +21,13 @@ function FPBS = CFF_project_nav(FPBS,ellips,tmproj)
 %
 %       More options are available. See help for CFF_ll2tm.m
 %
-% OUTPUT VARIABLES
+%   OUTPUT VARIABLES
+%   - FPBS: Updated FPBS with fields Easting and Northing
 %
-% - FPBS: Updated FPBS with fields Easting and Northing
-%
-% RESEARCH NOTES
-%
-% This function uses CFF_ll2tm
-%
-% NEW FEATURES
-%
-% 2014-09-30: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2017-20XX Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % convert posLatitude/posLongitude to easting/northing/grid convergence:
 [Easting, Northing, GridConvergence] = CFF_ll2tm(FPBS.Ping.Longitude, FPBS.Ping.Latitude, ellips, tmproj);

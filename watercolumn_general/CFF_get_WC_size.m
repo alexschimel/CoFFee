@@ -2,9 +2,8 @@ function [nSamples, nBeams, nPings] = CFF_get_WC_size(fData,varargin)
 %CFF_GET_WC_SIZE  One-line description
 %
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 11-11-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % get source datagram
 if ~isempty(varargin) && ~isempty(varargin{1})

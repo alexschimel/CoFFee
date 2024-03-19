@@ -22,9 +22,9 @@ classdef CFF_Comms < handle
     %   being recorded at all. Eventually, create another mode where there
     %   is NO display BUT messages are recorded.
 
-    %   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-    %   Ladroit (Kongsberg Maritime, yoann.ladroit@km.kongsberg.com) 
-    %   2021-2023; Last revision: 19-10-2023
+    %   Copyright 2021-2023 Alexandre Schimel
+    %   Licensed under MIT. Details on
+    %   https://github.com/alexschimel/CoFFee/
     
     properties
         Type (1,:) char {mustBeMember(Type,{'', 'disp','textprogressbar','waitbar','oneline','multilines'})} = ''

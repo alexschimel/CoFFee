@@ -70,10 +70,8 @@ function [fDataGroup,params] = CFF_group_processing(procFun,fDataGroup,varargin)
 %   See also CFF_COMPUTE_PING_NAVIGATION_V2,
 %   CFF_GEOREFERENCE_BOTTOM_DETECT, CFF_FILTER_BOTTOM_DETECT_V2. 
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2022-2022; Last revision: 27-07-2022
-
+%   Copyright 2022-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% Input arguments management
 p = inputParser;

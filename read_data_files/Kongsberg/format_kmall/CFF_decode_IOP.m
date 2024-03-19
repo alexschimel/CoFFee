@@ -8,8 +8,8 @@ function out_struct = CFF_decode_IOP(EMdgmIOP)
 %   See also CFF_KMALL_FILE_INFO, CFF_READ_KMALL_FROM_FILEINFO,
 %   CFF_READ_KMALL.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no)
-%   2022-2023; Last revision: 23-10-2023
+%   Copyright 2022-2023 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % initalize output
 out_struct = struct();

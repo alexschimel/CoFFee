@@ -1,44 +1,13 @@
 function DODstats = CFF_DOD_analysis(DEM1,DEM2,polygon,stats_flag,display_flag)
-% DODstats = CFF_DOD_analysis(DEM1,DEM2,polygon,stats_flag,display_flag)
+%CFF_DOD_ANALYSIS  DOD analysis
 %
-% DESCRIPTION
+%   Read DEMs 1 and 2, clip them to polygon, compute DOD, calculate stats
+%   (if flagged), display DOD (if flagged). 
 %
-% Read DEMs 1 and 2, clip them to polygon, compute DOD, calculate stats (if
-% flagged), display DOD (if flagged).
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 2015-08-10: first time tag.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_CALCULATE_DOD.
+
+%   Copyright 2015-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % load DEM1 and DEM2
 [Z1,Z1_easting,Z1_northing] = CFF_load_raster(DEM1);

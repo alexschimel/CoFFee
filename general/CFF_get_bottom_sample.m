@@ -17,10 +17,8 @@ function BP_bottomSample = CFF_get_bottom_sample(fData,varargin)
 %   CFF_GET_BOTTOM_SAMPLE(fData,'which','raw') forces the return of the raw
 %   bottom sample.
 
-
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 11-11-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% INPUT PARSING

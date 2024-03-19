@@ -1,40 +1,13 @@
-%% CFF_full_path.m
-%
-% out = CFF_full_path(in) returns the absolute path for input folder or
-% file "in", in case the input path is only relative.
-%
-%% Help
-%
-% *USE*
-%
-% TODO: write longer description of function
-%
-% *INPUT VARIABLES*
-%
-% * |in|: string of characters for folder or file
-%
-% *OUTPUT VARIABLES*
-%
-% * |out|: string of characters for folder or file
-%
-% *RESEARCH NOTES*
-%
-% TODO: write research notes
-%
-% *NEW FEATURES*
-%
-% * 2017-06-06: first version (Alex Schimel)
-%
-% *EXAMPLE*
-%
-% TODO: write examples
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
-
-%% Function
 function out = CFF_full_path(in)
+%CFF_FULL_PATH  One-line description
+%
+%   OUT = CFF_FULL_PATH(IN) returns the absolute path for input folder or
+%   file IN, in case the input path is only relative. 
+%
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2017-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % first, correct filesep if necessary:
 temp = CFF_correct_filesep(in);

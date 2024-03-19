@@ -8,11 +8,9 @@ function fData = CFF_init_memmapfiles(fData,varargin)
 %   to initialize the binary files (and link them to fData) with empty
 %   values, prior to reading the acoustic data and filling the binary
 %   files.
-%
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 27-07-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% input parser
 p = inputParser;

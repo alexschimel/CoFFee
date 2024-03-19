@@ -1,18 +1,7 @@
-%% CFF_filter_WC_sidelobe_artifact.m
+function [fData] = CFF_filter_WC_sidelobe_artifact(fData,varargin)
+% CFF_filter_WC_sidelobe_artifact.m
 %
 % Filter the water column specular/sidelobe artifact
-%
-%% Help
-%
-% *USE*
-%
-% _This section contains a more detailed description of what the function
-% does and how to use it, for the interested user to have an overall
-% understanding of its function. Example below to replace. Delete these
-% lines XXX._  
-%
-% This is a text file containing the basic comment template to add at the
-% start of any new ESP3 function to serve as function help. XXX 
 %
 % *INPUT VARIABLES*
 %
@@ -75,24 +64,9 @@
 % be applied to that masked original data, etc.
 % * 2016-10-10: v2 for new datasets recorded as SBP instead of PBS
 % * 2016-11-07: First version. Code taken from CFF_filter_watercolumn.m
-%
-% *EXAMPLE*
-%
-% _This section contains examples of valid function calls. Note that
-% example lines start with 3 white spaces so that the publish function
-% shows them correctly as matlab code. Example below to replace. Delete
-% these lines XXX._ 
-%
-%   example_use_1; % comment on what this does. XXX
-%   example_use_2: % comment on what this line does. XXX
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, Waikato University, Deakin University, NIWA. 
-% Yoann Ladroit, NIWA. 
 
-%% Function
-function [fData] = CFF_filter_WC_sidelobe_artifact(fData,varargin)
+%   Copyright 2014-2018 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% INPUT PARSING
 

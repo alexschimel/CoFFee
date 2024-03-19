@@ -11,7 +11,8 @@ function CFF_write_all_from_fileinfo(info, rawFileOut)
 %
 %   See also CFF_ALL_FILE_INFO, CFF_READ_ALL_FROM_FILEINFO
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no)
+%   Copyright 2023-2023 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 comms = CFF_Comms('textprogressbar');
 comms.start(sprintf('Reading/writing datagrams'));

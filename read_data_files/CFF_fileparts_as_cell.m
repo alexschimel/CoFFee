@@ -7,12 +7,10 @@ function [filepath,name,ext] = CFF_fileparts_as_cell(file_list)
 %   CFF_FILEPARTS_AS_CELL corrects this silly behaviour by always
 %   outputting cells.
 %
-%
 %   See also FILEPARTS.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 15-06-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 [filepath,name,ext] = fileparts(file_list);
 

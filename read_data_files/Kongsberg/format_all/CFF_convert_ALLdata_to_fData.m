@@ -94,9 +94,8 @@ function fData = CFF_convert_ALLdata_to_fData(ALLdataGroup,varargin)
 %   * Several datagrams still need to be upgraded to deal with dual head
 %   systems
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@km.kongsberg.com)
-%   2017-2022; Last revision: 05-07-2023
+%   Copyright 2017-2023 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% Input arguments management

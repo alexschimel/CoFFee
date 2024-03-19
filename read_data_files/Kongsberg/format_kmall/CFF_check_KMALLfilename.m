@@ -10,8 +10,7 @@ function out = CFF_check_KMALLfilename(rawfilename)
 %
 %   See also CFF_CHECK_FILENAME.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 20-08-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 out = CFF_check_filename(rawfilename,{'.kmall','.kmwcd'});

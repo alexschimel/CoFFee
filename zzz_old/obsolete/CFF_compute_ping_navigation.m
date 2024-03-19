@@ -7,9 +7,8 @@ function [fData] = CFF_compute_ping_navigation(fData,varargin)
 %
 %   OBSOLETE FUNCTION. USE CFF_COMPUTE_PING_NAVIGATION_V2 instead.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 11-11-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 warning('OBSOLETE FUNCTION. USE CFF_COMPUTE_PING_NAVIGATION_V2 instead.');
 

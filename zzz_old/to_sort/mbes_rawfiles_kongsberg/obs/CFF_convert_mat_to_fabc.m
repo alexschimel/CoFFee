@@ -1,13 +1,8 @@
-%% CFF_convert_mat_to_fabc.m
+function [FABCdata] = CFF_convert_mat_to_fabc(MATfilename)
+% CFF_convert_mat_to_fabc.m
 %
 % Converts the Kongsberg EM series data files in MAT format (containing the
 % KONGSBERG datagrams) to the FABC format for use in processing.
-%
-%% Help
-% 
-% *USE*
-%
-% ...
 %
 % *INPUT VARIABLES*
 %
@@ -93,12 +88,8 @@
 % - v0.3.1:
 %   - reading sound speed profile
 %
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel,Deakin University, NIWA
-
-%% Function
-function [FABCdata] = CFF_convert_mat_to_fabc(MATfilename)
+%   Copyright 2007-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % turn MATfilename to cell if string
 if ischar(MATfilename)

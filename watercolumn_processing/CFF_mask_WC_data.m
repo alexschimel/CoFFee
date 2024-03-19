@@ -31,11 +31,9 @@ function [fData] = CFF_mask_WC_data(fData,varargin)
 %   *DEVELOPMENT NOTES*
 %   * check that masking uses filtered bottom if it exists, original bottom
 %   if not.
-%
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 27-07-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % extract info about WCD
 wcdata_Class  = fData.X_1_WaterColumnProcessed_Class; % int8 or int16

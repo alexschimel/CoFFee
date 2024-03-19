@@ -1,9 +1,8 @@
-%% CFF_filelist_for_conversion.m
+function [IN_files,OUT_files] = CFF_filelist_for_conversion(varargin)
+% CFF_filelist_for_conversion.m
 %
 % CFF_filelist_for_conversion creates the list of input files and output
 % files prior to conversion to .mat format.
-%
-%% Help
 %
 % *USE*
 %
@@ -59,23 +58,6 @@
 % * Test if looks like a folder (ends with filesep). If so this is output
 % * Otherwise, error.
 %
-% *INPUT VARIABLES*
-%
-% * |input_variable_1|: TODO: write description and info on variable
-%
-% *OUTPUT VARIABLES*
-%
-% * |output_variable_1|: TODO: write description and info on variable
-%
-% *RESEARCH NOTES*
-%
-% TODO: write research notes
-%
-% *NEW FEATURES*
-%
-% * 2017-06-20: complete revamping. Extension now must be in third input (Alex Schimel)
-% * 2014-02-20: first version (Alex Schimel)
-%
 % *EXAMPLE*
 %
 % % all following examples need the said input files to exist:
@@ -92,13 +74,9 @@
 % [in9,out9] = CFF_filelist_for_conversion('D:\Alex\test\','D:\Alex\test\paf\','.all',)
 %
 % see end of function for more working examples
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
 
-%% Function
-function [IN_files,OUT_files] = CFF_filelist_for_conversion(varargin)
+%   Copyright 2014-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % The default output folder is the current folder.
 OUT_folder = [pwd filesep];

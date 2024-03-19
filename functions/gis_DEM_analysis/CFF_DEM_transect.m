@@ -1,42 +1,11 @@
 function transect = CFF_DEM_transect(DEMs,lines,resolution,display_flag)
-% transect = CFF_DEM_transect(DEMs,lines,resolution,display_flag)
+%CFF_DEM_TRANSECT  One-line description
 %
-% DESCRIPTION
-%
-% use as template for a new function
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_CALCULATE_DOD.
+
+%   Copyright 2015-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
+
 
 % number of rasters in input
 nDEMs = CFF_num_rasters(DEMs);

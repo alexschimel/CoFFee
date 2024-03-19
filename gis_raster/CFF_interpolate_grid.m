@@ -1,51 +1,22 @@
 function Zout = CFF_interpolate_grid(X,Y,Z,strel_size)
-% Zout = CFF_interpolate_grid(X,Y,Z,strel_size)
+%CFF_INTERPOLATE_GRID  Interpolate grid
 %
-% DESCRIPTION
+%   Interpolate depth image
 %
-% Interpolate depth image
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
+%	Using inpaint_nans (from John d'Erico, found on Mathworks).
 % 
-% - ...
-% - ...
-% - ...
+%   This function separates the full dataset into smaller ones for
+%   interpolation. This allows not wasting time interpolating vast expenses
+%   of areas without data and avoid running out on memory (inpaint_nans is
+%   a glutton).
 %
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% - Using inpaint_nans (from John d'Erico, found on Mathworks).
-%
-% - This function separates the full dataset into smaller ones for
-% interpolation. This allows not wasting time interpolating vast expenses
-% of areas without data and avoid running out on memory (inpaint_nans is a
-% glutton).
-%
-% - For later, build here my second approach idea of filling in cells with
-% 8 neighbours, then 7, etc.
-%
-% NEW FEATURES
-%
-% 2014-10-13: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   For later, build here my second approach idea of filling in cells with
+%   8 neighbours, then 7, etc.
+ % 
+%   See also CFF_OTHER_FUNCTION.
+
+%   Copyright 2014-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % small grids parameters
 nNo = 10;   % number of northing (rows) splits

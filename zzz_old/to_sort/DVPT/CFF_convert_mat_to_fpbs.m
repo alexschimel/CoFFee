@@ -1,65 +1,41 @@
 function DATA = CFF_convert_mat_to_fpbs(MATfile)
-% DATA = CFF_convert_mat_to_fpbs(MATfile)
+%CFF_CONVERT_MAT_TO_FPBS  Convert a mat file (Kongsberg) to FPBS format.
 %
-% DESCRIPTION
-%
-% convert a mat file (Kongsberg format) to FPBS format.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - get number of files in input
-% - create file table and store file-specific variables
-% - for each file
-%   - get number of pings in file
-%   - create ping table and store ping-specific variables
-%   - for each ping
-%       - get number of beams in ping
-%       - create beam table and store beam-specific variables
-%       - for each beam
-%           - get number of samples
-%           - create sample table and store sample-specific variables
-% - save the four tables in DATA
-%
-% INPUT VARIABLES
-%
-% - MATfile: list of data files in mat format (use
-% CFF_filelist_for_conversion)
-%
-% OUTPUT VARIABLES
-%
-% - DATA
-%
-% RESEARCH NOTES
-%
-% - FPBS format consists in four tables: File, Ping, Beam and Samp
-% containing the data relative to each of the levels of this hierarchy. For
-% example, a transmit beam angle is a ping parameter and will therefore be
-% stored in the Ping table, while a receive beam angle is a beam parameter
-% and will therefore be stored in the Beam table.
-%
-% - This code uses datagram "EM_SeabedImage89" to get needed information in
-% number of pings, beams and samples. For older datagrams, modify this code
-% with a test at the beggining for existence of "EM_SeabedImage89"
-%
-% - There is potential display at several levels. Beam level is on. Comment
-% it too to speed up process. Maybe add a flag to specify which level of
-% comment is wanted
-%
-% NEW FEATURES
-%
-% 2014-09-25: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%	PROCESSING SUMMARY
+% 
+%   - get number of files in input
+%   - create file table and store file-specific variables
+%   - for each file
+%     - get number of pings in file
+%     - create ping table and store ping-specific variables
+%     - for each ping
+%         - get number of beams in ping
+%         - create beam table and store beam-specific variables
+%         - for each beam
+%             - get number of samples
+%             - create sample table and store sample-specific variables
+%   - save the four tables in DATA
+% 
+%   RESEARCH NOTES
+% 
+%   - FPBS format consists in four tables: File, Ping, Beam and Samp
+%   containing the data relative to each of the levels of this hierarchy.
+%   For example, a transmit beam angle is a ping parameter and will
+%   therefore be stored in the Ping table, while a receive beam angle is a
+%   beam parameter and will therefore be stored in the Beam table.
+% 
+%   - This code uses datagram "EM_SeabedImage89" to get needed information
+%   in number of pings, beams and samples. For older datagrams, modify this
+%   code with a test at the beggining for existence of "EM_SeabedImage89"
+% 
+%   - There is potential display at several levels. Beam level is on.
+%   Comment it too to speed up process. Maybe add a flag to specify which
+%   level of comment is wanted
+
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % This function is made for a cell array of filenames. If input is a single
 % filename string, turn to cell

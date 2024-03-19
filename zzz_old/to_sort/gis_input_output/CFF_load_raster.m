@@ -1,49 +1,19 @@
 function [Z,X,Y] = CFF_load_raster(IN)
-% [Z,X,Y] = CFF_load_raster(IN)
+%CFF_LOAD_RASTER  Load raster
 %
-% DESCRIPTION
+%   Load raster IN allowing for a range of formats.
 %
-% load raster "IN" allowing for a range of formats
+%   "IN" can be:
+%   - a filename to be loaded (as a string of characters) or data as:
+%   - a structure with fields X, Y and Z, or 
+%   - a 3D array with 3rd dimension being of length 3 and containing X,Y
+%   and Z. 
+%   - a cell array of length 3 with each cell containing, in order, X, Y Z.
 %
-% USE
-%
-% "IN" can be:
-% - a filename to be loaded (as a string of characters) 
-% or data as:
-% - a structure with fields X, Y and Z, or 
-% - a 3D array with 3rd dimension being of length 3 and containing X,Y and
-% Z.
-% - a cell array of length 3 with each cell containing, in order, X, Y Z.
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_OTHER_FUNCTION_NAME.
 
+%   Copyright 2013-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if ischar(IN) && exist(IN,'file')
     % IN is a file

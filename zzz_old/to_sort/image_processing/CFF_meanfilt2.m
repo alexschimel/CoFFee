@@ -5,39 +5,8 @@ function B = CFF_meanfilt2(A,H,varargin)
 %
 % Filters image A with filter H, computing mean
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 2014-10-13: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % turn zeros to NaN in H
 H=double(H);
@@ -81,14 +50,4 @@ end
 %% if method = mean
 % summing non-nan elements and dividing by total numbero of non-Nan elements
 B = CFF_nanfunc3('sum',B,3)./nel;
-
-
-
-
-
-
-
-
-
-
 

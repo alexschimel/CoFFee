@@ -58,10 +58,9 @@ function [fData] = CFF_filter_WC_sidelobe_artifact(fData,varargin)
 % NEW FEATURES
 %
 % - 2016-11-07: First version. Code taken from CFF_filter_watercolumn.m
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+
+%   Copyright 2016-2016 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % random comment
 

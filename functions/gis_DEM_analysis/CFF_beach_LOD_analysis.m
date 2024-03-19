@@ -1,37 +1,11 @@
 function CFF_beach_LOD_analysis(DEM1_file,DEM2_file,ref_polygon_file,main_polygon_file,main_line_file)
-% CFF_beach_LOD_analysis(DEM1_file,DEM2_file,ref_polygon_file,main_polygon_file,main_line_file)
+%CFF_BEACH_LOD_ANALYSIS  DOD analysis of beach in warrnambool
 %
-% DESCRIPTION
-%
-% DOD analysis of beach in warrnambool
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
+%   See also CFF_CALCULATE_DOD.
+
+%   Copyright 2015-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
+
 % EXAMPLE
 %
 % % for UAV Warrnambool paper
@@ -41,10 +15,7 @@ function CFF_beach_LOD_analysis(DEM1_file,DEM2_file,ref_polygon_file,main_polygo
 % main_polygon_file = '.\DATA\Beach_polygon_vertices.txt';
 % main_line_file  = '.\DATA\Beach_line_vertices.txt';
 % CFF_beach_LOD_analysis(Z1_file,Z2_file,ref_polygon_file,main_polygon_file,main_line_file)
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+
 
 
 %% get reference polygon

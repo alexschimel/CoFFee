@@ -23,9 +23,8 @@ function fData = CFF_convert_S7Kdata_to_fData(S7Kdata,varargin)
 %   See also CFF_CONVERT_RAW_FILES, CFF_READ_S7K,
 %   CFF_CONVERT_ALLDATA_TO_FDATA 
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2017-2022; Last revision: 21-07-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 %% Input arguments management

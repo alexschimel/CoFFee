@@ -1,45 +1,13 @@
-%% CFF_weightgrid3.m
+function [gridV,gridW,gridX,gridY,gridZ] = CFF_weightgrid3(x,y,z,v,xi,yi,zi,w)
+% CFF_weightgrid3.m
 %
 % Weight gridding of 3D points.
 %
 % IMPORTANT NOTE: This function is now obsolete. Use CFF_weightgrid_3D.m
 % instead.
-%
-%% Help
-%
-% *USE*
-%
-% TODO: write longer description of function
-%
-% *INPUT VARIABLES*
-%
-% * |input_variable_1|: TODO: write description and info on variable
-%
-% *OUTPUT VARIABLES*
-%
-% * |output_variable_1|: TODO: write description and info on variable
-%
-% *RESEARCH NOTES*
-%
-% TODO: write research notes
-%
-% *NEW FEATURES*
-%
-% * 2017-10-06: added header (Alex Schimel).
-% * YYYY-MM-DD: first version (Alex Schimel).
-%
-% *EXAMPLE*
-%
-% TODO: write examples
-%
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alexandre Schimel, NIWA.
 
-
-%% Function
-function [gridV,gridW,gridX,gridY,gridZ] = CFF_weightgrid3(x,y,z,v,xi,yi,zi,w)
- 
+%   Copyright 2014-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% OPTION 1: just taking code from CFF_grid_watercolumn
 

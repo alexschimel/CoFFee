@@ -1,4 +1,5 @@
-%% CFF_convert_all_to_mat.m
+function [ALLfileinfo] = CFF_convert_all_to_mat(ALLfilename, varargin)
+% CFF_convert_all_to_mat.m
 %
 % WARNING: THIS FUNCTION IS OBSOLETE AND IS NOT SUPPORTED ANYMORE. 
 % USE CFF_convert_all_to_mat_v2 instead
@@ -6,12 +7,6 @@
 % Converts Kongsberg EM series binary .all or .wcd data files (ALL) to a
 % Matlab format (MAT), conserving all information from the original as it
 % is.
-%
-%% Help
-%
-% *USE*
-%
-% ...
 %
 % *INPUT VARIABLES*
 %
@@ -113,12 +108,8 @@
 % ALLfilename = '.\DATA\RAW\0001_20140213_052736_Yolla.all';
 % ALLfileinfo = CFF_convert_all_to_mat(ALLfilename, 'temp.mat');
 %
-% *AUTHOR, AFFILIATION & COPYRIGHT*
-%
-% Alex Schimel, Deakin University, NIWA.
-
-%% Function
-function [ALLfileinfo] = CFF_convert_all_to_mat(ALLfilename, varargin)
+%   Copyright 2007-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 warning('THIS FUNCTION (CFF_convert_all_to_mat) IS OBSOLETE AND IS NOT SUPPORTED ANYMORE. USE CFF_convert_all_to_mat_v2 instead');
 

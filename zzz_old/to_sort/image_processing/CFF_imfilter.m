@@ -4,50 +4,18 @@ function B = CFF_imfilter(A,H,varargin)
 %
 % implementing manual version of imfilter (need a toolbox)
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 2014-10-13: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
-
-
 % B = imfilter(A,h) filters the array A with the
 % filter h. The array A can be logical or a nonsparse
 % numeric array of any class and dimension. The result B has the same size
 % and class as A.   
-
+%
 % imfilter computes each element of the output, B, using double-precision
 % floating point. If A is an integer or logical array, imfilter truncates
 % output elements that exceed the range of the given type, and rounds
 % fractional values.   
+%
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % turn zeros to NaN in H
 H=double(H);

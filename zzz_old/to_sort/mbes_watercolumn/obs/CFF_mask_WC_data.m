@@ -41,9 +41,8 @@ function [fData] = CFF_mask_WC_data(fData,varargin)
 % processing
 % - 2016-11-07: First version. Code taken from CFF_filter_watercolumn.m
 %
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   Copyright 2014-2016 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% Extract needed data
 nPings   = size(fData.WC_PBS_SampleAmplitudes,1);

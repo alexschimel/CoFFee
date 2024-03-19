@@ -47,9 +47,8 @@ function [blocks, info] = CFF_setup_optimized_block_processing(nUnits,unitSizeIn
 %   See also CFF_MEMORY_AVAILABLE, CFF_IS_PARALLEL_COMPUTING_AVAILABLE,
 %   CFF_SETUP_BLOCK_PROCESSING. 
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2022; Last revision: 05-08-2022
+%   Copyright 2017-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 % input arguments management

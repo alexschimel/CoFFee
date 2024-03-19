@@ -12,9 +12,8 @@ function out = CFF_is_field_or_prop(structOrObj,fieldOrPropName)
 
 %   See also ISSTRUCT, ISPROP.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2021-2021; Last revision: 01-12-2021
+%   Copyright 2021-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
 if isstruct(structOrObj)

@@ -6,41 +6,13 @@ function [M,easting,northing] = CFF_read_tif(tif_file,varargin)
 % read tif and tfw file. If tfw file unavailable, returns row and col
 % number.
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
 % INPUT VARIABLES
 %
 % - tif_file
 % - varagin{1}: tfw file name
 %
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% 2015-02-10: tfw now optional.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   Copyright 2013-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % read tif file
 M = imread(tif_file);

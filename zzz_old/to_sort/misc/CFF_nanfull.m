@@ -1,32 +1,7 @@
 function F = CFF_nanfull(S)
-% function F = CFF_nanfull(S)
-%
-% DESCRIPTION
 %
 % Same as function "full" to turn a sparse matrix into a full one, but
 % using NaN instead of 0 for empty elements
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
 %
 % NEW FEATURES
 %
@@ -40,10 +15,9 @@ function F = CFF_nanfull(S)
 % S = sparse(i,j,s)
 % F1 = full(S)
 % F2 = CFF_nanfull(S)
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 [i,j,s] = find(S);
 Smask = sparse(i,j,ones(size(i)));

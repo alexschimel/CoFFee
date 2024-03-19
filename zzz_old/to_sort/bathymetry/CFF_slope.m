@@ -1,7 +1,13 @@
 function [gridSlope, slopeCoef] = CFF_slope(X,Y,Z)
-% INCOMPLETE
-% make sure that what is exported is the slope vector coordinates in X and
-% Y
+%CFF_SLOPE  Slope of a DEM
+%
+%   INCOMPLETE. Make sure that what is exported is the slope vector
+%   coordinates in X and Y.
+%
+%   See also CFF_OTHER_FUNCTION_NAME.
+
+%   Copyright 2017-2017 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % scale parameter
 scale = 3;

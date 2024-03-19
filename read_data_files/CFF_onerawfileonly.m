@@ -4,9 +4,8 @@ function rawfileslist_out = CFF_onerawfileonly(rawfileslist_in)
 %   Simplify a raw files list to a single file per pair, for filenames
 %   manipulation purposes.
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 11-11-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 if ischar(rawfileslist_in)
     % single file

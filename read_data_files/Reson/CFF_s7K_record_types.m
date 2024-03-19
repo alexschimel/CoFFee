@@ -3,9 +3,8 @@ function [listRecordTypeText,s7kFormatVersion] = CFF_s7K_record_types()
 %
 %   See also CFF_S7K_FILE_INFO
 
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann Ladroit
-%   (NIWA, yoann.ladroit@niwa.co.nz) 
-%   2021-2022; Last revision: 21-07-2022
+%   Copyright 2021-2022 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % The list of record types below was established from the s7k Data Format
 % documentation version 3.12 (May 2020). This may be updated but ensure the

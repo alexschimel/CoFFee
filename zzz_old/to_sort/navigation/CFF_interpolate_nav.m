@@ -7,26 +7,6 @@ function ping_data = CFF_interpolate_nav(sensor_time,sensor_data,ping_time)
 % ping_time, outputting resulting interpolation ping_data. To be used to
 % interpolate navigation data (lat, long, heading, etc.)
 %
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-% 
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - sensor_time
-% - sensor_data
-% - ping_time
-%
-% OUTPUT VARIABLES
-%
-% - ping_data
-%
 % RESEARCH NOTES
 %
 % modify to allow arrays of sensor_data (several columns of data)
@@ -34,14 +14,9 @@ function ping_data = CFF_interpolate_nav(sensor_time,sensor_data,ping_time)
 % NEW FEATURES
 %
 % 2014-09-29: first version.
-%
-% EXAMPLE
-%
-% ...
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+
+%   Copyright 2014-2014 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % initialize new vectors
 ping_data = nan(size(ping_time));

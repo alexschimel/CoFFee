@@ -2,9 +2,8 @@ function CFF_clean_delete_fdata(wc_dir)
 %CFF_CLEAN_DELETE_FDATA  Delete a fData including all memmapped files
 %
 
-%   Authors: Yoann Ladroit (NIWA, yoann.ladroit@niwa.co.nz) and Alex
-%   Schimel (NGU, alexandre.schimel@ngu.no)
-%   2017-2021; Last revision: 27-07-2021
+%   Copyright 2017-2021 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % if wc_dir does not exist, exit here
 if ~isfolder(wc_dir)

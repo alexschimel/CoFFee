@@ -22,10 +22,8 @@ function [fData] = CFF_WC_radiometric_corrections(fData)
 %   protection modes I think). But ideally develop this function for future
 %   compensations of TVG, pulse length, etc.
 
-
-%   Authors: Alex Schimel (NGU, alexandre.schimel@ngu.no) and Yoann
-%   Ladroit (NIWA, yoann.ladroit@niwa.co.nz)
-%   2017-2021; Last revision: 24-09-2019
+%   Copyright 2017-2019 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % extract info about WCD
 wcdata_Class  = fData.X_1_WaterColumnProcessed_Class; % int8 or int16

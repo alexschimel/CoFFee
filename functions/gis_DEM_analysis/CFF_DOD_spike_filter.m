@@ -1,43 +1,13 @@
 function DEM2 = CFF_DEM_spike_filter(DEM, n_pixel_neighborhood, k_std_factor, display_flag)
-% DEM2 = CFF_DEM_spike_filter(DEM, n_pixel_neighborhood, k_std_factor, display_flag)
+%CFF_DEM_SPIKE_FILTER  Filtering spikes out of DEM.
 %
-% DESCRIPTION
+%   Filtering spikes out of DEM. The larger n and the smaller k, the more
+%   filtering.
 %
-% filtering spikes out of DEM. The larger n and the smaller k, the more
-% filtering.
-%
-% USE
-%
-% ...
-%
-% PROCESSING SUMMARY
-%
-% - ...
-% - ...
-% - ...
-%
-% INPUT VARIABLES
-%
-% - varagin
-%
-% OUTPUT VARIABLES
-%
-% - NA
-%
-% RESEARCH NOTES
-%
-% ...
-%
-% NEW FEATURES
-%
-% YYYY-MM-DD: second version.
-% YYYY-MM-DD: first version.
-%
-% EXAMPLE
-%
-%%%
-% Alex Schimel, Deakin University
-%%%
+%   See also CFF_CALCULATE_DOD.
+
+%   Copyright 2015-2015 Alexandre Schimel
+%   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % params
 n = n_pixel_neighborhood; %neighborhood size
