@@ -23,7 +23,7 @@ function [SBP_sampleAcrossDistance,SBP_sampleUpwardsDistance] = CFF_get_samples_
 %   See also CFF_GET_SAMPLES_RANGE, CFF_GET_SAMPLES_ENH,
 %   CFF_GEOREFERENCE_SAMPLE 
 
-%   Copyright 2017-2022 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % permute dimension of angle input to get SBP matrix-compatible

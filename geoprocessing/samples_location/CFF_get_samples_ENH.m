@@ -1,11 +1,11 @@
 function [sampleEasting, sampleNorthing, sampleHeight] = CFF_get_samples_ENH(sonarEasting,sonarNorthing,sonarHeight,sonarHeading,sampleAcrossDistance,sampleUpwardsDistance)
-%CFF_GET_SAMPLES_ENH  Compute samples coordinates in the geographical frame
+%CFF_GET_SAMPLES_ENH  Compute samples coordinates in the projected frame
 %
-%   Compute coordinates in the geographical frame (Easting, Northing,
+%   Compute coordinates in the projected frame (Easting, Northing,
 %   Height) of samples using their coordinates in the swath frame
 %   (Distances across and upwards). 
 %
-%   The geographical frame is defined as:
+%   The projected frame is defined as:
 %   - origin: the (0,0) Easting/Northing projection/datum reference
 %   - Xp: Easting (positive grid East)
 %   - Yp: Northing (grid North, positive grid North)
@@ -18,7 +18,7 @@ function [sampleEasting, sampleNorthing, sampleHeight] = CFF_get_samples_ENH(son
 %   - Zs: up distance (positive up)
 %
 %   [E,N,H] = CFF_GET_SAMPLES_ENH(SE,SN,SH,SHEADING,SAMPACD,SAMPUPD)
-%   returns the easting E, northing N, and height H in the geographical
+%   returns the easting E, northing N, and height H in the projected
 %   frame of samples, from the sonar easting SE (in m), sonar northing SN
 %   (in m), sonar height SH (in m), sonar heading SHEADING (in radians
 %   relative to North?), and the samples' across distance SAMPACD (in m)
@@ -27,9 +27,10 @@ function [sampleEasting, sampleNorthing, sampleHeight] = CFF_get_samples_ENH(son
 %   one ping). SAMPACD and SAMPUPD must be SBP tensors or compatible (e.g.
 %   SB matrices for 1 ping).
 %
-%   See also CFF_GET_SAMPLES_DIST, CFF_GEOREFERENCE_SAMPLE
+%   See also CFF_GET_SAMPLES_RANGE, CFF_GET_SAMPLES_DIST,
+%   CFF_GEOREFERENCE_SAMPLE 
 
-%   Copyright 2017-2022 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % permute dimensions of input to get everything as SBP matrices
@@ -43,7 +44,7 @@ sampleEasting  = sonarEasting  + sampleAcrossDistance.*cos(sonarHeading);
 sampleNorthing = sonarNorthing + sampleAcrossDistance.*sin(sonarHeading);
 sampleHeight   = sonarHeight   + sampleUpwardsDistance;
 
-% NOTE: We make the STRONG ASSUMPTION here that the geographical and swath
+% NOTE: We make the STRONG ASSUMPTION here that the projected and swath
 % frames have THE SAME Z axis, so that going from one to the other only
 % requires considering the rotation about the Z axis (aka heading/yaw),
 % which includes the vessel heading, the sonar head heading offset, and the

@@ -1,11 +1,11 @@
 function [sampleEasting, sampleNorthing, sampleHeight] = CFF_get_samples_ENH(sonarEasting,sonarNorthing,sonarHeight,sonarHeading,sampleAcrossDistance,sampleUpwardsDistance)
 % CFF_get_samples_ENH.m
 %
-% Compute samples' coordinates in the geographical frame (Easting,
+% Compute samples' coordinates in the projected frame (Easting,
 % Northing, Height) from their coordinates in the swath frame (Distances
-% across and upwards). This requires the geographical coordinates of the
+% across and upwards). This requires the projected coordinates of the
 % swath frame origin (sonar), and the orientation of the swath frame in the
-% geographical frame (vessel's heading).   
+% projected frame (vessel's heading).   
 %
 % *USE*
 %
@@ -19,11 +19,11 @@ function [sampleEasting, sampleNorthing, sampleHeight] = CFF_get_samples_ENH(son
 % *INPUT VARIABLES*
 %
 % * |sonarEasting|: Required. A 1P matrix (or 1 scalar for 1 ping) of the
-% sonar's Easting coordinate in the geographical frame.
+% sonar's Easting coordinate in the projected frame.
 % * |sonarNorthing|: Required. A 1P matrix (or 1 scalar for 1 ping) of the
-% sonar's Northing coordinate in the geographical frame.
+% sonar's Northing coordinate in the projected frame.
 % * |sonarHeight|: Required. A 1P matrix (or 1 scalar for 1 ping) of the
-% sonar's Height coordinate in the geographical frame.
+% sonar's Height coordinate in the projected frame.
 % * |sonarHeading|: Required. A 1P matrix (or 1 scalar for 1 ping) of the
 % swathe's heading.
 % * |sampleAcrossDistance|: Required. A SBP matrix (or SB for 1 ping) of
@@ -34,11 +34,11 @@ function [sampleEasting, sampleNorthing, sampleHeight] = CFF_get_samples_ENH(son
 % *OUTPUT VARIABLES*
 %
 % * |sampleEasting|: A SBP matrix (or SB for 1 ping) of each sample's
-% Easting coordinate in the geographical frame.
+% Easting coordinate in the projected frame.
 % * |sampleNorthing|: A SBP matrix (or SB for 1 ping) of each sample's
-% Northing coordinate in the geographical frame. 
+% Northing coordinate in the projected frame. 
 % * |sampleHeight|: A SBP matrix (or SB for 1 ping) of each sample's Height
-% coordinate in the geographical frame.
+% coordinate in the projected frame.
 
 %   Copyright 2017-2018 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/

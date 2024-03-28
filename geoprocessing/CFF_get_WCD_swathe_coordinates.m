@@ -1,10 +1,9 @@
-function [sampleAcrossDist,sampleUpDist] = CFF_get_WC_coordinates(fData,iPing,nSamples)
-%CFF_GET_WC_COORDINATES  WCD samples coordinates in swath frame from fData
+function [sampleAcrossDist,sampleUpDist] = CFF_get_WCD_swathe_coordinates(fData,iPing,nSamples)
+%CFF_GET_WCD_SWATHE_COORDINATES  Get swath frame coordinates for fData WCD
 %
 %   Computes the cartesian coordinates in the swath frame (i.e. the
-%   distances across and upwards from the sonar) of all samples of
-%   water-column data in one ping. Use this function along with
-%   CFF_GET_WC_DATA to get the coordinates of the data for wedge display. 
+%   distances across and upwards from the sonar) of all samples of one ping
+%   of water-column data. These coordinates are used for WCD wedge display. 
 %
 %   The swath frame is defined as:
 %   - origin: sonar face
@@ -12,15 +11,15 @@ function [sampleAcrossDist,sampleUpDist] = CFF_get_WC_coordinates(fData,iPing,nS
 %   - Ys: along distance (positive ~forward) = 0
 %   - Zs: up distance (positive up)
 %
-%   [ACD,UPD] = CFF_GET_WC_COORDINATES(FDATA,IPING,NSAMPLES) returns the
-%   across distance ACD and the upward distance UPD (both in m) in the
-%   swath frame for all WCD samples with index 1 to NSAMPLES in ping of
-%   index IPING in FDATA. 
+%   [ACD,UPD] = CFF_GET_WCD_SWATHE_COORDINATES(FDATA,IPING,NSAMPLES)
+%   returns the across distance ACD and the upward distance UPD (both in m)
+%   in the swath frame for all WCD samples with index 1 to NSAMPLES in ping
+%   of index IPING in FDATA. 
 %
-%   See also CFF_GET_WC_DATA, CFF_INTER_SAMPLE_DISTANCE,
-%   CFF_GET_SAMPLES_RANGE, CFF_GET_SAMPLES_DIST, CFF_GEOREFERENCE_SAMPLE
+%   See also CFF_INTER_SAMPLE_DISTANCE, CFF_GET_SAMPLES_RANGE,
+%   CFF_GET_SAMPLES_DIST, CFF_GET_WCD_PROJECTED_COORDINATES
 
-%   Copyright 2017-2022 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % get source datagram

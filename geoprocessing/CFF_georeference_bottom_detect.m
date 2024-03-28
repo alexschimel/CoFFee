@@ -23,7 +23,7 @@ function fData = CFF_georeference_bottom_detect(fData,varargin)
 %   See also CFF_COMPUTE_PING_NAVIGATION_V2, CFF_FILTER_BOTTOM_DETECT_V2,
 %   CFF_GROUP_PROCESSING. 
 
-%   Copyright 2017-2022 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
@@ -82,7 +82,7 @@ switch datagramSource
         X_BP_beamPointingAngleRad = deg2rad(X_BP_beamPointingAngleDeg);
         
         % Range and angle will get us the coordinates of the bottom sample
-        % in the swath frame. To get in a geographical frame, we also need
+        % in the swath frame. To get in a projected frame, we also need
         % the heading angle, made up of the sonar heading offset, the
         % vessel heading, and the grid convergence
         X_1P_thetaDeg = - mod( X_1P_gridConvergenceDeg + X_1P_vesselHeadingDeg + X_1_sonarHeadingOffsetDeg, 360 );

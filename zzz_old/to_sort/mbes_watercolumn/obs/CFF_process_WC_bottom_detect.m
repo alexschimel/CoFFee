@@ -4,7 +4,7 @@ function [fData] = CFF_process_WC_bottom_detect(fData)
 % DESCRIPTION
 %
 % Calculates the XY position in the swathe frame of each bottom detection,
-% as well as their XYZ position in the geographical frame. Exact same
+% as well as their XYZ position in the projected frame. Exact same
 % calculations as in CFF_process_watercolumn.m
 %
 % Important Note: this code executes the same calculations on the bottom

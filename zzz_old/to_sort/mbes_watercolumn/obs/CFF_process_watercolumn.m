@@ -4,7 +4,7 @@ function [fData] = CFF_process_watercolumn(fData)
 % DESCRIPTION
 %
 % Calculates the XY position in the swathe frame of each WC sample, as well
-% as their XYZ position in the geographical frame. Exact same calculations
+% as their XYZ position in the projected frame. Exact same calculations
 % as in CFF_process_WC_bottom_detect.m
 %
 % Important Note: this code executes the same calculations on the WC

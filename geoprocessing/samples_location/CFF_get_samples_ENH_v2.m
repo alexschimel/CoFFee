@@ -31,7 +31,7 @@ function [sampleEasting, sampleNorthing, sampleHeight] = CFF_get_samples_ENH_v2(
 %   rotation (i.e. angle between y_s and y_p, positive counter-clockwise. 
 
 %   [E,N,H] = CFF_GET_SAMPLES_ENH(SE,SN,SH,SHEADING,SAMPACD,SAMPUPD)
-%   returns the easting E, northing N, and height H in the geographical
+%   returns the easting E, northing N, and height H in the projected
 %   frame of samples, from the sonar easting SE (in m), sonar northing SN
 %   (in m), sonar height SH (in m), sonar heading SHEADING (in radians
 %   relative to North?), and the samples' across distance SAMPACD (in m)

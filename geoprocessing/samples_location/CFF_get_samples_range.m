@@ -18,9 +18,9 @@ function SBP_sampleRange = CFF_get_samples_range(SBP_idxSamples,BP_startSampleNu
 %   CFF_INTER_SAMPLE_DISTANCE. 
 %
 %   See also CFF_INTER_SAMPLE_DISTANCE, CFF_GET_SAMPLES_DIST,
-%   CFF_GEOREFERENCE_SAMPLE 
+%   CFF_GET_SAMPLES_ENH, CFF_GEOREFERENCE_SAMPLE 
 
-%   Copyright 2017-2022 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % permute dimensions of input to get everything as SBP matrix-compatible

@@ -18,22 +18,22 @@ function [sampleEasting, sampleNorthing, sampleHeight,sampleAcrossDistance,sampl
 % * |beamPointingAngle|: Required. A BP matrix (or B1 for 1 ping) of beam
 % pointing angle in each ping/beam 
 % * |sonarEasting|: Required. A 1P matrix (or 1 scalar for 1 ping) of the
-% sonar's Easting coordinate in the geographical frame.
+% sonar's Easting coordinate in the projected frame.
 % * |sonarNorthing|: Required. A 1P matrix (or 1 scalar for 1 ping) of the
-% sonar's Northing coordinate in the geographical frame.
+% sonar's Northing coordinate in the projected frame.
 % * |sonarHeight|: Required. A 1P matrix (or 1 scalar for 1 ping) of the
-% sonar's Height coordinate in the geographical frame.
+% sonar's Height coordinate in the projected frame.
 % * |sonarHeading|: Required. A 1P matrix (or 1 scalar for 1 ping) of the
 % swathe's heading.
 %
 % *OUTPUT VARIABLES*
 %
 % * |sampleEasting|: A SBP matrix (or SB for 1 ping) of each sample's
-% Easting coordinate in the geographical frame.
+% Easting coordinate in the projected frame.
 % * |sampleNorthing|: A SBP matrix (or SB for 1 ping) of each sample's
-% Northing coordinate in the geographical frame. 
+% Northing coordinate in the projected frame. 
 % * |sampleHeight|: A SBP matrix (or SB for 1 ping) of each sample's Height
-% coordinate in the geographical frame.
+% coordinate in the projected frame.
 % * |sampleAcrossDistance|: A SBP matrix (or SB for 1 ping) of each
 % sample's distance across (in m) from the sonar.
 % * |sampleUpwardsDistance|: A SBP matrix (or SB for 1 ping) of each
