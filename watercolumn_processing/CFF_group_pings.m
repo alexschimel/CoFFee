@@ -16,29 +16,48 @@ function [maxNSamples_groups,ping_group_start,ping_group_end] = CFF_group_pings(
 % wrapping does break this code too. So best solution is to unwrap ping counters
 % right here at the begginning.
 
-% unwrap ping counter
+% assess if we have ping wraps
 indexWrapInPingCounter = find(diff(ping_counter)<0)+1;
 nWraps = numel(indexWrapInPingCounter);
-unwrappedPingCounter = ping_counter;
-for iWrap = 1:nWraps
-    thisIndex = indexWrapInPingCounter(iWrap);
-    unwrappedPingCounter(thisIndex:end) = unwrappedPingCounter(thisIndex:end) + unwrappedPingCounter(thisIndex-1) + 1;
+
+if nWraps
+    % need to unwrap ping_counter and dtgrm_ping_number
+    
+    % initialize
+    unwrappedPingCounter = ping_counter;
+    datagramUnwrappedPingCounter = dtgrm_ping_number;
+    
+    % unwrap
+    for iWrap = 1:nWraps
+        % wrap index and offset
+        thisIndex = indexWrapInPingCounter(iWrap);
+        offset = unwrappedPingCounter(thisIndex-1) - unwrappedPingCounter(thisIndex) + 1;
+        
+        % unwrap ping counter is easy
+        unwrappedPingCounter(thisIndex:end) = unwrappedPingCounter(thisIndex:end) + offset;
+        
+        % unwrap dtgrm_ping_number is a bit more difficult in case there are
+        % more than one wrap. This code assumes the values in dtgrm_ping_number
+        % are consistently increasing, so this may create an error down the line
+        % if this is not valid.
+        idxfirstDtgmBeforeWrap = find(datagramUnwrappedPingCounter==unwrappedPingCounter(thisIndex-1),1,'first');
+        thatIndex = idxfirstDtgmBeforeWrap + find(dtgrm_ping_number(idxfirstDtgmBeforeWrap+1:end)==ping_counter(thisIndex),1,'first');
+        datagramUnwrappedPingCounter(thatIndex:end) = datagramUnwrappedPingCounter(thatIndex:end) + offset;
+    end
+    
+    dbug = 0;
+    if dbug
+        figure;
+        plot(ping_counter,'.-'); ylabel('ping counter'); hold on
+        plot(unwrappedPingCounter,'ro-'); grid on; legend({'wrapped','unwrapped'});
+    end
+    
+    % save unrwapped variables back into original variables to as to not change
+    % the rest of the code
+    ping_counter = unwrappedPingCounter;
+    dtgrm_ping_number = datagramUnwrappedPingCounter; 
 end
 
-dbug = 0;
-if dbug
-    figure;
-    plot(ping_counter,'.-'); ylabel('ping counter'); hold on
-    plot(unwrappedPingCounter,'ro-'); grid on; legend({'wrapped','unwrapped'})
-end
-
-% modify dtgrm_ping_number to match new ping counters
-datagramUnwrappedPingCounter = arrayfun(@(x) unwrappedPingCounter(ping_counter==x), dtgrm_ping_number);
-
-% save results back into original variables to as to not change the rest of the
-% code
-ping_counter = unwrappedPingCounter;
-dtgrm_ping_number = datagramUnwrappedPingCounter;
 %% END BUG FIX
 
 % get the maximum number of samples for each ping
