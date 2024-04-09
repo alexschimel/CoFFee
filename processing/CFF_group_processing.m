@@ -200,7 +200,7 @@ for iFD = 1:nFData
                     procFunInfo = functions(procFun{iFun});
                     infoMsg = sprintf('Applying %s',procFunInfo.function);
                 end
-                comms.info(infoMsg)
+                comms.info(sprintf('%s...',infoMsg));
             end
 
             % function application is dependent on whether function takes
@@ -230,7 +230,7 @@ for iFD = 1:nFData
             % get output folder and create it if necessary
             wc_dir = CFF_converted_data_folder(fData.ALLfilename);
             mat_fdata_file = fullfile(wc_dir, 'fData.mat');
-            comms.info('Saving');
+            comms.info('Saving...');
             save(mat_fdata_file,'-struct','fData','-v7.3');
         end
         
@@ -238,7 +238,7 @@ for iFD = 1:nFData
         fDataGroup{iFD} = fData;
         
         % successful end of this iteration
-        comms.info('Done');
+        comms.info('Done.');
         
     catch err
         if abortOnError

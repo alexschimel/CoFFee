@@ -306,11 +306,7 @@ for iF = 1:nFiles
                 end
                 
                 % conversion step 1: read what we can
-                if ischar(rawFile)
-                    comms.info('Reading data in file');
-                else
-                    comms.info('Reading data in pair of files');
-                end
+                comms.info('Reading raw data...');
                 [EMdata,iDtgsParsed] = CFF_read_all(rawFile, dtgs);
                 
                 if ~strcmp(conversionType,'everything')
@@ -347,7 +343,7 @@ for iF = 1:nFiles
                 end
                 
                 % conversion step 2: convert
-                comms.info('Converting to fData format');
+                comms.info('Converting to fData format...');
                 fData = CFF_convert_ALLdata_to_fData(EMdata,dr_sub,db_sub);
 
                 % sort fields by name
@@ -384,9 +380,9 @@ for iF = 1:nFiles
                 
                 % conversion step 1: read what we can
                 if ischar(rawFile)
-                    comms.info('Reading data in file');
+                    comms.info('Reading data in file...');
                 else
-                    comms.info('Reading data in pair of files');
+                    comms.info('Reading data in pair of files...');
                 end
                 [EMdata,iDtgsParsed] = CFF_read_kmall(rawFile, dtgs);
                 
@@ -424,7 +420,7 @@ for iF = 1:nFiles
                 end
                 
                 % conversion step 2: convert
-                comms.info('Converting to fData format');
+                comms.info('Converting to fData format...');
                 fData = CFF_convert_KMALLdata_to_fData(EMdata,dr_sub,db_sub);
                 
                 % sort fields by name
@@ -464,7 +460,7 @@ for iF = 1:nFiles
                 end
                 
                 % conversion step 1: read what we can
-                comms.info('Reading data in file');
+                comms.info('Reading data in file...');
                 [S7Kdata,iDtgsParsed] = CFF_read_s7k(rawFile, dtgs);
                 
                 if ~strcmp(conversionType,'everything')
@@ -530,7 +526,7 @@ for iF = 1:nFiles
                 end
                 
                 % conversion step 2: convert
-                comms.info('Converting to fData format');
+                comms.info('Converting to fData format...');
                 fData = CFF_convert_S7Kdata_to_fData(S7Kdata,dr_sub,db_sub);
                 
                 % sort fields by name
@@ -546,7 +542,7 @@ for iF = 1:nFiles
                 mkdir(wc_dir);
             end
             mat_fdata_file = fullfile(wc_dir, 'fData.mat');
-            comms.info('Saving');
+            comms.info('Saving...');
             save(mat_fdata_file,'-struct','fData','-v7.3');
         end
         
@@ -557,7 +553,7 @@ for iF = 1:nFiles
         clear fData
         
         % successful end of this iteration
-        comms.info('Done');
+        comms.info('Done.');
         
     catch err
         if abortOnError
@@ -585,7 +581,7 @@ if outputFData
 end
 
 %% end message
-comms.finish('Done');
+comms.finish('Done.');
 
 end
 

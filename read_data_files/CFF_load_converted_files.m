@@ -106,7 +106,7 @@ for iF = 1:nFiles
         fDataGroup{iF} = orderfields(fDataGroup{iF});
         
         % successful end of this iteration
-        comms.info('Done');
+        comms.info('Done.');
         
     catch err
         if abortOnError
@@ -128,7 +128,7 @@ end
 
 
 %% end message
-comms.finish('Done');
+comms.finish('Done.');
 
 
 end
