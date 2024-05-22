@@ -518,20 +518,20 @@ for iB = 1:size(blocks,1)
             % pass block's data level to natural intensity values and sum
             % these values per grid cell
             blockStackSumVal = accumarray( [blockIndRow(:),blockIndCol(:)],...
-                10.^(blockWCD(:)/10),[],@sum,single(0));
+                10.^(blockWCD(:)/10),[numel(stackY),numel(blockPings)],@sum,single(0));
             clear blockWCD % clear up memory
             
             % block's data number of elements that were summed per grid
             % cell 
             blockStackNumElem = accumarray( [blockIndRow(:),blockIndCol(:)],...
-                single(1),[],@sum);
+                single(1),[numel(stackY),numel(blockPings)],@sum);
             clear blockIndRow blockIndCol % clear up memory
             
             % compute average and convert back to dB
             blockStackAvg = 10*log10(blockStackSumVal./blockStackNumElem);
             
             % save in stack array
-            stack(1:size(blockStackAvg,1),blockPings) = blockStackAvg;
+            stack(:,blockPings) = blockStackAvg;
             
         case 'fan'
             
