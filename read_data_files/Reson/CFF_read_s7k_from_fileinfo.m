@@ -52,7 +52,7 @@ function S7Kdata = CFF_read_s7k_from_fileinfo(S7Kfilename,S7Kfileinfo,varargin)
 %
 %   See also CFF_READ_S7K.
 
-%   Copyright 2017-2022 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% Input arguments management
@@ -199,9 +199,7 @@ for iDatag = datagToParse'
         case 1015 % Navigation
             % Description: This record will be output at the input
             % navigation rate.
-            
-            % DEV NOTE -- Have not tested this code against actual data...
-            
+
             % start parsing RTH
             
             % 1– Ellipsoid; 2 – Geoid; 3 – Chart datum
@@ -540,17 +538,42 @@ for iDatag = datagToParse'
             S7Kdata.(recordName).SonarId(iRec)    = fread(fid,1,'uint64'); % Sonar serial number
             S7Kdata.(recordName).PingNumber(iRec) = fread(fid,1,'uint32'); % Sequential number
             
-            % Flag to indicate multiping sequence. 
-            % Always 0 (zero) if not in multiping mode; otherwise this
-            % represents the sequence number of the ping in the multiping
+            % Flag to indicate multi-ping sequence. 
+            % Always 0 (zero) if not in multi-ping mode; otherwise this
+            % represents the sequence number of the ping in the multi-ping
             % sequence. 
             S7Kdata.(recordName).MultipingSequence(iRec) = fread(fid,1,'uint16');
             
-            S7Kdata.(recordName).N(iRec)                  = fread(fid,1,'uint32'); % Number of detection points
-            S7Kdata.(recordName).DataFieldSize(iRec)      = fread(fid,1,'uint32'); % Size of detection information block in bytes
-            S7Kdata.(recordName).DetectionAlgorithm(iRec) = fread(fid,1,'uint8'); % see doc
-            S7Kdata.(recordName).Flags(iRec)              = fread(fid,1,'uint32'); % see doc
-            S7Kdata.(recordName).SamplingRate(iRec)       = fread(fid,1,'float32'); % Sonar’s sampling frequency in Hz
+            S7Kdata.(recordName).N(iRec)             = fread(fid,1,'uint32'); % Number of detection points
+            S7Kdata.(recordName).DataFieldSize(iRec) = fread(fid,1,'uint32'); % Size of detection information block in bytes
+
+            % Detection algorithm:
+            % 0 – G1_Simple
+            % 1 – G1_BlendFilt
+            % 2 – G2
+            % 3 – G3
+            % 4 – IF1
+            % 5 – PS1 (beam detection)
+            % 6 – HS1 (beam detection)
+            % 7 – HS2 (pseudo beam detection)
+            % 8-255 – Reserved for future use
+            S7Kdata.(recordName).DetectionAlgorithm(iRec) = fread(fid,1,'uint8');
+
+            % Flags:
+            % BIT FIELD:
+            % Bit 0-3: Uncertainty method
+            %   0 – Not calculated
+            %   1 – Rob Hare’s method
+            %   2 – Ifremer’s method
+            %   3-15 – Reserved for future use
+            % Bit 4: Multi-detection enabled
+            % Bit 5: Reserved
+            % Bit 6: Has Snippets detection point flag
+            % Bit 7: Has clipping flag
+            % Bit 8-31: Reserved for future use
+            S7Kdata.(recordName).Flags(iRec) = fread(fid,1,'uint32');
+            
+            S7Kdata.(recordName).SamplingRate(iRec) = fread(fid,1,'float32'); % Sonar’s sampling frequency in Hz
             
             % Applied transmitter steering angle, in radians
             % This angle is used for pitch stabilization. It will be zero
@@ -565,7 +588,7 @@ for iDatag = datagToParse'
             % lines in the real-time user interface wedge display.
             S7Kdata.(recordName).AppliedRoll(iRec) = fread(fid,1,'float32'); 
             
-            S7Kdata.(recordName).Reserved{iRec}    = fread(fid,15,'uint32'); % Reserved for future use
+            S7Kdata.(recordName).Reserved{iRec} = fread(fid,15,'uint32'); % Reserved for future use
                         
             % start parsing RD
             
@@ -618,11 +641,11 @@ for iDatag = datagToParse'
             fseek(fid,temp+26,'bof'); % to next data type
             
             % Minimum sample number of gate limit
-            S7Kdata.(recordName).MinLimit{iRec}       = fread(fid,N,'float32',S-4);
+            S7Kdata.(recordName).MinLimit{iRec} = fread(fid,N,'float32',S-4);
             fseek(fid,temp+30,'bof'); % to next data type
             
             % Maximum sample number of gate limit
-            S7Kdata.(recordName).MaxLimit{iRec}       = fread(fid,N,'float32',S-4);
+            S7Kdata.(recordName).MaxLimit{iRec} = fread(fid,N,'float32',S-4);
             fseek(fid,4-S,'cof'); % we need to come back after last jump
             
             % NOTE
@@ -632,6 +655,7 @@ for iDatag = datagToParse'
             % to isolate steering components. For sign explanations, see
             % section 2.2 Sign Conventions.
             
+            % Optional data 7027 record
             if OD_size~=0
                 tmp_pos = ftell(fid);
                 
@@ -693,6 +717,146 @@ for iDatag = datagToParse'
                 S7Kdata.(recordName).PointingAngle{iRec}       = NaN(1,N);
                 S7Kdata.(recordName).AzimuthAngle{iRec}        = NaN(1,N);
                 
+            end
+            
+            % start parsing CS
+            if CS_size == 4
+                S7Kdata.(recordName).Checksum(iRec) = fread(fid,1,'uint32');
+            elseif CS_size == 0
+                S7Kdata.(recordName).Checksum(iRec) = NaN;
+            else
+                comms.error('%s: unexpected CS size',recordName);
+            end
+            % check data integrity with checksum... TO DO XXX2
+            
+            % confirm parsing
+            parsed = 1;
+            
+        case 7028 % Snippet data
+            % Description: This record is produced by the SeaBat™ 7k sonar.
+            % It contains the sonar snippet imagery data. The 7k sonar
+            % source updates this record on every ping.  This record is
+            % available by subscription only. It is not available for
+            % forward-looking  sonar. 
+            % For details about requesting and subscribing to records, see
+            % section 10.62 7500 –  Remote Control together with section 11
+            % 7k Remote Control Definitions. 
+            % For information on optional data, see Appendix A Teledyne PDS
+            % Optional Data Beams and samples are numbered from 0. Data is
+            % beams followed by samples 
+            
+            % ----- DEV NOTES ---------------------------------------------
+            % 1. Have coded this (May 2024) but not tested with data yet. 
+            % 2. Since I have had no use for it yet, I haven't developped
+            % the code to read the snippets. For now we are only recording
+            % the start position for the snippets, like we do for WCD.
+            % Remains to be assessed if that is what we want to do..
+            % -------------------------------------------------------------
+             
+            % start parsing RTH
+            S7Kdata.(recordName).SonarId(iRec)    = fread(fid,1,'uint64'); % Sonar serial number
+            S7Kdata.(recordName).PingNumber(iRec) = fread(fid,1,'uint32'); % Sequential number
+
+            % Flag to indicate multi-ping sequence. 
+            % Always 0 (zero) if not in multi-ping mode; otherwise this
+            % represents the sequence number of the ping in the multi-ping
+            % sequence. 
+            S7Kdata.(recordName).MultipingSequence(iRec) = fread(fid,1,'uint16');
+            
+            S7Kdata.(recordName).N(iRec) = fread(fid,1,'uint16'); % Number of detection points
+
+            % Error flag:
+            % If set, record will not contain any data. Flag
+            % itself will indicate an error.
+            % 0 – OK
+            % 1-5 – Reserved
+            % 6 – Bottom detection failed (R7006)
+            % 7-255 – Reserved
+            S7Kdata.(recordName).ErrorFlag(iRec) = fread(fid,1,'uint8');
+            
+            % Control flags:
+            % Control settings from RC 1118
+            % 0 – Automatic snippet window is used
+            % 1 – Quality Filter enabled
+            % 2 – Minimum window size is required
+            % 3 – Maximum window size is required
+            % 4-7 – Reserved
+            S7Kdata.(recordName).ControlFlags(iRec) = fread(fid,1,'uint8');
+            
+            % Flags:
+            % BIT FIELD:
+            % Bit 0: 0: 16 bit snippets
+            %        1: 32 bit snippets
+            % Bit 1: 0: Use global sample rate
+            %        1: Use local sample rate used for snippets
+            S7Kdata.(recordName).Flags(iRec) = fread(fid,1,'uint32');
+            
+            S7Kdata.(recordName).SampleRate(iRec) = fread(fid,1,'float32'); % Snippets sample rate
+            S7Kdata.(recordName).Reserved{iRec}   = fread(fid,5,'uint32'); % Reserved for future use
+            
+            % start parsing RD
+            
+            % repeat cycle: N entries of 14 bytes
+            temp = ftell(fid);
+            N = S7Kdata.(recordName).N(iRec);
+            
+            % Beam number
+            S7Kdata.(recordName).BeamDescriptor{iRec} = fread(fid,N,'uint16',14-2);
+            fseek(fid,temp+2,'bof'); % to next data type
+            
+            % First sample included in the snippet
+            S7Kdata.(recordName).SnippetStart{iRec} = fread(fid,N,'uint32',14-4);
+            fseek(fid,temp+6,'bof'); % to next data type
+            
+            % Detection point
+            S7Kdata.(recordName).DetectionSample{iRec} = fread(fid,N,'uint32',14-4);
+            fseek(fid,temp+10,'bof'); % to next data type
+            
+            % Last sample included in the snippet
+            S7Kdata.(recordName).SnippetEnd{iRec} = fread(fid,N,'uint32',14-4);
+            fseek(fid,temp+14,'bof'); % to next data type
+            
+            % Intensity series for each sample. Array is populated with
+            % samples from the first sample to the last as defined above.
+            % ----- DEV NOTES ---------------------------------------------
+            % Recording just the start position for this, as I am coding
+            % this with no use for it for the moment 
+            % -------------------------------------------------------------
+            S7Kdata.(recordName).SnippetsPos(iRec) = ftell(fid);
+            
+            % Optional data 7028 record
+            if OD_size~=0
+                tmp_pos = ftell(fid);
+                
+                % start parsing OD
+                fread(fid,OD_offset-(tmp_pos-pif_recordstart),'uint8');
+                
+                S7Kdata.(recordName).Frequency(iRec) = fread(fid,1,'float32'); % Ping Frequency in Hz
+                S7Kdata.(recordName).Latitude(iRec)  = fread(fid,1,'float64'); % Latitude of vessel reference point in radians -pi/2 to pi/2, south negative
+                S7Kdata.(recordName).Longitude(iRec) = fread(fid,1,'float64'); % Longitude of vessel reference point in radians -pi to pi, west negative
+                S7Kdata.(recordName).Heading(iRec)   = fread(fid,1,'float32'); % Heading of vessel at transmit time in radians
+                
+                % The following set of data items are repeated for each
+                % beam:
+                tmp_beam_data = fread(fid,[3 N],'float32');
+                
+                 % Along track distance in vessel grid in meters
+                S7Kdata.(recordName).AlongTrackDistance{iRec} = tmp_beam_data(1,:);
+                
+                % Across track distance in vessel grid in meters
+                S7Kdata.(recordName).AcrossTrackDistance{iRec} = tmp_beam_data(2,:);
+                
+                % Sample number at detection point of beam
+                S7Kdata.(recordName).CenterSampleNumber{iRec} = cast(tmp_beam_data(3,:),'uint32');
+
+            else
+                S7Kdata.(recordName).Frequency(iRec) = NaN;
+                S7Kdata.(recordName).Latitude(iRec)  = NaN;
+                S7Kdata.(recordName).Longitude(iRec) = NaN;
+                S7Kdata.(recordName).Heading(iRec)   = NaN;
+                S7Kdata.(recordName).AlongTrackDistance{iRec}  = NaN(1,N);
+                S7Kdata.(recordName).AcrossTrackDistance{iRec} = NaN(1,N);
+                S7Kdata.(recordName).CenterSampleNumber{iRec}  = NaN(1,N);
             end
             
             % start parsing CS
@@ -893,7 +1057,7 @@ for iDatag = datagToParse'
                 elseif CS_size == 0
                     S7Kdata.(recordName).Checksum(iRec) = NaN;
                 else
-                    comms.error('%s: unexpected CS size',recordName);
+                    comms.error(sprintf('%s: unexpected CS size',recordName));
                 end
                 % check data integrity with checksum... TO DO XXX2
                 
@@ -903,7 +1067,7 @@ for iDatag = datagToParse'
             else
                 % HERE if data parsing failed, add a blank datagram in
                 % output
-                comms.error('%s: error while parsing datagram',recordName);
+                comms.error(sprintf('%s: error while parsing datagram',recordName));
                 % copy field names of previous entries
                 fields_wc = recordNames(S7Kdata.(recordName));
                 
@@ -959,7 +1123,7 @@ for iDatag = datagToParse'
                 S7Kdata.(recordName).Size(iRec)   = NaN;
                 S7Kdata.(recordName).Offset(iRec) = NaN;
             else
-                comms.error('%s: unexpected OD size',recordName);
+                comms.error(sprintf('%s: unexpected OD size',recordName));
             end
             
             % start parsing CS
@@ -968,7 +1132,7 @@ for iDatag = datagToParse'
             elseif CS_size == 0
                 S7Kdata.(recordName).Checksum(iRec) = NaN;
             else
-                comms.error('%s: unexpected CS size',recordName);
+                comms.error(sprintf('%s: unexpected CS size',recordName));
             end
             % check data integrity with checksum... TO DO XXX2
             
@@ -976,7 +1140,7 @@ for iDatag = datagToParse'
             parsed = 1;
             
         case 7610 % Sound Velocity
-            % Description: This record can be used to set the SeaBat™ 7k
+            % Description: This record can be used to set the SeaBat 7k
             % sonar series systems current sound velocity value. The record
             % can be manually requested or subscribed to from the 7k sonar
             % source. For details about requesting and subscribing to
