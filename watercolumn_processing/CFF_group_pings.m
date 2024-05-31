@@ -8,13 +8,13 @@ function [maxNSamples_groups,ping_group_start,ping_group_end] = CFF_group_pings(
 
 
 
-%% BUG FIX
-% Getting errors in the final calculation ("calculate the max number of samples
-% in a ping, per group") when ping counter wraps down from 65535 back to 1. We
-% had a last bit of code to modify ping_group_start and ping_group_end (now
-% commented) to avoid such errors downstream, but recent examples show this
-% wrapping does break this code too. So best solution is to unwrap ping counters
-% right here at the begginning.
+%% BUG FIX ----------------------------------------------------------------
+% Getting errors in the final calculation ("calculate the max number of
+% samples in a ping, per group") when ping counter wraps down from 65535
+% back to 1. We had a last bit of code to modify ping_group_start and
+% ping_group_end (now commented) to avoid such errors downstream, but
+% recent examples show this wrapping does break this code too. So best
+% solution is to unwrap ping counters right here at the begginning.
 
 % assess if we have ping wraps
 indexWrapInPingCounter = find(diff(ping_counter)<0)+1;
@@ -37,9 +37,9 @@ if nWraps
         unwrappedPingCounter(thisIndex:end) = unwrappedPingCounter(thisIndex:end) + offset;
         
         % unwrap dtgrm_ping_number is a bit more difficult in case there are
-        % more than one wrap. This code assumes the values in dtgrm_ping_number
-        % are consistently increasing, so this may create an error down the line
-        % if this is not valid.
+        % more than one wrap. This code assumes the values in
+        % dtgrm_ping_number are consistently increasing, so this may create
+        % an error down the line if this is not valid.
         idxfirstDtgmBeforeWrap = find(datagramUnwrappedPingCounter==unwrappedPingCounter(thisIndex-1),1,'first');
         thatIndex = idxfirstDtgmBeforeWrap + find(dtgrm_ping_number(idxfirstDtgmBeforeWrap+1:end)==ping_counter(thisIndex),1,'first');
         datagramUnwrappedPingCounter(thatIndex:end) = datagramUnwrappedPingCounter(thatIndex:end) + offset;
@@ -52,13 +52,14 @@ if nWraps
         plot(unwrappedPingCounter,'ro-'); grid on; legend({'wrapped','unwrapped'});
     end
     
-    % save unrwapped variables back into original variables to as to not change
+    % save unrwapped variables back into original variables to as to not
+    % change 
     % the rest of the code
     ping_counter = unwrappedPingCounter;
     dtgrm_ping_number = datagramUnwrappedPingCounter; 
 end
 
-%% END BUG FIX
+%% END BUG FIX -----------------------------------------------------------
 
 % get the maximum number of samples for each ping
 if iscell(num_samp_per_dtgrm)
@@ -80,14 +81,27 @@ end
 nb_min_s = 50;
 nb_min_win = 50;
 perc_inc = 10/100;
-X_fact = prctile(ceil(max_num_samp_per_ping/nb_min_s)*nb_min_s,90)/prctile(floor(max_num_samp_per_ping/nb_min_s)*nb_min_s,10);
+mystery_variable = max_num_samp_per_ping/nb_min_s;
+mystery_variable_ceiled = ceil(mystery_variable);
+mystery_variable_floored = floor(mystery_variable);
+X_fact = prctile(mystery_variable_ceiled*nb_min_s,90)/prctile(mystery_variable_floored*nb_min_s,10);
 div_factor = (perc_inc/(X_fact-1))*min(max_num_samp_per_ping);
 div_factor = ceil(div_factor/nb_min_s)*nb_min_s;
+
+% make groups of pings identified by group index
 group_by_nb_s = ceil(filter2(ones(1,nb_min_win),ceil(max_num_samp_per_ping/div_factor),'same')./...
     filter2(ones(1,nb_min_win),ones(size(ping_counter)),'same'));
-idx_change = find(diff(group_by_nb_s)~=0);
-idx_change_2 = find(diff(ping_counter)>1)+1;
-idx_change = union(idx_change,idx_change_2);
+
+% indices of group changes...
+idx_change = find(diff(group_by_nb_s)~=0)+1;
+
+% .. which looks like it was complemented with indices for ping counter
+% jumps? No idea why this exists, but this trips up Norbit data where ping
+% counters are not sequential, so for now (30/05/2024) we are commenting
+% it. If you're still reading this later, then it means it was unnecessary.
+% If you experience bugs in this algorithm, maybe reinstate it. Alex
+% idx_change_2 = find(diff(ping_counter)>1)+1;
+% idx_change = union(idx_change,idx_change_2);
 
 % % mystery plot for the mystery algorithm
 % figure();
@@ -99,7 +113,7 @@ idx_change = union(idx_change,idx_change_2);
 %     xline(ping_counter(idx_change(uil)),'--k');
 % end
 
-% and the resulting grouping of pings:
+% get the indices of pings for the start and end of each group
 idx_new_group = unique([1 idx_change]);
 ping_group_start = ping_counter(idx_new_group);
 ping_group_end   = ping_counter([idx_new_group(2:end)-1 numel(ping_counter)]);
@@ -121,8 +135,8 @@ end
 
 % because ping counters often wrap around (i.e. max ping counter is 65536
 % then it goes back to 1), this can trip up later code, so Yoann here
-% changed the ping groups back to 1. After the bug fix above, this is now just
-% bringing numbers back to 1.
+% changed the ping groups back to 1. After the bug fix above, this is now
+% just bringing numbers back to 1.
 for ui = 1:num_groups
     ping_group_start(ui) = find(ping_counter==ping_group_start(ui),1);
     ping_group_end(ui) = find(ping_counter==ping_group_end(ui),1);
