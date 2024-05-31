@@ -19,7 +19,7 @@ function fData = CFF_grid_WC_data(fData,varargin)
 %   *OUTPUT VARIABLES*
 %   * |fData|: fData structure updated with fields for gridded data
 
-%   Copyright 2017-2021 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% input parsing
@@ -95,6 +95,15 @@ interSamplesDistance = CFF_inter_sample_distance(fData); % m
 sonarEasting  = fData.X_1P_pingE; % m
 sonarNorthing = fData.X_1P_pingN; % m
 sonarHeight   = fData.X_1P_pingH; % m
+
+% For some files, the sonar height is an actually-measured height
+% referenced to a datum. For others, it's just dummy zero values. Depends
+% on the raw datagrams these values were taken from. Here, the
+% "Sonar-referenced" grids must ignore the sonar height above a datum to
+% ensure the grids are indeed referenced to the sonar. So we enforce dummy
+% zero values for height. If in the future we want to create grids in
+% reference to a datum, will need to adjust this code.
+sonarHeight = zeros(size(sonarHeight));
 
 % sonar heading
 gridConvergence    = fData.X_1P_pingGridConv; % deg
