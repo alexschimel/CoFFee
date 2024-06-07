@@ -507,6 +507,18 @@ if all(isfield(S7Kdata,{'R7042_CompressedWaterColumnData','R7000_SonarSettings',
     fData.AP_1P_TVGFunctionApplied              = nan(size(pingNumber));
     fData.AP_1P_TVGOffset                       = zeros(size(pingNumber));
     fData.AP_1P_ScanningInfo                    = nan(size(pingNumber));
+    % DEV NOTE: R7042 records contains a "Sample Rate" field, described in
+    % documentation as the "effective sample rate after downsampling, if
+    % specified". Documentation also has a note saying "if downsampling is
+    % used (Flags bit 8-11), then the effective Sample Rate of the data is
+    % changed and is given by the sample rate field. To calculate the
+    % effective sample rate, the system sample rate (provided in the 7000
+    % record) must be divided by the downsampling divisor factor specified
+    % in bits 4-7.". We assume that the "Sample Rate" field is the result
+    % of this calculation, so we only have to record it, rather than
+    % re-calculate as described, that is, from the nominal sample rate in
+    % the R7000 record and the divisor factor in the R7042 flags. Only
+    % verified on one Norbit file so far. Alex 03/06/2024.
     
     % initialize data per transmit sector and ping
     fData.AP_TP_TiltAngle            = nan(maxNTransmitSectors,nPings);
@@ -517,12 +529,27 @@ if all(isfield(S7Kdata,{'R7042_CompressedWaterColumnData','R7000_SonarSettings',
     fData.AP_BP_BeamPointingAngle      = nan(maxnBeams,nPings);
     fData.AP_BP_StartRangeSampleNumber = nan(maxnBeams,nPings);
     fData.AP_BP_NumberOfSamples        = nan(maxnBeams,nPings);
-    fData.AP_BP_DetectedRangeInSamples = zeros(maxnBeams,nPings);
+    fData.AP_BP_DetectedRangeInSamples = nan(maxnBeams,nPings);
     fData.AP_BP_TransmitSectorNumber   = nan(maxnBeams,nPings);
     fData.AP_BP_BeamNumber             = nan(maxnBeams,nPings);
     
     % flags indicating what data are available
-    [flags,sample_size,mag_fmt,phase_fmt] = CFF_get_R7042_flags(S7Kdata.R7042_CompressedWaterColumnData.Flags(1));
+    [flags,sample_size,mag_fmt,phase_fmt] = CFF_get_R7042_flags(S7Kdata.R7042_CompressedWaterColumnData.Flags);
+
+    % For now we only support conversion of data with constant sample_size,
+    % mag_fmt, and phase_fmt. Throw an error and leave it for future
+    % development.
+    if numel(unique(flags.magnitudeOnly))==1 && ...
+            numel(unique(sample_size))==1 && ...
+            numel(unique(mag_fmt))==1 && ...
+            numel(unique(phase_fmt))==1
+        flags.magnitudeOnly = unique(flags.magnitudeOnly);
+        sample_size = unique(sample_size);
+        mag_fmt     = char(unique(mag_fmt));
+        phase_fmt   = char(unique(phase_fmt));
+    else
+        error('Conversion of s7k R7042 Compressed Water-Column datagrams with non-constant sample size, magnitude format, or phase format, are not yet supported.');
+    end
     
     % The actual water-column data will not be saved in fData but in binary
     % files. Get the output directory to store those files
@@ -584,11 +611,6 @@ if all(isfield(S7Kdata,{'R7042_CompressedWaterColumnData','R7000_SonarSettings',
     % source file, so we need to fopen the source file to grab the data. 
     fid = fopen(S7Kfilename,'r','l');
     
-    % correct sampling frequency record
-    if flags.downsamplingType > 0
-        fData.AP_1P_SamplingFrequencyHz = fData.AP_1P_SamplingFrequencyHz./flags.downsamplingDivisor;
-    end
-    
     % initialize ping group counter, to use to specify which memmapfile
     % to fill. We start in the first.
     iG = 1;
@@ -623,11 +645,48 @@ if all(isfield(S7Kdata,{'R7042_CompressedWaterColumnData','R7000_SonarSettings',
         % data per beam
         iBeam = S7Kdata.R7042_CompressedWaterColumnData.BeamNumber{ipR7042(iP)}+1; % beam numbers in this ping
         fData.AP_BP_BeamPointingAngle(iBeam,iP)      = S7Kdata.R7004_BeamGeometry.BeamHorizontalDirectionAngleRad{ipR7004(iP)}/pi*180;
-        fData.AP_BP_StartRangeSampleNumber(iBeam,iP) = round(S7Kdata.R7042_CompressedWaterColumnData.FirstSample(ipR7042(iP)));
+        fData.AP_BP_StartRangeSampleNumber(iBeam,iP) = S7Kdata.R7042_CompressedWaterColumnData.FirstSample(ipR7042(iP));
         fData.AP_BP_NumberOfSamples(iBeam,iP)        = round(S7Kdata.R7042_CompressedWaterColumnData.NumberOfSamples{ipR7042(iP)});
-        fData.AP_BP_DetectedRangeInSamples(S7Kdata.R7027_RawDetectionData.BeamDescriptor{ipR7027(iP)}+1,iP) = round(S7Kdata.R7027_RawDetectionData.DetectionPoint{ipR7027(iP)}/flags.downsamplingDivisor);
+        beamsInR7027 = S7Kdata.R7027_RawDetectionData.BeamDescriptor{ipR7027(iP)}+1;
+        fData.AP_BP_DetectedRangeInSamples(beamsInR7027,iP) = S7Kdata.R7027_RawDetectionData.DetectionPoint{ipR7027(iP)}./flags.downsamplingDivisor(ipR7042(iP));
         fData.AP_BP_TransmitSectorNumber(iBeam,iP)   = 1;
         fData.AP_BP_BeamNumber(iBeam,iP)             = S7Kdata.R7004_BeamGeometry.N(ipR7004(iP));
+        
+        % DEV NOTE --------------------------------------------------------
+        % There is an issue with the detection sample here. These
+        % R7042 datagrams do not have information about bottom detect, so
+        % we have to get them from R7027 datagrams. But that "detection
+        % point" info in R7027 are for the raw WCD, not the compressed
+        % ones, so we need to correct it to match the compressed WCD.
+        % Specifically, we need to account for the "first Sample" (FS) and
+        % the "downsampling divisor" (k). The documentation is unclear
+        % whether FS is the offset before or after downsampling, aka
+        % whether the corrected detection sample should be: 
+        %   dS_corr = (ds-FS)/k (FS is the offset before downsampling)
+        %, OR:
+        %   dS_corr = (ds/k)-FS, (FS is the offset after downsampling)
+        %
+        % CoFFee does not resample any downsampled WCD, so any downsampled
+        % WCD must be recorded with the appropriate offset and appropriate
+        % (downsampled) sampling frequency.  
+        % Here we record in fData the "effective sampling rate" in the
+        % field "SamplingFrequencyHz" (F), and the "first sample" in the
+        % field "StartRangeSampleNumber" (SSN). Then CoFFee calculates the
+        % interSampleDistance (ISD) as:
+        %   ISD = c/(2*F),
+        % Then range (R) is calculated directly from sample indices (i) as:
+        %   R = (i+SSN)*ISD
+        %
+        % The fact that the results are at the right place with compressed
+        % WCD implies that FS is indeed the offset AFTER downsampling, so
+        % that the corrected detection sample SHOULD be calculated as: 
+        %   dS_corr = (ds/k)-FS
+        %
+        % YET WHEN I DO THIS IT DOESN'T WORK!!! I reverted the code back to
+        % what it was originally, aka dS_corr = ds/k, but my tests on files
+        % that have a variable k and FS show that it is not correct. To
+        % investigate further...
+        % Alex 07/06/2024 -------------------------------------------------
         
         % initialize amplitude and phase matrices
         Mag_tmp = ones(maxNSamples_groups(iG),maxnBeams,mag_fmt)*eval([mag_fmt '(-inf)']);
@@ -663,7 +722,7 @@ if all(isfield(S7Kdata,{'R7042_CompressedWaterColumnData','R7000_SonarSettings',
         % before because all WCD from R7042 records test previously did NOT
         % have a start sample offset. Now, saving data with the offset is
         % something we did not do with ALL or KMALL data, so why did we
-        % code it here. Anyway, for now I don't want to change the code in
+        % code it here? Anyway, for now I don't want to change the code in
         % case there was a good reason for doing things this way. So just
         % saving start_sample = 1 to override this approach:
         start_sample = S7Kdata.R7042_CompressedWaterColumnData.FirstSample(ipR7042(iP))+1;

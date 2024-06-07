@@ -746,12 +746,12 @@ for iDatag = datagToParse'
             % beams followed by samples 
             
             % ----- DEV NOTES ---------------------------------------------
-            % 1. Have coded this (May 2024) but not tested with data yet. 
+            % 1. Have coded this but not tested with data yet. 
             % 2. Since I have had no use for it yet, I haven't developped
             % the code to read the snippets. For now we are only recording
             % the start position for the snippets, like we do for WCD.
             % Remains to be assessed if that is what we want to do..
-            % -------------------------------------------------------------
+            % Alex, May 2024 ----------------------------------------------
              
             % start parsing RTH
             S7Kdata.(recordName).SonarId(iRec)    = fread(fid,1,'uint64'); % Sonar serial number
@@ -818,10 +818,10 @@ for iDatag = datagToParse'
             
             % Intensity series for each sample. Array is populated with
             % samples from the first sample to the last as defined above.
-            % ----- DEV NOTES ---------------------------------------------
+            % DEV NOTE ----------------------------------------_______-----
             % Recording just the start position for this, as I am coding
             % this with no use for it for the moment 
-            % -------------------------------------------------------------
+            % Alex --------------------------------------------------------
             S7Kdata.(recordName).SnippetsPos(iRec) = ftell(fid);
             
             % Optional data 7028 record
@@ -912,7 +912,7 @@ for iDatag = datagToParse'
             % 1/10 the size of corresponding 7018 mag+phase Water Column
             % Record.
             
-            % ----- DEV NOTE ----------------------------------------------
+            % DEV NOTE ----------------------------------------------------
             % This datagram's data is too to be stored in memory. Instead,
             % we record the metadata and the position-in-file location of
             % the data, which be extracted and stored in binary format at
@@ -947,7 +947,7 @@ for iDatag = datagToParse'
             % BIT FIELD. See CFF_get_R7042_flags
             S7Kdata.(recordName).Flags(iRec) = fread(fid,1,'uint32');
             
-            % flag processing
+            % decoding flags
             [flags,sample_size,~,~] = CFF_get_R7042_flags(S7Kdata.(recordName).Flags(iRec));
             
             % First sample included for each beam. Normally zero, unless
