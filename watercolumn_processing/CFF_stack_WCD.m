@@ -1,28 +1,29 @@
 function [stack,stackX,stackY,params] = CFF_stack_WCD(fData,varargin)
 %CFF_STACK_WCD  Stack WCD in a 2D array
 %
-%   This function stacks water-column data (naturally in 3 dimensions
-%   Ping-Beam-Sample) into a 2D array to allow visualization. Stacking
-%   modes supported are "range stacking" (or "R-stack", in which all
-%   samples at a given range across all beams in a ping are averaged,
+%   This function stacks water-column data (which is naturally in 3
+%   dimensions Ping/Beam/Sample) into a 2D array to allow visualization.
+%   Stacking modes supported are "range stacking" (or "R-stack", in which
+%   all samples at a given range across all beams in a ping are averaged,
 %   leading to a Range-by-Ping 2D array), "depth stacking" (or "D-stack",
 %   in which all samples at a given depth in a ping are averaged, leading
 %   to a Depth-by-Ping 2D array), and "fan stacking" (or "F-stack", in
 %   which all samples at a given depth and across-track distance in a ping
-%   are averaged, leading to a Depth-by-Across-track-distance 2D array, aka
+%   are averaged, leading to a Depth-by-Across-Track-Distance 2D array, aka
 %   a "Fan view"). Note this function requires the bottom samples in input
 %   data to have been previously geoprocessed using
-%   CFF_GEOREFERENCE_BOTTOM_DETECT. 
+%   CFF_GEOREFERENCE_BOTTOM_DETECT.
 %
 %   [STACK,STACKX,STACKY] = CFF_STACK_WCD(FDATA) creates a range stack from
 %   all water-column data from the FDATA field 'WC_SBP_SampleAmplitudes'
 %   (i.e. original data), over the range values going from 0 (sonar face)
 %   to the deepest bottom detect in the data, by increments of the
-%   inter-sample distance. The function returns the stacked data STACK as a 
-%   Range-by-Pings matrix, the vector STACKX of pings corresponding to the
-%   columns of that matrix, and the vector STACKY of ranges corresponding
-%   to the rows of that matrix. The resolution in the Y-dimension (ranges)
-%   is the inter-sample distance.
+%   coarsest inter-sample distance in the data. The function returns the
+%   stacked data STACK as a Range-by-Pings matrix, the vector STACKX of
+%   pings corresponding to the columns of that matrix, and the vector
+%   STACKY of ranges corresponding to the rows of that matrix. The
+%   resolution in the Y-dimension (ranges) is the coarsest inter-sample
+%   distance in the data.
 %
 %   CFF_STACK_WCD(FDATA,PARAMS) uses processing parameters defined as the
 %   fields in the PARAMS structure to modify the default behaviour.
@@ -33,15 +34,16 @@ function [stack,stackX,stackY,params] = CFF_stack_WCD(fData,varargin)
 %   Depth-by-Pings matrix, the vector STACKX of pings corresponding to the
 %   columns of that matrix, and the vector STACKY of depth bins
 %   corresponding to the rows of that matrix. The resolution in the
-%   Y-dimension (depths) is equal to twice the inter-sample distance (see
-%   the param field 'resDepthStackY' to modify this default behaviour).
-%   When 'stackMode' is set to 'fan', the function returns the F-stacked
-%   data STACK as a Depth-by-Across-track-distance matrix, the vector
-%   STACKX of across-track distance bins corresponding to the columns of
-%   that matrix, and the vector STACKY of depth bins corresponding to the
-%   rows of that matrix. The resolution in both the X and Y dimensions is
-%   equal to the distance between two beams at the max depth (see 
-%   the param field 'resFanStack' to modify this default behaviour).
+%   Y-dimension (depths) is equal to twice the coarsest inter-sample
+%   distance in the data (see the param field 'resDepthStackY' to modify
+%   this default behaviour). When 'stackMode' is set to 'fan', the function
+%   returns the F-stacked data STACK as a Depth-by-Across-track-distance
+%   matrix, the vector STACKX of across-track distance bins corresponding
+%   to the columns of that matrix, and the vector STACKY of depth bins
+%   corresponding to the rows of that matrix. The resolution in both the X
+%   and Y dimensions is equal to the distance between two beams at the max
+%   depth (see the param field 'resFanStack' to modify this default
+%   behaviour).
 %       'dataField': name of the fData field to use as the (memmaped file)
 %   WCD data to stack. Default is 'WC_SBP_SampleAmplitudes'.
 %       'angleDegLims': two-values vector of beam angles (in degrees) to
@@ -91,7 +93,7 @@ function [stack,stackX,stackY,params] = CFF_stack_WCD(fData,varargin)
 %
 %   See also CFF_GEOREFERENCE_BOTTOM_DETECT.
 
-%   Copyright 2017-2023 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
@@ -214,8 +216,10 @@ nBeams = numel(iBeams);
 
 
 %% Indices of samples to extract from memmapped files
-
-% at first we ignore the iSampleLims input
+% Notes:
+% 1. For now ignoring the iSampleLims input.
+% 2. Because inter-samples distance may vary from ping to ping, we define
+% the samples to be extracted for each ping.
 
 % whether we stack in range or depth, the first sample to extract is the
 % sample corresponding to minStackY
@@ -228,8 +232,11 @@ minStackY = params.minStackY;
 % get intersample distance to turn ranges into sample numbers
 interSamplesDistance = CFF_inter_sample_distance(fData,iPings);
 
-% first sample to extract
-firstSamplePerPing = floor(minStackY./interSamplesDistance);
+% get startSampleNUmber for each beam and ping
+
+% find first sample to extract
+startSampleNumber = fData.(sprintf('%s_BP_StartRangeSampleNumber',datagramSource))(iBeams,iPings);
+firstSamplePerPing = floor(min((minStackY./interSamplesDistance)-startSampleNumber,[],1));
 firstSamplePerPing = max(ones(size(firstSamplePerPing)),firstSamplePerPing);
 
 % for the last sample to extract, it depends on maxStackY and also on the
@@ -240,8 +247,7 @@ if ~isfield(params,'maxStackY'), params.maxStackY = 0; end % default
 mustBeNonnegative(params.maxStackY); % validate
 maxStackY = params.maxStackY;
 % NOTE: maxStackY=0 (default) is used as special code to indicate we want
-% our stack to only go to the bottom, so we extract all samples that
-% contribute data down to the deepest bottom, but no more than that.
+% our stack to only go to the furthest bottom return in the stack
 
 % get stackMode parameter
 if ~isfield(params,'stackMode'), params.stackMode = 'range'; end % default
@@ -250,23 +256,31 @@ stackMode = params.stackMode;
 
 switch stackMode
     case 'range'
-        % stacking in range is simple. We simply extract all samples down
-        % to the stack's desired max range
         if maxStackY == 0
-            % the stack's desired max range is the furthest bottom detect
-            % sample (within the extracted pings and beams)
+            % special code to stack only down to the bottom sample with the
+            % deepest range. Find that sample in each ping
             bottomSamples = CFF_get_bottom_sample(fData);
-            lastSamplePerPing = max(bottomSamples(iBeams,iPings),[],1,'omitnan');
+            bottomSamples = bottomSamples(iBeams,iPings);
+            lastSamplePerPing = max(bottomSamples,[],1,'omitnan');
+            % then find the maximum of the corresponding ranges, for the
+            % stack lower boundary
+            SBP_idxSamples = permute(ones(numel(iBeams),1).*lastSamplePerPing,[3,1,2]);
+            BP_sampleRange = permute(CFF_get_samples_range(SBP_idxSamples,startSampleNumber,interSamplesDistance),[2,3,1]);
+            maxStackY = max(BP_sampleRange(:));
         elseif isinf(maxStackY)
-            % simply use the max number of samples in the entire file so we
-            % will extract them all. For pings that have less samples than
-            % this number, all samples available will be extracted.
+            % all samples to be extracted. Just find the max number of
+            % samples in a beam in the entire file. For pings that have
+            % less samples than this number, all samples available will be
+            % extracted. 
             lastSamplePerPing = max(cellfun(@(x) x.Format{2}(1),fData.(dataField)));
             lastSamplePerPing = lastSamplePerPing.*ones(1,nPings);
+            % find the max of the corresponding ranges, for the stack lower
+            % boundary
+            maxStackY = max(lastSamplePerPing.*interSamplesDistance);
         else
-            % otherwise, we calculate the sample corresponding to
-            % maxStackY. For pings that have less samples than this number,
-            % all samples available will be extracted.
+            % if maxStackY is user-defined, we calculate the sample
+            % corresponding to this value. For pings that have less samples
+            % than this number, all samples available will be extracted.
             lastSamplePerPing = ceil(maxStackY./interSamplesDistance);
         end
     case {'depth','fan'}
@@ -305,37 +319,29 @@ end
 
 
 %% Initialize the stack
-% Note that there is an input resolution parameter in depth- and
-% fan-stacking, but not range-stacking. That's because depth- and
-% fan-stacking always include gridding, meaning the grid resolution has to
-% be specified anyway, meaning we can make it parametrable.
-% However, if the interSamplesDistance is constant, range-stacking can be
-% done fast by simply averaging across beams (aka keeping the native
-% resolution) compared to gridding the data. So the range-stacking
-% resolution is de facto the 
-% interSamplesDistance... Now, this is only valid if the
-% interSamplesDistance is constant of course. If it's not, we will use the
-% coarsest interSamplesDistance as a resolution, which will mean
-% downsampling the data to that coarsest resolution.
+% Here we define the resolution and boundaries of the stack.
 switch stackMode
     case 'range'
-        % In a range-stack, the Y-axis is range. The resolution is the
-        % interSamplesDistance and the axis limits are given by the  
-        % sample equivalents of minStackY and maxStackY, aka firstSample
-        % and lastSample. If the interSamplesDistance is not constant, we
-        % use the coarsest value as grid resolution, and any data acquired
-        % with a finer interSamplesDistance (aka, higher sampling
-        % frequency) will need to be averaged, or downsampled.
+        % In a range-stack, the Y-axis is range. Since data are stored per
+        % ping, beam, and range, we can stack simply by averaging the 3D
+        % tensors across beams, and this process leads to the natural
+        % resolution that is the interSamplesDistance. For this reason, we
+        % do not make the grid resolution a parameter in this mode.
+        % However, if interSamplesDistance is not constant, we
+        % use the coarsest interSamplesDistance across all pings for the
+        % stack's resolution and we will need to grid the stacked data to
+        % this resolution. 
         resRangeStack = max(interSamplesDistance);
-        stackY = (min(firstSamplePerPing):1:max(lastSamplePerPing))'.*resRangeStack;
+        
+        % build the range-stack Y-vector
+        stackY = (minStackY:resRangeStack:maxStackY)';
         
         % in a range-stack, the X-axis are pings
         stackX = iPings;
         
     case 'depth'
-        % in a depth-stack, the Y axis is depth. So we use minStackY and
-        % maxStackY, which were specified in depth. But first, since data
-        % are re-gridded, we have to specify the resolution.
+        % in a depth-stack, the Y axis is depth. The data need to be
+        % gridded, so we use the grid resolution parameter.
         
         % get resDepthStackY parameter
         if ~isfield(params,'resDepthStackY'), params.resDepthStackY = 0; end % default
@@ -358,9 +364,8 @@ switch stackMode
         stackX = iPings;
         
     case 'fan'
-        % in a fan-stack, the Y axis is depth. So we use minStackY and
-        % maxStackY, which were specified in depth. But first, since data
-        % are re-gridded, we have to specify the resolution.
+        % in a fan-stack, the Y axis is depth. The data need to be gridded,
+        % so we use the grid resolution parameter. 
         
         % get resFanStack parameter
         if ~isfield(params,'resFanStack'), params.resFanStack = 0; end % default
@@ -379,9 +384,9 @@ switch stackMode
         % build the depth-stack Y-vector
         stackY = (minStackY:resFanStack:maxStackY)';
         
-        % in a depth-stack, the X-axis is across-track distance. There is
-        % no possibility of input min/max here (for now), we simply define
-        % the min and max across-track distance from the data extracted
+        % in a fan-stack, the X-axis is across-track distance. There is no
+        % possibility of input min/max here (for now), we simply define the
+        % min and max across-track distance from the data extracted
         maxStackX = max(furthestRangePerPing.*sin(widestAngleRadPerPing));
         
         % build the depth-stack X-vector
@@ -392,13 +397,24 @@ end
 % initialize the stack array
 stack = nan(numel(stackY),numel(stackX),'single');
 
-% from here onwards, we also need to take into account the input
-% limitations in samples 
+% from here onwards, we also need to take into account any input
+% limitations in samples. 
 
 % get iSampleLims parameter
 if ~isfield(params,'iSampleLims'), params.iSampleLims = [1 inf]; end % default
 CFF_mustBeTwoPositiveIncreasingIntegers(params.iSampleLims); % validate
 iSampleLims = params.iSampleLims;
+
+% We will use those sample limitations directly in the code when WCD is
+% extracted. But before we get there, we do need to calculate the maximum
+% number of samples that are to be extracted
+
+% indices of samples to extract, per ping          
+iSamplesPerPing = arrayfun(@(idx) max(iSampleLims(1),firstSamplePerPing(idx)):min(iSampleLims(2),lastSamplePerPing(idx)),1:nPings,'UniformOutput',false);
+% number of samples to extract, per ping
+nSamplesPerPing = cellfun(@numel,iSamplesPerPing);
+% maximum number of samples to extract, across all pings                                                
+maxNSamples = max(nSamplesPerPing); 
 
 
 %% Processing setup
@@ -415,61 +431,31 @@ end
 % number of big block variables in the calculations for each mode
 switch stackMode
     case 'range'
-        maxNumBlockVar = 1;
+        maxNumBlockVar = 2;
     case 'depth'
         maxNumBlockVar = 4;
     case 'fan'
         maxNumBlockVar = 4;
 end
 
-% define blocks of pings for processing, based on 1) varying
-% interSampleDistance and 2) memory limitations. 
+% get list of blocks
+[blocks,info] = CFF_setup_optimized_block_processing(...
+    nPings,maxNSamples*nBeams*4,...
+    processingUnit,...
+    'desiredMaxMemFracToUse',0.1,...
+    'maxNumBlockVar',maxNumBlockVar);
+% disp(info);
 
-% 1) define blocks of constant interSampleDistance
-indISDChange = find(diff(interSamplesDistance)~=0)+1;
-blocks_tmp = [[1;indISDChange'],[indISDChange'-1;nPings]];
-
-% 2) if necessary, further split those blocks based on memory available
-blocks = [];
-for ii = 1:size(blocks_tmp,1)
-    
-    % number of pings in this temp block
-    nPingsInTmpBlock = blocks_tmp(ii,2)-blocks_tmp(ii,1)+1;
-    
-    % number of samples to extract in this temp block
-    firstSampleInTmpBlock = min(firstSamplePerPing(blocks_tmp(ii,1):blocks_tmp(ii,2)));
-    lastSampleInTmpBlock = max(lastSamplePerPing(blocks_tmp(ii,1):blocks_tmp(ii,2)));
-    nSamplesInTmpBlock = lastSampleInTmpBlock-firstSampleInTmpBlock+1;
-    
-    [splitBlocks,info] = CFF_setup_optimized_block_processing(...
-        nPingsInTmpBlock,nSamplesInTmpBlock*nBeams*4,...
-        processingUnit,...
-        'desiredMaxMemFracToUse',0.1,...
-        'maxNumBlockVar',maxNumBlockVar);
-    % disp(info);
-    
-    % correct ping numbers
-    splitBlocks = splitBlocks + blocks_tmp(ii,1) - 1;
-    
-    blocks = [blocks;splitBlocks];
-    
-end
-
-% setup block processing for fan stacking
-switch stackMode
-    case 'fan'
-        % For stacking in range or depth, each block of pings can be
-        % processed independently because they contribute to different
-        % parts of the stack. But stacking in fan requires merging the 
-        % results of processing of each block with results from previous
-        % blocks. Initialize here the grids necessary to keep track of past
-        % processing
-        gridWeightedSum  = zeros(size(stack),'single');
-        gridTotalWeight  = zeros(size(stack),'single');
-        if useGpu
-            gridWeightedSum  = gpuArray(gridWeightedSum);
-            gridTotalWeight  = gpuArray(gridTotalWeight);
-        end
+% For stacking in range or depth, each block of pings can be processed
+% independently because they contribute to different parts of the stack.
+% But stacking in fan requires merging the results of processing of each
+% block with results from previous blocks. Initialize here the grids
+% necessary to keep track of past processing
+gridWeightedSum  = zeros(size(stack),'single');
+gridTotalWeight  = zeros(size(stack),'single');
+if useGpu
+    gridWeightedSum  = gpuArray(gridWeightedSum);
+    gridTotalWeight  = gpuArray(gridTotalWeight);
 end
 
 
@@ -479,13 +465,6 @@ for iB = 1:size(blocks,1)
     % list of pings in this block
     blockPings = blocks(iB,1):blocks(iB,2);
     
-    % test for constant interSamplesDistance. If blocks were setup right,
-    % it should be. So create an error if it isn't.
-    interSamplesDistanceForThisBlock = unique(interSamplesDistance(blockPings));
-    if numel(interSamplesDistanceForThisBlock)>1
-        error('Coding error to fix. interSamplesDistance should be constant in this block');
-    end
-    
     % indices of samples to extract
     firstSampleInBlock = max(iSampleLims(1),min(firstSamplePerPing(blockPings)));
     lastSampleInBlock  = min(iSampleLims(2),max(lastSamplePerPing(blockPings)));
@@ -494,20 +473,13 @@ for iB = 1:size(blocks,1)
 
     % get WCD
     blockWCD = CFF_get_WC_data(fData,dataField,'iPing',iPings(blockPings),'iBeam',iBeams,'iRange',iSamples);
-    
     if isempty(blockWCD)
         continue;
     end
     
     % set to NaN the beams that are to be excluded from the stack
     blockWCD(:,~subBeamKeep(iBeams,blockPings)) = NaN;
-    
-    % set to NaN the samples that are to be excluded from the stack
-    tmp = lastSamplePerPing(blockPings);
-    for iP = 1:numel(blockPings)
-        blockWCD(tmp+1:end,:,iP) = NaN;
-    end
-    
+        
     if useGpu
         blockWCD = gpuArray(blockWCD);
     end
@@ -515,35 +487,83 @@ for iB = 1:size(blocks,1)
     switch stackMode
         
         case 'range'
-             
-            % average across beams in natural intensity values, then back
-            % to dB 
-            blockStack = 10*log10(squeeze(mean(10.^(blockWCD/10),2,'omitnan')));
+
+            % whether interSamplesDistance is constant or not, we can
+            % average the WCD tensor across beams. We just need to account
+            % for any startSampleNumber offset, in case it varies between
+            % beams
+            blockStartSampleNumber = startSampleNumber(:,blockPings);
+            blockWCD_2 = CFF_offset_array(blockWCD,permute(blockStartSampleNumber,[3,1,2]));
+            clear blockWCD % clear up memory
             
-            % if the interSamplesDistance is the range-stack resolution
-            % (always the case if interSamplesDistance was constant), the
-            % result can be saved directly in the stack array  
-            if interSamplesDistanceForThisBlock==resRangeStack
-                idxRows = iSamples-min(firstSamplePerPing(blockPings))+1; 
-                stack(idxRows,blockPings) = blockStack;
+            % then turn data to natural intensity values and average across
+            % beams
+            blockAvgWCD = permute(mean(10.^(blockWCD_2/10),2,'omitnan'),[1,3,2]);
+            clear blockWCD_2 % clear up memory
+            
+            if numel(unique(interSamplesDistance)) == 1
+                % with a constant interSamplesDistance, the resolution is
+                % the same for each ping so we can directly save it in the
+                % stack
+                
+                % first, come back to dB 
+                blockStack = 10*log10(blockAvgWCD);
+                
+                % save in stack
+                iSamples_2 = single((1:size(blockAvgWCD,1))');
+                S_blockSampleRange = iSamples_2.*interSamplesDistance(1);
+                blockIndRow = round((S_blockSampleRange-stackY(1))/resRangeStack);
+                % NaN those samples that fall outside of the desired stack
+                blockIndRow(blockIndRow<1) = NaN;
+                blockIndRow(blockIndRow>numel(stackY)) = NaN;
+                stack(blockIndRow,blockPings) = blockStack;
+                
             else
-                % otherwise, we need to downsample or interpolate the data
-                % first.
-                downSampleFactor = resRangeStack./interSamplesDistanceForThisBlock;
-                if abs(round(downSampleFactor)-downSampleFactor) < 0.01.*interSamplesDistanceForThisBlock
-                    % interSamplesDistance for this block is (roughly) a
-                    % factor of resRangeStack (which is the largest
-                    % interSamplesDistance in all pings. Then we can just
-                    % decimate the data.
-                    downSampleFactor = round(downSampleFactor);
-                    blockStackResampled = blockStack(1:downSampleFactor:end,:);
-                    idxRows = 1:size(blockStackResampled,1); % this is a first try- probably wrong when start sample varies. To check
-                else
-                    % to write
-                    error('File with variable sampling frequencies that are not proportional. This rare case is not supported yet');
-                    continue;
+                % with a variable interSamplesDistance, we need to grid the
+                % data ping by ping into the stack
+                
+                % first, get the range of each sample in the average array
+                if useGpu
+                    iSamples = gpuArray(iSamples);
+                    blockPings = gpuArray(blockPings);
                 end
-                stack(idxRows,blockPings) = blockStackResampled;
+                iSamples_2 = single((1:size(blockAvgWCD,1))');
+                S1P_blockSampleRange = CFF_get_samples_range(iSamples_2,single(blockStartSampleNumber(1,:)),single(interSamplesDistance(blockPings)));
+                SP_blockSampleRange = permute(S1P_blockSampleRange,[1,3,2]);
+                
+                % indices of each sample in the stack's Y-axis
+                blockIndRow = round((SP_blockSampleRange-stackY(1))/resRangeStack+1);
+                
+                % NaN those samples that fall outside of the desired stack
+                blockIndRow(blockIndRow<1) = NaN;
+                blockIndRow(blockIndRow>numel(stackY)) = NaN;
+                
+                % grid the values for each ping
+                for ii = 1:numel(blockPings)
+                    
+                    % get data just for this ping
+                    pingIndRow = blockIndRow(:,ii);
+                    pingVal = blockAvgWCD(:,ii);
+                    
+                    % remove NaNs
+                    iPingNaN = isnan(pingIndRow) | isnan(pingVal);
+                    pingIndRow(iPingNaN) = [];
+                    pingVal(iPingNaN) = [];
+                    
+                    % sum values per grid cell
+                    pingSumVal = accumarray( pingIndRow,...
+                       pingVal(:),[numel(stackY),1],@sum,single(0));
+                    
+                    % number of elements per grid cell
+                    pingNumElem = accumarray( pingIndRow,...
+                        single(1),[numel(stackY),1],@sum);
+                    
+                    % calculate the average, turn data back to dB, and save
+                    % in stack array 
+                    stack(:,blockPings(ii)) = 10*log10(pingSumVal./pingNumElem);
+                    
+                end
+                
             end
             
         case 'depth'
@@ -557,7 +577,7 @@ for iB = 1:size(blocks,1)
             end
             
             % distance upwards from sonar for each sample
-            blockStartSampleNumber = single(fData.(sprintf('%s_BP_StartRangeSampleNumber',datagramSource))(iBeams,iPings(blockPings)));
+            blockStartSampleNumber = startSampleNumber(:,blockPings);
             blockSampleRange = CFF_get_samples_range(single(iSamples'),blockStartSampleNumber,single(interSamplesDistance(blockPings)));
             blockAngle = single(angleRad(:,blockPings));
             [~,blockSampleUpDist] = CFF_get_samples_dist(blockSampleRange,blockAngle);
@@ -590,7 +610,7 @@ for iB = 1:size(blocks,1)
             clear blockWCD % clear up memory
             
             % block's data number of elements that were summed per grid
-            % cell 
+            % cell
             blockStackNumElem = accumarray( [blockIndRow(:),blockIndCol(:)],...
                 single(1),[numel(stackY),numel(blockPings)],@sum);
             clear blockIndRow blockIndCol % clear up memory
@@ -612,7 +632,7 @@ for iB = 1:size(blocks,1)
             end
             
             % distance upwards from sonar for each sample
-            blockStartSampleNumber = single(fData.(sprintf('%s_BP_StartRangeSampleNumber',datagramSource))(iBeams,iPings(blockPings)));
+            blockStartSampleNumber = startSampleNumber(:,blockPings);
             blockSampleRange = CFF_get_samples_range(single(iSamples'),blockStartSampleNumber,single(interSamplesDistance(blockPings)));
             blockAngle = single(angleRad(:,blockPings));
             [blockSampleAcrossDist,blockSampleUpDist] = CFF_get_samples_dist(blockSampleRange,blockAngle);
