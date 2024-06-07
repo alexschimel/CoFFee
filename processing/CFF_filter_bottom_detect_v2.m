@@ -2,7 +2,7 @@ function [fData,params] = CFF_filter_bottom_detect_v2(fData,varargin)
 %CFF_FILTER_BOTTOM_DETECT_V2  Filter and interpolate the bottom detections
 %
 %   Bottom detects are the sample number in each beam corresponding to the
-%   bottom, according to the bottom detect algorithms. This
+%   bottom, according to the bottom detection algorithms. This
 %   filtering/interpolating algorithm can be applied to data either in
 %   bathymetry, or water-column datagrams. Note this function requires the
 %   bottom samples in input data to have been previously geoprocessed using
@@ -26,7 +26,7 @@ function [fData,params] = CFF_filter_bottom_detect_v2(fData,varargin)
 %   'pingBeamWindowSize': a two-elements vector (first for pings, second
 %   for beams) of non-negative integers defining the window size around a
 %   detect to consider for the filtering/flagging. By default using [3,3]
-%   that is, we consider windows of 7 beams (f3 starboard, 3 port) and 7
+%   that is, we consider windows of +-3 beams (3 starboard, 3 port) and +-3
 %   pings (3 prior, 3 after) around the detect of interest.
 %   'maxHorizDist': nonnegative scalar defining the maximum horizontal
 %   distance (in m) to keep windows elements. Use maxHorizDist = inf to
@@ -60,7 +60,7 @@ function [fData,params] = CFF_filter_bottom_detect_v2(fData,varargin)
 %
 %   See also CFF_GEOREFERENCE_BOTTOM_DETECT, CFF_GROUP_PROCESSING.
 
-%   Copyright 2017-2022 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 global DEBUG
@@ -90,7 +90,7 @@ if ~isfield(params,'sourceBottom'), params.sourceBottom = 'raw'; end % default
 mustBeMember(params.sourceBottom,{'raw','processed'}); % validate
 sourceBottom = params.sourceBottom;
 
-% get bottom data to process
+% get the bottom sample numbers
 b0 = CFF_get_bottom_sample(fData,'which',sourceBottom);
 b0(b0==0) = NaN; % replace no detects by NaNs
 
@@ -133,6 +133,16 @@ switch method
         
         comms.step('Filtering');
         
+        % get bottom range from sample numbers
+        datagramSource = CFF_get_datagramSource(fData);
+        startSampleNumber = fData.(sprintf('%s_BP_StartRangeSampleNumber',datagramSource));
+        interSamplesDistance = CFF_inter_sample_distance(fData);
+        bR0 = CFF_get_samples_range(permute(b0,[3,1,2]),startSampleNumber,interSamplesDistance);
+        bR0 = permute(bR0,[2,3,1]);
+        
+        % initialize results
+        bR1 = nan(size(bR0));
+        
         if isinf(maxHorizDist)
             
             % filter method, with no limit on horiz distance
@@ -145,9 +155,9 @@ switch method
                     bmin = max(1,bb-pingBeamWindowSize(2));
                     bmax = min(nBeams,bb+pingBeamWindowSize(2));
                     % get bottom for subset
-                    subBottom = b0(bmin:bmax,pmin:pmax);
+                    subBottom = bR0(bmin:bmax,pmin:pmax);
                     % compute median value
-                    b1(bb,pp) = median(subBottom(:),'omitnan');
+                    bR1(bb,pp) = median(subBottom(:),'omitnan');
                 end
             end
             
@@ -163,7 +173,7 @@ switch method
                     bmin = max(1,bb-pingBeamWindowSize(2));
                     bmax = min(nBeams,bb+pingBeamWindowSize(2));
                     % get bottom for subset
-                    subBottom = b0(bmin:bmax,pmin:pmax);
+                    subBottom = bR0(bmin:bmax,pmin:pmax);
                     % get easting and northing
                     subEasting = bE(bmin:bmax,pmin:pmax);
                     subNorthing = bN(bmin:bmax,pmin:pmax);
@@ -172,11 +182,15 @@ switch method
                     % keep only subset within desired horizontal distance
                     subBottom(subHzDist>maxHorizDist) = NaN;
                     % compute median value
-                    b1(bb,pp) = median(subBottom(:),'omitnan');
+                    bR1(bb,pp) = median(subBottom(:),'omitnan');
                 end
             end
             
         end
+        
+        % filtering in range done, get samples back from range...
+        b1 = CFF_get_samples_index_from_range(permute(bR1,[3,1,2]),startSampleNumber,interSamplesDistance);
+        b1 = permute(b1,[2,3,1]);
         
     case 'flag'
         
@@ -282,8 +296,8 @@ comms.progress(2,4);
 if DEBUG
     figure; tiledlayout(3,1);
     minb = min([b0(:);b1(:)]); maxb=max([b0(:);b1(:)]);
-    ax1 = nexttile; imagesc(b0); colormap(jet); colorbar; title('range of raw bottom'); grid on; caxis([minb maxb])
-    ax2 = nexttile; imagesc(b1); colormap(jet); colorbar; title('range of filtered bottom'); grid on; caxis([minb maxb])
+    ax1 = nexttile; imagesc(b0); colormap(jet); colorbar; title('sample index of raw bottom'); grid on; caxis([minb maxb])
+    ax2 = nexttile; imagesc(b1); colormap(jet); colorbar; title('sample index of filtered bottom'); grid on; caxis([minb maxb])
     ax3 = nexttile; imagesc(b1-b0); colormap(jet); colorbar; title('filtered minus raw');
     linkaxes([ax1 ax2 ax3],'xy')
 end
