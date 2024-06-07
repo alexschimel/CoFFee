@@ -1,15 +1,16 @@
 function fData = CFF_convert_S7Kdata_to_fData(S7Kdata,varargin)
 %CFF_CONVERT_S7KDATA_TO_FDATA  Convert s7k data to the CoFFee format
 %
-%   Converts Teledyne-Reson data FROM the S7Kdata format (read by
-%   CFF_READ_S7K) TO the CoFFee fData format used in processing. 
+%   Converts Multibeam data FROM the S7Kdata format (e.g. Teledyne, Norbit)
+%   TO the CoFFee fData format used in processing.
+%
 %   IMPORTANT NOTE: THE FDATA FORMAT WAS NOT DESIGNED TO BE A GENERIC
 %   FORMAT BUT A MATLAB VERSION OF THE KONGSBERG *.ALL FORMAT. AS A RESULT,
-%   CONVERSION FROM S7K IS NOT OPTIMAL AND REQUIRES SOME TWEAKS. ALSO, WE
-%   ONLY POPULATE THE FDATA FIELDS THAT ARE ABSOLUTELY NECESSARY FOR
-%   WATER-COLUMN DISPLAY. YOU MIGHT EXPERIENCE ISSUES TRYING TO DO ANYTHING
-%   ELSE WITH THAT FDATA. CHECK CFF_CONVERT_ALLDATA_TO_FDATA TO GET AN IDEA
-%   OF WHAT ALL THOSE FIELDS ACTUALLY ARE.
+%   CONVERSION FROM S7K TO FDATA IS NOT OPTIMAL AND REQUIRES SOME TWEAKS.
+%   ALSO, WE ONLY POPULATE THE FDATA FIELDS THAT ARE ABSOLUTELY NECESSARY
+%   FOR WATER-COLUMN DISPLAY. YOU MIGHT EXPERIENCE ISSUES TRYING TO DO
+%   ANYTHING ELSE WITH THAT FDATA. CHECK CFF_CONVERT_ALLDATA_TO_FDATA TO
+%   GET AN IDEA OF WHAT ALL THOSE FIELDS ACTUALLY ARE.
 %
 %   FDATA = CFF_CONVERT_S7KDATA_TO_FDATA(S7KDATA) converts the contents of
 %   the S7KDATA structure to a structure in the fData format.
@@ -23,7 +24,7 @@ function fData = CFF_convert_S7Kdata_to_fData(S7Kdata,varargin)
 %   See also CFF_CONVERT_RAW_FILES, CFF_READ_S7K,
 %   CFF_CONVERT_ALLDATA_TO_FDATA 
 
-%   Copyright 2017-2022 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
@@ -108,12 +109,12 @@ comms.step('Converting Navigation data');
 if isfield(S7Kdata,'R1015_Navigation')
     fData.Po_1D_Date                            = S7Kdata.R1015_Navigation.Date;
     fData.Po_1D_TimeSinceMidnightInMilliseconds = S7Kdata.R1015_Navigation.TimeSinceMidnightInMilliseconds;
-    fData.Po_1D_PositionCounter                 = S7Kdata.R1015_Navigation.PositionCounter;
+    fData.Po_1D_PositionCounter                 = 1:numel(S7Kdata.R1015_Navigation.Date);    % dummy values
     fData.Po_1D_Latitude                        = S7Kdata.R1015_Navigation.Latitude/pi*180; % now in deg
     fData.Po_1D_Longitude                       = S7Kdata.R1015_Navigation.Longitude/pi*180; % now in deg
-    fData.Po_1D_SpeedOfVesselOverGround         = S7Kdata.R1015_Navigation.SpeedOfVesselOverGround;
+    fData.Po_1D_SpeedOfVesselOverGround         = S7Kdata.R1015_Navigation.SpeedOverGround;
     fData.Po_1D_HeadingOfVessel                 = S7Kdata.R1015_Navigation.Heading/pi*180; % now in deg
-    fData.Po_1D_MeasureOfPositionFixQuality     = S7Kdata.R1015_Navigation.HorizontalPositionAccuracy;
+    fData.Po_1D_MeasureOfPositionFixQuality     = ones(size(S7Kdata.R1003_Position.Date)); % dummy values
     fData.Po_1D_PositionSystemDescriptor        = ones(size(S7Kdata.R1015_Navigation.Date)); % dummy values
 elseif isfield(S7Kdata,'R1003_Position')
     fData.Po_1D_Date                            = S7Kdata.R1003_Position.Date;
@@ -648,7 +649,26 @@ if all(isfield(S7Kdata,{'R7042_CompressedWaterColumnData','R7000_SonarSettings',
         DataSamples_tot = fread(fid,pos_end_ping-pos_start_ping+1,'int8=>int8');
         
         % index of first sample
+        % DEV NOTE --------------------------------------------------------
+        % Here we used to save the samples with any start sample
+        % offset, aka:
+        % start_sample = S7Kdata.R7042_CompressedWaterColumnData.FirstSample(ipR7042(iP))+1;
+        % so it could be used when recording the data a few lines down,
+        % such as:
+        % Mag_tmp((start_sample:start_sample+nSamples(jj)-1),jj) = DataSamples_tmp;
+        %
+        % Now I removed it because it caused errors. The errors are due to
+        % the fact that Mag_tmp are initialized without considering the
+        % start sample number. It turns out this error never happened
+        % before because all WCD from R7042 records test previously did NOT
+        % have a start sample offset. Now, saving data with the offset is
+        % something we did not do with ALL or KMALL data, so why did we
+        % code it here. Anyway, for now I don't want to change the code in
+        % case there was a good reason for doing things this way. So just
+        % saving start_sample = 1 to override this approach:
         start_sample = S7Kdata.R7042_CompressedWaterColumnData.FirstSample(ipR7042(iP))+1;
+        start_sample = 1;
+        % -----------------------------------------------------------------
         
         % read beam by beam
         for jj = 1:S7Kdata.R7004_BeamGeometry.N(ipR7004(iP))  % from R7004??? XXX1
@@ -736,6 +756,7 @@ if all(isfield(S7Kdata,{'R7042_CompressedWaterColumnData','R7000_SonarSettings',
         % appropriate binary file, at the appropriate ping, through the
         % memory mapping
         fData.AP_SBP_SampleAmplitudes{iG}.Data.val(:,:,iP-ping_group_start(iG)+1) = Mag_tmp;
+        
         if ~flags.magnitudeOnly
             fData.AP_SBP_SamplePhase{iG}.Data.val(:,:,iP-ping_group_start(iG)+1) = Ph_tmp;
         end

@@ -99,7 +99,7 @@ end
 idx_corrupted = info.syncCounter~=0;
 idx_corrupted = [idx_corrupted(2:end);false]; % the possibly corrupted datagram is the one before the one with syncCounter~=0;
 if any(idx_corrupted & idx_to_parse)
-    comms.info('%i of the %i datagrams to be parsed in this file may be corrupted and will not be parsed.',sum(idx_corrupted & idx_to_parse), sum(idx_to_parse) );
+    comms.info(sprintf('%i of the %i datagrams to be parsed in this file may be corrupted and will not be parsed.',sum(idx_corrupted & idx_to_parse), sum(idx_to_parse)));
 end
 
 % parsable datagrams to be parsed
