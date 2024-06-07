@@ -874,7 +874,7 @@ for iF = 1:nStruct
         
         % initialize data per decimated beam and ping
         fData.WC_BP_BeamPointingAngle      = nan(maxnBeams_sub,nPings);
-        fData.WC_BP_StartRangeSampleNumber = nan(maxnBeams_sub,nPings);
+        fData.WC_BP_StartRangeSampleNumber = zeroes(maxnBeams_sub,nPings);
         fData.WC_BP_NumberOfSamples        = nan(maxnBeams_sub,nPings);
         fData.WC_BP_DetectedRangeInSamples = zeros(maxnBeams_sub,nPings);
         fData.WC_BP_TransmitSectorNumber   = nan(maxnBeams_sub,nPings);
@@ -1115,7 +1115,7 @@ for iF = 1:nStruct
         
         % initialize data per decimated beam and ping
         fData.AP_BP_BeamPointingAngle      = nan(maxnBeams_sub,nPings);
-        fData.AP_BP_StartRangeSampleNumber = nan(maxnBeams_sub,nPings);
+        fData.AP_BP_StartRangeSampleNumber = zeroes(maxnBeams_sub,nPings);
         fData.AP_BP_NumberOfSamples        = nan(maxnBeams_sub,nPings);
         fData.AP_BP_DetectedRangeInSamples = zeros(maxnBeams_sub,nPings);
         fData.AP_BP_TransmitSectorNumber   = nan(maxnBeams_sub,nPings);

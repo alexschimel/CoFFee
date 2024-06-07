@@ -17,7 +17,7 @@ function BP_bottomSample = CFF_get_bottom_sample(fData,varargin)
 %   CFF_GET_BOTTOM_SAMPLE(fData,'which','raw') forces the return of the raw
 %   bottom sample.
 
-%   Copyright 2017-2021 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
@@ -40,5 +40,5 @@ if strcmp(which,'processed') && isfield(fData,sprintf('X_BP_bottomSample_%s',dat
 else
     % Extracting raw bottom sample
     BP_bottomSample = fData.(sprintf('%s_BP_DetectedRangeInSamples',datagramSource)); % in sample number
-    BP_bottomSample(BP_bottomSample==0) = NaN;
+    BP_bottomSample(BP_bottomSample<=0) = NaN;
 end
