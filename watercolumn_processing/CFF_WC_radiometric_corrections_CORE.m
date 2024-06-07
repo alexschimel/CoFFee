@@ -157,7 +157,13 @@ comms.start('Applying radiometric corrections');
 %% Transmit Power level reduction
 % This is the "mammal protection" setting, which is recorded in Runtime
 % Parameters datagram
-TPRM = fData.Ru_1D_TransmitPowerReMaximum;
+if isfield(fData,'Ru_1D_TransmitPowerReMaximum')
+    TPRM = fData.Ru_1D_TransmitPowerReMaximum;
+else
+    comms.info('Transmit Power (Ru_1D_TransmitPowerReMaximum) level not stored in the file. We will use 1kW...');
+    TPRM = 1000*ones(size(data));
+end
+
 if numel(unique(TPRM)) == 1
     % This value does not change in the file
     TPRM = TPRM(1).*ones(size(data));

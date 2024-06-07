@@ -141,7 +141,12 @@ if ~isinf(maxRangeBelowBottomEcho)
     
     % some data needed to find the top of the bottom echo
     theta = deg2rad(beamPointingAngleDeg); % beam pointing angle in radians
-    beamwidth = deg2rad(fData.Ru_1D_ReceiveBeamwidth(1)); % beamwidth
+    if isfield(fData,'Ru_1D_ReceiveBeamwidth')
+        beamwidth = deg2rad(fData.Ru_1D_ReceiveBeamwidth(1)); % beamwidth
+    else
+        comms.info('Beamwidth (Ru_1D_ReceiveBeamwidth) level not stored in the file. We will use 1 degree...');
+        beamwidth = 1;
+    end
     
     % the first part is to find the top of the bottom echo, i.e. the range
     % in each beam where the echo starts. Some development is still needed
