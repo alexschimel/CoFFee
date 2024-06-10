@@ -186,7 +186,7 @@ if strcmp(tmproj,'utm')
     FN = (lat < 0).*10000000;
     FE = 500000;  
     k0 = 0.9996;
-    utmzone = [num2str(floor(origLon./6)+31) char(78.*(lat>=0)+83.*(lat<0))];
+    utmzone = [num2str(floor(origLon./6)+31,'%02i') char(78.*(lat>=0)+83.*(lat<0))];
 else
     utmzone = [];
 end
