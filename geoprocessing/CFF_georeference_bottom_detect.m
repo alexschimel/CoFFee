@@ -74,7 +74,7 @@ switch datagramSource
         X_1BP_BottomSample = permute(X_BP_bottomSample,[3,1,2]);
         
         % start sample number
-        X_BP_startSampleNumber = fData.(sprintf('%s_BP_StartRangeSampleNumber',datagramSource));
+        % X_BP_startSampleNumber = fData.(sprintf('%s_BP_StartRangeSampleNumber',datagramSource));
         
         % To get from sample number to range in meters, we need the OWTT
         % distance traveled in one sample 
@@ -92,17 +92,21 @@ switch datagramSource
         X_1P_thetaRad = deg2rad(X_1P_thetaDeg);
         
         % Use all of this to georeference those bottom samples
+        [X_1BP_bottomEasting, X_1BP_bottomNorthing, X_1BP_bottomHeight, ...
+            X_1BP_bottomAcrossDist, X_1BP_bottomUpDist, X_1BP_bottomRange] = CFF_georeference_sample(...
+            X_1BP_BottomSample, 0, X_1P_oneSampleDistance, X_BP_beamPointingAngleRad, ...
+            X_1P_sonarEasting, X_1P_sonarNorthing, X_1P_sonarHeight, X_1P_thetaRad);
         % DEV NOTE --------------------------------------------------------
-        % This code should incorporate the startSampleNumber (SSN). Without
-        % it, all data is referenced to the range of the first sample,
-        % instead of the sonar. Yet it uses 0 instead of SSN and I don't
-        % know why.  
-        % It would make sense if the water-column display did not
-        % incorporate the SSN offset... but it does! So this needs to be
-        % investigated... To start with, I readded the calculation for the
-        % SSN above, but I have not plugged it in the equation below yet. 
+        % This command does not incorporate the startSampleNumber (SSN) and
+        % I don't know why... Without it, it means that all data is
+        % referenced to the range of the first sample, instead of the
+        % sonar. Yet in Espresso, the bottom is at the right place over the
+        % WCD (which does incorporate the SSN offset) and you get an offset
+        % if you add the SSN here... I don't know what is going on... I
+        % added the calculation for the SSN above and commented it, but I
+        % would need to investigate why we don't plug it in the
+        % calculation... 
         % Alex 07/06/2024 -------------------------------------------------
-        [X_1BP_bottomEasting, X_1BP_bottomNorthing, X_1BP_bottomHeight, X_1BP_bottomAcrossDist, X_1BP_bottomUpDist, X_1BP_bottomRange] = CFF_georeference_sample(X_1BP_BottomSample, 0, X_1P_oneSampleDistance, X_BP_beamPointingAngleRad, X_1P_sonarEasting, X_1P_sonarNorthing, X_1P_sonarHeight, X_1P_thetaRad);
         
         % save info
         fData = CFF_set_bottom_sample(fData,X_BP_bottomSample);

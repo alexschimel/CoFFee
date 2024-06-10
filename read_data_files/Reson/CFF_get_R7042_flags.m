@@ -41,9 +41,9 @@ for ii = 1:nEntries
     % dec to bin
     flag_bin = dec2bin(flag_dec(ii),32);
     
-    % Bit 0 : Use maximum bottom detection point in each beam to limit data.
-    % Data is included up to the bottom detection point + 10%. This flag has no
-    % effect on systems which do not perform bottom detection.
+    % Bit 0 : Use maximum bottom detection point in each beam to limit
+    % data. Data is included up to the bottom detection point + 10%. This
+    % flag has no effect on systems which do not perform bottom detection.
     flags.dataTruncatedBeyondBottom(ii) = bin2dec(flag_bin(32-0));
     
     % Bit 1 : Include intensity data only (strip phase)
@@ -61,6 +61,12 @@ for ii = 1:nEntries
     % values 2-16 are valid. This field is ignored if downsampling
     % is not enabled (type = “none”).
     flags.downsamplingDivisor(ii) = bin2dec(flag_bin(32-7:32-4));
+    % DEV NOTE ------------------------------------------------------------
+    % I experienced issues in some files with varying downsampling, where
+    % the values I calculate for the divisor here don't match with the
+    % "effective sampling rate, after downsampling" read in the data. Aka,
+    % I might be reading that field wrong. See relevant NOTE below.
+    % Alex 10/6/2024 ------------------------------------------------------
     
     % Bit 8-11 : Downsampling type:
     %             0x000 = None
@@ -82,16 +88,16 @@ for ii = 1:nEntries
     flags.firstSampleContainsRxDelay(ii) = bin2dec(flag_bin(32-15));
     
     % NOTE
-    % If downsampling is used (Flags bit 8-11), then the effective Sample Rate
-    % of the data is changed and is given by the sample rate field. To
-    % calculate the effective sample rate, the system sample rate (provided in
-    % the 7000 record) must be divided by the downsampling divisor factor
-    % specified in bits 4-7.
+    % If downsampling is used (Flags bit 8-11), then the effective Sample
+    % Rate of the data is changed and is given by the sample rate field. To
+    % calculate the effective sample rate, the system sample rate (provided
+    % in the 7000 record) must be divided by the downsampling divisor
+    % factor specified in bits 4-7.
     
     % NOTE
-    % When ‘Bit 2’ is set in the flags of the 7042 record, the record contains
-    % 8 bit dB values. This should never combined with ‘Bit 12’ indicating that
-    % intensities are stored as 32 bit values.
+    % When ‘Bit 2’ is set in the flags of the 7042 record, the record
+    % contains 8 bit dB values. This should never combined with ‘Bit 12’
+    % indicating that intensities are stored as 32 bit values.
     
     
     %% interpret
@@ -125,16 +131,16 @@ for ii = 1:nEntries
         end
     else
         if ~flags.magnitudeOnly(ii)
-            % This case is strange. We have both mag and phase, and bit 12 "32
-            % Bits data" is on. One would assume it means magnitude and phase
-            % are both 32 bits, for a total of 64. OR that magnitude is 32 bits
-            % and phase is nominal, aka 16 bits, for a total of 48 bits. But
-            % none of those cases are in the documentation.
+            % This case is strange. We have both mag and phase, and bit 12
+            % "32 Bits data" is on. One would assume it means magnitude and
+            % phase are both 32 bits, for a total of 64. OR that magnitude
+            % is 32 bits and phase is nominal, aka 16 bits, for a total of
+            % 48 bits. But none of those cases are in the documentation.
             %
-            % What we have in the documentation is case "E) 32 bit Mag & 8 bit
-            % Phase (40 bits total)", which is strange. Is the phase downgraded
-            % from 16 to 8 bits to save space? Anyway, we assume that the doc
-            % is correct and that this case applies here.
+            % What we have in the documentation is case "E) 32 bit Mag & 8
+            % bit Phase (40 bits total)", which is strange. Is the phase
+            % downgraded from 16 to 8 bits to save space? Anyway, we assume
+            % that the doc is correct and that this case applies here.
             
             % E) 32 bit Mag & 8 bit Phase (40 bits total)
             sample_size(ii) = 5;
