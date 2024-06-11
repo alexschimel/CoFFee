@@ -1068,9 +1068,10 @@ for iDatag = datagToParse'
                 % HERE if data parsing failed, add a blank datagram in
                 % output
                 comms.error(sprintf('%s: error while parsing datagram',recordName));
-                % copy field names of previous entries
-                fields_wc = recordNames(S7Kdata.(recordName));
                 
+                % copy field names of previous entries
+                fields_wc = fieldnames(S7Kdata.(recordName));
+
                 % add blanks fields for those missing
                 for ifi = 1:numel(fields_wc)
                     if numel(S7Kdata.(recordName).(fields_wc{ifi})) >= iRec

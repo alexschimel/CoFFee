@@ -409,10 +409,8 @@ iSampleLims = params.iSampleLims;
 % extracted. But before we get there, we do need to calculate the maximum
 % number of samples that are to be extracted
 
-% indices of samples to extract, per ping          
-iSamplesPerPing = arrayfun(@(idx) max(iSampleLims(1),firstSamplePerPing(idx)):min(iSampleLims(2),lastSamplePerPing(idx)),1:nPings,'UniformOutput',false);
 % number of samples to extract, per ping
-nSamplesPerPing = cellfun(@numel,iSamplesPerPing);
+nSamplesPerPing = min(iSampleLims(2),lastSamplePerPing) - max(iSampleLims(1),firstSamplePerPing) + 1;
 % maximum number of samples to extract, across all pings                                                
 maxNSamples = max(nSamplesPerPing); 
 
@@ -522,13 +520,15 @@ for iB = 1:size(blocks,1)
                 % with a variable interSamplesDistance, we need to grid the
                 % data ping by ping into the stack
                 
-                % first, get the range of each sample in the average array
+                % first, get the range of each sample in the average array.
+                % Note that the averaged data has already been corrected
+                % for the startSampleNumber
                 if useGpu
                     iSamples = gpuArray(iSamples);
                     blockPings = gpuArray(blockPings);
                 end
                 iSamples_2 = single((1:size(blockAvgWCD,1))');
-                S1P_blockSampleRange = CFF_get_samples_range(iSamples_2,single(blockStartSampleNumber(1,:)),single(interSamplesDistance(blockPings)));
+                S1P_blockSampleRange = CFF_get_samples_range(iSamples_2,single(0),single(interSamplesDistance(blockPings)));
                 SP_blockSampleRange = permute(S1P_blockSampleRange,[1,3,2]);
                 
                 % indices of each sample in the stack's Y-axis
