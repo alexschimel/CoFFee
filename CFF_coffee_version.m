@@ -22,7 +22,8 @@ function ver = CFF_coffee_version()
 %   Copyright 2022-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
-ver = '2.0.0-alpha.19'; % 27/05/2024
+ver = '2.0.0-alpha.20'; % 13/06/2024
+% ver = '2.0.0-alpha.19'; % 27/05/2024
 % ver = '2.0.0-alpha.18'; % 22/05/2024
 % ver = '2.0.0-alpha.17'; % 28/03/2024
 % ver = '2.0.0-alpha.16'; % 19/03/2024
