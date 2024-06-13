@@ -261,7 +261,7 @@ switch stackMode
             % deepest range. Find that sample in each ping
             bottomSamples = CFF_get_bottom_sample(fData);
             bottomSamples = bottomSamples(iBeams,iPings);
-            lastSamplePerPing = max(bottomSamples,[],1,'omitnan');
+            lastSamplePerPing = ceil(max(bottomSamples,[],1,'omitnan'));
             % then find the maximum of the corresponding ranges, for the
             % stack lower boundary
             SBP_idxSamples = permute(ones(numel(iBeams),1).*lastSamplePerPing,[3,1,2]);

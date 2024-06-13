@@ -1,24 +1,34 @@
 function data_tot = CFF_get_WC_data(fData,fieldN,varargin)
 %CFF_GET_WC_DATA  Grab water column data in a fData structure
 %
-%   Grab water column data in a fData structure, possibly subsampled in
-%   range or beams, or any pings required, in raw format or true value.
+%   WCD = CFF_GET_WC_DATA(FDATA,FIELD) gets the water-column data WCD from
+%   the water-column data field FIELD in the fData structure FDATA. All
+%   pings, beams, and samples available are returned, with no sub-sampling,
+%   in the "true" format, that is after the appropriate transformation from
+%   the data stored "raw" format. The following optional commands allow
+%   modifying this defautl behavior. 
 %
-%   *INPUT VARIABLES*
-%   * |fData|: Required. Structure for the storage of kongsberg EM series
-%   multibeam data in a format more convenient for processing. The data is
-%   recorded as fields coded "a_b_c" where "a" is a code indicating data
-%   origing, "b" is a code indicating data dimensions, and "c" is the data
-%   name. See the help of function CFF_convert_ALLdata_to_fData.m for
-%   description of codes.
-%   * |fieldN|: Required. Description (Information).
-%   * |iPing|: Optional. Description (Information). Default []. 
-%   * |dr_sub|: Optional. Description (Information). Default 1.
-%   * |db_sub|: Optional. Description (Information). Default 1.
-%   * |output_format|: Optional. Description (Information). 'raw' or 'true'
-%   (default)
+%   CFF_GET_WC_DATA(FDATA,FIELD,IPING) returns the water-column data as
+%   above but only for the desired range of pings IPING (scalar or vector).
+%
+%   CFF_GET_WC_DATA(FDATA,FIELD,IPING,DRSUB) returns the water-column data
+%   as above but also down-sampled in samples by a factor of DRSUB
+%   (scalar). 
+%
+%   CFF_GET_WC_DATA(FDATA,FIELD,IPING,DRSUB,DBSUB) returns the water-column
+%   data as above but also down-sampled in beams by a factor of DBSUB
+%   (scalar).
+%
+%   CFF_GET_WC_DATA(FDATA,FIELD,IPING,DRSUB,DBSUB,'raw') returns the
+%   water-column data as above but in its "raw" stored format.
+%
+%   CFF_GET_WC_DATA(...,'iBeam',IBEAM) returns the water-column data only
+%   for the desired range of beams IBEAM (scalar or vector).
+%
+%   CFF_GET_WC_DATA(...,'iRange',ISAMPLE) returns the water-column data
+%   only for the desired range of samples ISAMPLE (scalar or vector).
 
-%   Copyright 2017-2021 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % input parser
@@ -50,21 +60,21 @@ if ~ismember(datagramSource,{'WC','AP'})
 end
 
 if isempty(iPing)
-    iPing = 1:cellfun(@(x) nansum(size(x.Data.val,3)),fData.(fieldN));
+    iPing = 1:sum(cellfun(@(x) nansum(size(x.Data.val,3)),fData.(fieldN)));
 end
 if isempty(iBeam)
-    iBeam = 1:cellfun(@(x) nanmax(size(x.Data.val,2)),fData.(fieldN));
+    iBeam = 1:nanmax(cellfun(@(x) nanmax(size(x.Data.val,2)),fData.(fieldN)));
 end
 if isempty(iRange)
-    iRange = 1:cellfun(@(x) nanmax(size(x.Data.val,1)),fData.(fieldN));
+    iRange = 1:nanmax(cellfun(@(x) nanmax(size(x.Data.val,1)),fData.(fieldN)));
 end
 
 % finding relevant groups of pings
+nPingsTot = numel(fData.(sprintf('%s_1P_PingCounter',datagramSource)));
 p_start = fData.(sprintf('%s_n_start',datagramSource));
 p_end   = fData.(sprintf('%s_n_end',datagramSource));
-pingCounter = fData.(sprintf('%s_1P_PingCounter',datagramSource));
-p_end(p_end>numel(pingCounter))     = numel(pingCounter);
-p_start(p_start>numel(pingCounter)) = numel(pingCounter);
+p_end(p_end>nPingsTot) = nPingsTot;
+p_start(p_start>nPingsTot) = nPingsTot;
 
 % indices of first and last group of pings where requested data is found
 istart = find(p_start<=nanmin(iPing),1,'last');
@@ -90,7 +100,6 @@ for ig = istart:iend
     iRange_src = iRange(1):dr_sub:min([iRange(end) size(fData.(fieldN){ig}.Data.val,1)]);
     iBeam_src  = iBeam(1):db_sub:min([iBeam(end) size(fData.(fieldN){ig}.Data.val,2)]);
     
-
 %     iPing_src = pingCounter(iPing);
 %     iPing_src_gr = intersect(iPing_src,ping_group_start(ig):ping_group_end(ig));
 %     iPing_src = iPing_src_gr-ping_group_start(ig)+1;
@@ -98,8 +107,7 @@ for ig = istart:iend
     
     iPing_src = intersect(iPing,p_start(ig):p_end(ig));
     iPing_src = iPing_src - p_start(ig) + 1;
-    
-    
+   
     if isempty(iRange_src)||isempty(iBeam_src)||isempty(iPing_src)
         data_tot = [];
         continue;
