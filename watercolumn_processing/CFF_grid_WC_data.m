@@ -96,30 +96,33 @@ sonarEasting  = fData.X_1P_pingE; % m
 sonarNorthing = fData.X_1P_pingN; % m
 sonarHeight   = fData.X_1P_pingH; % m
 
-% For some files, the sonar height is an actually-measured height
-% referenced to a datum. For others, it's just dummy zero values. Depends
-% on the raw datagrams these values were taken from. Here, the
-% "Sonar-referenced" grids must ignore the sonar height above a datum to
-% ensure the grids are indeed referenced to the sonar. So we enforce dummy
-% zero values for height. If in the future we want to create grids in
-% reference to a datum, will need to adjust this code.
-sonarHeight = zeros(size(sonarHeight));
-
 % sonar heading
 gridConvergence    = fData.X_1P_pingGridConv; % deg
 vesselHeading      = fData.X_1P_pingHeading; % deg
 sonarHeadingOffset = fData.IP_ASCIIparameters.S1H; % deg
 sonarHeading       = deg2rad(-mod(gridConvergence + vesselHeading + sonarHeadingOffset,360)); % rad
 
+% prep specific to reference type
 switch grdlim_var
+    case 'Sonar'
+        % For some files, the sonar height is an actually-measured height
+        % referenced to a datum. For others, it's just dummy zero values.
+        % Depends on the raw datagrams these values were taken from. Here,
+        % the "Sonar-referenced" grids must ignore the sonar height above a
+        % datum to ensure the grids are indeed referenced to the sonar. So
+        % we enforce dummy zero values for height. If in the future we want
+        % to create grids in reference to a datum, will need to adjust this
+        % code. 
+        sonarHeight = zeros(size(sonarHeight));
     case 'Bottom'
-        %% Prepare the Height interpolant
-        % needed to calculate height above seafloor for each sample in case of
-        % gridding in height above bottom, as well as final gridded bathymetry.
-        idx_valid_bottom = false(size(fData.X_BP_bottomHeight));
-        idx_valid_bottom(1:db_sub:end,:) =true;
-        idx_valid_bottom = idx_valid_bottom &(~isnan(fData.X_BP_bottomHeight) & ~isinf(fData.X_BP_bottomHeight));        
-        HeightInterpolant = scatteredInterpolant(fData.X_BP_bottomNorthing(idx_valid_bottom),fData.X_BP_bottomEasting(idx_valid_bottom),fData.X_BP_bottomHeight(idx_valid_bottom),'linear','none');
+        % For bottom-reference gridding, we will need to calculate the
+        % height above bottom for all samples. To do this, we prepare an
+        % interpolant: a function that will give the height of the bottom
+        % (above datum) for any easting/northing location.
+        iValidBottom = false(size(fData.X_BP_bottomHeight));
+        iValidBottom(1:db_sub:end,:) = true;
+        iValidBottom = iValidBottom & (~isnan(fData.X_BP_bottomHeight) & ~isinf(fData.X_BP_bottomHeight));
+        heightInterpolant = scatteredInterpolant(fData.X_BP_bottomNorthing(iValidBottom),fData.X_BP_bottomEasting(iValidBottom),fData.X_BP_bottomHeight(iValidBottom),'linear','none');
 end
 
 
@@ -252,21 +255,36 @@ for iB = 1:nBlocks
     % blockAdd needs to be single for the following calculations
     blockAccD = single(blockAccD);
     
-    % if needed, turn height above sonar into height above bottom, which
-    % depends on height of sonar above bottom. We use the interpolant here,
-    % which takes a while....
+    % for bottom-reference gridding, we need to calculate each sample's
+    % height above the bottom. We use the interpolant here, which takes a
+    % while....
     switch grdlim_var
         case 'Bottom'
+            % First, we calculate the height of the bottom for the
+            % Easting/Northing location of each sample.
             
-            %block_bottomHeight = HeightInterpolant(blockN,blockE);
-            block_bottom_H=permute(fData.X_BP_bottomHeight(1:db_sub:end,blockPings),[3 1 2]);
-            block_bottomHeight = nan(size(blockH));
-            id_interp = (blockH>block_bottom_H);%reducing the amount of data we need to compute heigth above bottom for
+            % REFACTOR Alex 16/08/2024
             
-            block_bottomHeight(id_interp) = HeightInterpolant(blockN(id_interp),blockE(id_interp));
+            % SUPER OLD
+            % block_bottomHeight = HeightInterpolant(blockN,blockE);
             
+            % OLD (Yoann)
+            % block_bottom_H=permute(fData.X_BP_bottomHeight(1:db_sub:end,blockPings),[3 1 2]);
+            % block_bottomHeight = nan(size(blockH));
+            % id_interp = (blockH>block_bottom_H);%reducing the amount of data we need to compute heigth above bottom for
+            % block_bottomHeight(id_interp) = heightInterpolant(blockN(id_interp),blockE(id_interp));
+            
+            % NEW
+            % No need to calculate the height of the bottom at the
+            % horizontal location of samples for which the level is NaN
+            block_bottomHeight = nan(size(blockN));
+            iValid = ~isnan(blockL);
+            block_bottomHeight(iValid) = heightInterpolant(blockN(iValid),blockE(iValid));
+            
+            % REFACTOR END
+            
+            % Turn sample's height above datum to height above bottom
             blockH = blockH - block_bottomHeight;
-            blockH(blockH<0) = NaN;
             clear block_bottomHeight
     end
     

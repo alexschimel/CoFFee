@@ -49,7 +49,7 @@ function [data,params] = CFF_mask_WC_data_CORE(data, fData, iPings, varargin)
 %   See also CFF_MASK_WC_DATA, CFF_WC_RADIOMETRIC_CORRECTIONS_CORE,
 %   CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE.
 
-%   Copyright 2017-2022 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 
@@ -249,32 +249,46 @@ if ~isinf(maxRangeBelowBottomEcho)
     
     % DEBUG display
     if DEBUG
-    	WCD = CFF_get_WC_data(fData,'WC_SBP_SampleAmplitudes',iPings);
-        WCD_x = 1:size(WCD,2);
-        WCD_y = interSamplesDistance(1).*[1:size(WCD,1)];
-        figure;imagesc(WCD_x,WCD_y,WCD(:,:,1)); colormap('jet'); grid on; hold on
-        plot(fData.X_BP_bottomRange(:,1),'k.-')
-        plot(fData.X_BP_bottomRange(:,1) - R1(:,1),'ko-');
+    	WCD = CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',datagramSource),iPings(1));
+        [sampleAcrossDist,sampleUpDist] = CFF_get_WCD_swathe_coordinates(fData,iPings(1),size(WCD,1));
+        figure;
+        pa = pcolor(sampleAcrossDist,sampleUpDist,WCD);
+        set(pa,'LineStyle','none');
+        colormap('jet'); grid on; hold on
+        angleDeg = fData.(sprintf('%s_BP_BeamPointingAngle',datagramSource));
+        angleRad = deg2rad(angleDeg);
+        [botAcDist,botUpDist] = CFF_get_samples_dist(fData.X_BP_bottomRange(:,1)',angleRad(:,1));
+        plot(botAcDist,botUpDist,'k.-');
+        [echoTopAcDist,echoTopUpDist] = CFF_get_samples_dist(fData.X_BP_bottomRange(:,1)'-R1(:,1)',angleRad(:,1));
+        plot(echoTopAcDist,echoTopUpDist,'wo-');
     end
     
     % when we have that range, the rest is easy...
     
-    % calculate max sample beyond which mask is to be applied
+    % max range beyond which samples are to be masked
     X_BP_maxRange  = fData.X_BP_bottomRange(:,iPings) - R1 + maxRangeBelowBottomEcho;
-    X_BP_maxSample = bsxfun(@rdivide,X_BP_maxRange,interSamplesDistance);
-    X_BP_maxSample = round(X_BP_maxSample);
-    X_BP_maxSample(X_BP_maxSample>nSamples|isnan(X_BP_maxSample)) = nSamples;
     
-    % build list of indices for each beam & ping
-    [PP,BB] = meshgrid((1:nPings),(1:nBeams));
-    maxSubs = [X_BP_maxSample(:),BB(:),PP(:)];
+    % BUG FIX: masking based on range, not sample number, as sampleRange
+    % incorporates the start sample number. New code done Aug 15 2024.
+    % Remove old code if you are far from this date and have not noticed
+    % any significant issue in the bottom echo masking 
+    % NEW
+    X_SBP_BottomRangeMask = sampleRange < permute(repmat(double(X_BP_maxRange),1,1,nSamples),[3,1,2]);
     
-    % build mask: 1: to conserve, 0: to remove
-    X_SBP_BottomRangeMask = false(nSamples,nBeams,nPings);
-    for ii = 1:size(maxSubs,1)
-        X_SBP_BottomRangeMask(1:maxSubs(ii,1),maxSubs(ii,2),maxSubs(ii,3)) = true;
-    end
-    
+    % OLD
+%     % calculate max sample beyond which mask is to be applied
+%     X_BP_maxSample = bsxfun(@rdivide,X_BP_maxRange,interSamplesDistance);
+%     X_BP_maxSample = round(X_BP_maxSample);
+%     X_BP_maxSample(X_BP_maxSample>nSamples|isnan(X_BP_maxSample)) = nSamples;
+%     % build list of indices for each beam & ping
+%     [PP,BB] = meshgrid((1:nPings),(1:nBeams));
+%     maxSubs = [X_BP_maxSample(:),BB(:),PP(:)];    
+%     % build mask: 1: to conserve, 0: to remove
+%     X_SBP_BottomRangeMask = false(nSamples,nBeams,nPings);
+%     for ii = 1:size(maxSubs,1)
+%         X_SBP_BottomRangeMask(1:maxSubs(ii,1),maxSubs(ii,2),maxSubs(ii,3)) = true;
+%     end
+%     
 else
     
     % conserve all data

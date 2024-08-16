@@ -4,18 +4,16 @@ function BP_bottomSample = CFF_get_bottom_sample(fData,varargin)
 %   Gets the number of the sample corresponding to the bottom detect for
 %   each ping and beam. 
 %
-%   BP_bottomSample = CFF_GET_BOTTOM_SAMPLE(fData) returns the processed
-%   bottom sample (i.e. possibly filtered) if it exists, otherwise the raw
-%   bottom sample, from the datagram source in fData.
+%   BS = CFF_GET_BOTTOM_SAMPLE(FDATA) returns the processed (i.e. possibly
+%   filtered) bottom sample BS if it exists, otherwise the raw bottom
+%   sample, from the datagram source in FDATA. 
 %
-%   BP_bottomSample =
-%   CFF_GET_BOTTOM_SAMPLE(fData,'datagramSource',datagramSource) forces the
-%   use of the input datagramSource, with datagramSource being one of
-%   either 'WC', 'AP', 'De', or 'X8'.
+%   BS = CFF_GET_BOTTOM_SAMPLE(...,'datagramSource',DS) forces the
+%   use of the input datagramSource DS, with DS being one of either 'WC',
+%   'AP', 'De', or 'X8'. 
 %
-%   BP_bottomSample =
-%   CFF_GET_BOTTOM_SAMPLE(fData,'which','raw') forces the return of the raw
-%   bottom sample.
+%   BS = CFF_GET_BOTTOM_SAMPLE(...,'which','raw') forces the return of
+%   the raw bottom sample.
 
 %   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/

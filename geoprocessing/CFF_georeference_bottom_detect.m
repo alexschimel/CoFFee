@@ -73,9 +73,6 @@ switch datagramSource
         X_BP_bottomSample = CFF_get_bottom_sample(fData);
         X_1BP_BottomSample = permute(X_BP_bottomSample,[3,1,2]);
         
-        % start sample number
-        % X_BP_startSampleNumber = fData.(sprintf('%s_BP_StartRangeSampleNumber',datagramSource));
-        
         % To get from sample number to range in meters, we need the OWTT
         % distance traveled in one sample 
         X_1P_oneSampleDistance = CFF_inter_sample_distance(fData);
@@ -91,22 +88,14 @@ switch datagramSource
         X_1P_thetaDeg = - mod( X_1P_gridConvergenceDeg + X_1P_vesselHeadingDeg + X_1_sonarHeadingOffsetDeg, 360 );
         X_1P_thetaRad = deg2rad(X_1P_thetaDeg);
         
-        % Use all of this to georeference those bottom samples
+        % Use all of this to georeference those bottom samples.
+        % NOTE: we do not add a start sample number (SSN) in this command
+        % because bottom sample numbers are referenced to the sonar, aka do
+        % not include this offset, which is only used for WCD
         [X_1BP_bottomEasting, X_1BP_bottomNorthing, X_1BP_bottomHeight, ...
             X_1BP_bottomAcrossDist, X_1BP_bottomUpDist, X_1BP_bottomRange] = CFF_georeference_sample(...
             X_1BP_BottomSample, 0, X_1P_oneSampleDistance, X_BP_beamPointingAngleRad, ...
             X_1P_sonarEasting, X_1P_sonarNorthing, X_1P_sonarHeight, X_1P_thetaRad);
-        % DEV NOTE --------------------------------------------------------
-        % This command does not incorporate the startSampleNumber (SSN) and
-        % I don't know why... Without it, it means that all data is
-        % referenced to the range of the first sample, instead of the
-        % sonar. Yet in Espresso, the bottom is at the right place over the
-        % WCD (which does incorporate the SSN offset) and you get an offset
-        % if you add the SSN here... I don't know what is going on... I
-        % added the calculation for the SSN above and commented it, but I
-        % would need to investigate why we don't plug it in the
-        % calculation... 
-        % Alex 07/06/2024 -------------------------------------------------
         
         % save info
         fData = CFF_set_bottom_sample(fData,X_BP_bottomSample);

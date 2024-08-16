@@ -3,9 +3,9 @@ function SBP_sampleRange = CFF_get_samples_range(SBP_idxSamples,BP_startSampleNu
 %
 %   Computes the range (in m from the sonar head) of samples, based on
 %   their index in a beam and the distance between two samples (in m). For
-%   water column data, the sample number must be corrected by a fixed index
-%   offset (startSampleNumber). 
-%
+%   water column data, you might need to add a fixed index offset
+%   (startSampleNumber).
+% 
 %   SAMPR = CFF_GET_SAMPLES_RANGE(INDSAMP,STARTSAMPNUM,INTERSAMPDIST)
 %   returns the range SAMPR (in m) of samples based on their index INDSAMP,
 %   the corresponding beams' start index offset STARTSAMPNUM and the
