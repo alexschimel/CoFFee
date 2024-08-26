@@ -48,7 +48,7 @@ clear p;
 %% prep
 
 % get list of files in folder
-rawFilesList = CFF_list_raw_files_in_dir(dataFolder);
+rawFilesList = CFF_list_raw_files_in_dir(dataFolder,1);
 nFiles = numel(rawFilesList);
 if nFiles == 0
     warning('No files found in folder. Abort. No export shapefile created.');
