@@ -52,7 +52,7 @@ If you want to receive notifications of future releases (recommended), you may c
 * Alexandre Schimel ([The Geological Survey of Norway](https://www.ngu.no), alexandre.schimel@ngu.no)
 * Yoann Ladroit (Kongsberg Discovery)
 * Amy Nau (CSIRO)
-* Shyam CHand (The Geological Survey of Norway)
+* Shyam Chand (The Geological Survey of Norway)
 
 ### Copyright
 
