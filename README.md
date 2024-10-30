@@ -47,11 +47,12 @@ If you want to receive notifications of future releases (recommended), you may c
 
 ## License
 
-## Authors
+## Authors and contributors
 
 * Alexandre Schimel ([The Geological Survey of Norway](https://www.ngu.no), alexandre.schimel@ngu.no)
-* Yoann Ladroit (NIWA)
-* Amy Nay (CSIRO)
+* Yoann Ladroit (Kongsberg Discovery)
+* Amy Nau (CSIRO)
+* Shyam CHand (The Geological Survey of Norway)
 
 ### Copyright
 
