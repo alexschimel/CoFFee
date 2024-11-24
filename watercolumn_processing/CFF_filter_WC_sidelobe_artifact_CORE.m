@@ -1,13 +1,10 @@
 function [data, params] = CFF_filter_WC_sidelobe_artifact_CORE(data, fData, iPings, varargin)
-%CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE  Filter WCD sidelobe artefact
-%
-%   This function filters the sidelobe artefact in specific pings of
-%   water-column data.
+%CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE  Filter sidelobe artefact in WCD
 %
 %   DATA = CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE(DATA,FDATA,IPINGS) takes
 %   input DATA (SBP tensor) and filters the sidelobe artefact in it, using
 %   the necessary information in FDATA for the relevant ping indices
-%   IPINGS. It returns the corrected DATA.
+%   IPINGS, and default parameters. It returns the corrected DATA.
 %
 %   CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE(DATA,FDATA,IPINGS,PARAMS) uses
 %   processing parameters defined as the fields in the PARAMS structure.
@@ -41,9 +38,10 @@ function [data, params] = CFF_filter_WC_sidelobe_artifact_CORE(data, fData, iPin
 %   Note: development notes at the bottom
 %
 %   See also CFF_FILTER_WC_SIDELOBE_ARTIFACT,
-%   CFF_WC_RADIOMETRIC_CORRECTIONS_CORE, CFF_MASK_WC_DATA_CORE.
+%   CFF_WC_RADIOMETRIC_CORRECTIONS_CORE, CFF_MASK_WC_DATA_CORE,
+%   CFF_PROCESS_WC.
 
-%   Copyright 2017-2022 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 

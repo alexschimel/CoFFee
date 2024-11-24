@@ -9,8 +9,8 @@ function datagramSource = CFF_get_datagramSource(fData,varargin)
 %   data, or returns the datagramSource for processed data.
 % 
 %   DS = CFF_GET_DATAGRAMSOURCE(FDATA) checks if FDATA is processed. If
-%   yes, it returns its datagramSource as DS. If not, it returns a
-%   suitable datagramSource DS for processing.
+%   yes, it returns its datagramSource as DS. If not, it returns a suitable
+%   datagramSource DS for processing.
 %
 %   CFF_GET_DATAGRAMSOURCE(FDATA, DS) checks if DS is a suitable
 %   datagramSource for (presumably unprocessed) FDATA. If yes, it returns
@@ -18,7 +18,7 @@ function datagramSource = CFF_get_datagramSource(fData,varargin)
 
 %   See also CFF_COMPUTE_PING_NAVIGATION_V2.
 
-%   Copyright 2017-2022 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % init output

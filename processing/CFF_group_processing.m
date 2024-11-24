@@ -15,30 +15,33 @@ function [fDataGroup,params] = CFF_group_processing(procFun,fDataGroup,varargin)
 %
 %   FDATAGROUP = CFF_GROUP_PROCESSING(PROCFUN,FDATAGROUP), with PROCFUN
 %   being a suitable CFF processing function handle (e.g.
-%   @CFF_my_function_name), applies the function to the cell array of
-%   fData structures FDATAGROUP, and returns the cell array of processed
-%   fData structures. PROCFUN can also be a cell array of suitable function
-%   handles, in which case CFF_GROUP_PROCESSING operates per element of
-%   FDATAGROUP: aka, first it applies the first PROCFUN function to the
-%   first element of FDATAGROUP, then it takes the output and applies the
-%   second PROCFUN function to it, then it takes that output and applies
-%   the third PROCFUN function to it, etc. When all PROCFUN functions have
-%   been applied, it then moves on to the second element of FDATAGROUP.
-%   Note that in that syntax, no other input arguments are passed to
-%   PROCFUN, so if the PROCFUN function(s) require(s) parameters, then
-%   it/they will use default parameters.
+%   @CFF_my_function_name), applies the PROCFUN function (with default
+%   parameters) to the cell array of fData structures FDATAGROUP, and
+%   returns the cell array of processed fData structures. 
 %
-%   CFF_GROUP_PROCESSING(PROCFUN,FDATAGROUP,PARAMS) also passes the
-%   structure of parameters PARAMS in input to PROCFUN. If PROCFUN is a
-%   cell array of functions, CFF_GROUP_PROCESSING expects a matching array
-%   of cell parameter structures as PARAMS. Note that PARAMS gets updated
-%   with each application of PROCFUN to a fData, as in
+%   FDATAGROUP = CFF_GROUP_PROCESSING(PROCFUN,FDATAGROUP), with PROCFUN
+%   being a cell array of suitable function handles, applies all PROCFUN
+%   functions (with default parameters) in series, over each fData
+%   structure in FDATAGROUP in turn. The functions are the inner loop, and
+%   the fData structures are the outer loop. Aka, it starts with the first
+%   PROCFUN function being applied to the first fData. Then, it takes the
+%   output and applies the second PROCFUN function to it, then it takes
+%   that output and applies the third PROCFUN function to it, etc. until
+%   all PROCFUN functions have been applied to that first fData. Then it
+%   repeats the process on the second fData, then again to the third, etc.
+%   until all fData have been processed.
+%
+%   CFF_GROUP_PROCESSING(PROCFUN,FDATAGROUP,PARAMS) does the above, but
+%   with passing the structure of parameters PARAMS in input to PROCFUN. If
+%   PROCFUN is a cell array of functions, CFF_GROUP_PROCESSING expects a
+%   matching array of cell parameter structures as PARAMS. Note that PARAMS
+%   gets updated with each application of PROCFUN to a fData, as in
 %   [FDATA,PARAMS]=PROCFUN(FDATA,PARAMS), implying that subsequent 
 %   iterations may use a different PARAMS than earlier ones. For example,
 %   it is typical to pass an empty PARAMS to the function
 %   CFF_COMPUTE_PING_NAVIGATION_V2 in order to request default parameters,
 %   which are then output by that function. As a result, for the next
-%   fData, the function will use those defined parameters. 
+%   fData, the function will use those defined parameters.
 %
 %   [FDATAGROUP,PARAMS] = CFF_GROUP_PROCESSING(...) also outputs the
 %   parameters PARAMS in output of the last iteration of PROCFUN.
@@ -70,7 +73,7 @@ function [fDataGroup,params] = CFF_group_processing(procFun,fDataGroup,varargin)
 %   See also CFF_COMPUTE_PING_NAVIGATION_V2,
 %   CFF_GEOREFERENCE_BOTTOM_DETECT, CFF_FILTER_BOTTOM_DETECT_V2. 
 
-%   Copyright 2022-2022 Alexandre Schimel
+%   Copyright 2022-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 %% Input arguments management
