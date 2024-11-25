@@ -1,70 +1,38 @@
-function [fData] = CFF_mask_WC_data(fData,varargin)
-%CFF_MASK_WC_DATA  Mask water-column data to remove unwanted samples
+function [fData, params] = CFF_mask_WC_data(fData, varargin)
+%CFF_MASK_WC_DATA  Apply water-column data masking algorithm
 %
-%   *INPUT VARIABLES*
-%   * |fData|: Required. Structure for the storage of kongsberg EM series
-%   multibeam data in a format more convenient for processing. The data is
-%   recorded as fields coded "a_b_c" where "a" is a code indicating data
-%   origing, "b" is a code indicating data dimensions, and "c" is the data
-%   name. See the help of function CFF_convert_ALLdata_to_fData.m for
-%   description of codes.
-%   * |remove_angle|: Optional. Steering angle beyond which outer beams are
-%   removed (in deg ref acoustic axis). Example: 55 -> angles>55 and <-55
-%   are removed. Default: inf (all angles are conserved).
-%   * |remove_closerange|: Optional. Range from sonar (in m) within which
-%   samples are removed. Example: 4 -> all samples within 4m range from
-%   sonar are removed. Default: 0 (all samples are conserved).
-%   * |remove_bottomrange|: Optional. Range from bottom (in m) beyond which
-%   samples are removed. Range after bottom if positive, before bottom if
-%   negative. Example: 2 -> all samples 2m AFTER bottom detect and beyond
-%   are removed. Example: -3 -> all samples 3m BEFORE bottom detect and beyond
-%   are removed (therefore including bottom detect). Default: inf (all
-%   samples are conserved).
-%   * |mypolygon|: Optional. Horizontal polygon (in Easting, Northing
-%   coordinates) outside of which samples are removed. Defualt: [] (all
-%   samples are conserved).
+%	Apply the function that masks unwanted parts of the water-column data,
+%	e.g. data in outer beams, within a range from the sonar, bottom echo,
+%	distance from bottom echo, within an Easting-Northing polygon,
+%	exceeding a threshold of faulty bottom detects, ranges beyong the
+%	Minimum Slant Range, etc. 
 %
-%   *OUTPUT VARIABLES*
-%   * |fData|: fData structure updated with "X_SBP_WaterColumnProcessed"
-%   now masked.
+%   FDATA = CFF_MASK_WC_DATA(FDATA) applies the WCD masking function
+%   CFF_MASK_WC_DATA_CORE to the WCD in FDATA. The function returns FDATA
+%   with the modified WCD. 
 %
-%   *DEVELOPMENT NOTES*
-%   * check that masking uses filtered bottom if it exists, original bottom
-%   if not.
+%   CFF_MASK_WC_DATA(FDATA,PARAMS) uses processing parameters defined as
+%   the fields in the PARAMS structure. See CFF_MASK_WC_DATA_CORE for the
+%   possible parameters.
+%
+%   CFF_MASK_WC_DATA(...,'comms',COMMS) specifies if and how
+%   CFF_MASK_WC_DATA_CORE will communicate on its internal state (progress,
+%   info, errors). COMMS can be either a CFF_COMMS object, or a text string
+%   to initiate a new CFF_COMMS object. Options are 'disp',
+%   'textprogressbar', 'waitbar', 'oneline', 'multilines'. By default,
+%   using an empty CFF_COMMS object (i.e. no communication). See CFF_COMMS
+%   for more information. 
+%
+%   [FDATA,PARAMS] = CFF_MASK_WC_DATA(...) also outputs the
+%   parameters used in processing.
+%
+%   See also CFF_MASK_WC_DATA_CORE, CFF_PROCESS_WC,
+%   CFF_FILTER_WC_SIDELOBE_ARTIFACT, CFF_WC_RADIOMETRIC_CORRECTIONS.
 
-%   Copyright 2017-2021 Alexandre Schimel
+%   Copyright 2024-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
-% extract info about WCD
-wcdata_Class  = fData.X_1_WaterColumnProcessed_Class; % int8 or int16
-wcdata_Factor = fData.X_1_WaterColumnProcessed_Factor;
-wcdata_Nanval = fData.X_1_WaterColumnProcessed_Nanval;
-
-[nSamples, nBeams, nPings] = CFF_get_WC_size(fData);
-
-% block processing setup
-[blocks,info] = CFF_setup_optimized_block_processing(...
-    nPings,nSamples*nBeams*4,...
-    'desiredMaxMemFracToUse',0.1);
-
-% block processing
-for iB = 1:size(blocks,1)
-    
-    % list of pings in this block
-    blockPings  = (blocks(iB,1):blocks(iB,2));
-    
-    % grab data in dB
-    data = CFF_get_WC_data(fData,'X_SBP_WaterColumnProcessed','iPing',blockPings,'output_format','true');
-    
-    % core processing
-    data = CFF_mask_WC_data_CORE(data, fData, blockPings, varargin{:});
-    
-    % convert modified data back to raw format and store
-    data = data./wcdata_Factor;
-    data(isnan(data)) = wcdata_Nanval;
-    fData.X_SBP_WaterColumnProcessed.Data.val(:,:,blockPings) = cast(data,wcdata_Class);
-    
-end
-
-
-
+% Just pass CFF_MASK_WC_DATA_CORE as input to CFF_PROCESS_WC. 
+% Pass input arguments as is, and let any errors be raised there
+fun = @CFF_mask_WC_data_CORE;
+[fData, params] = CFF_process_WC(fData, fun, varargin{:});

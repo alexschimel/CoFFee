@@ -1,8 +1,10 @@
 function [data,params] = CFF_mask_WC_data_CORE(data, fData, iPings, varargin)
-%CFF_MASK_WC_DATA_CORE  Mask unwanted WCD 
+%CFF_MASK_WC_DATA_CORE  Mask unwanted water-column data
 %
-%   This function masks unwanted data in specific pings of water-column
-%   data. 
+%	Mask unwanted parts of the water-column data, e.g. data in outer beams,
+%	within a range from the sonar, bottom echo, distance from bottom echo,
+%	within an Easting-Northing polygon, exceeding a threshold of faulty
+%	bottom detects, ranges beyong the Minimum Slant Range, etc.
 %
 %   DATA = CFF_MASK_WC_DATA_CORE(DATA,FDATA,IPINGS) takes input DATA (SBP
 %   tensor) and masks unwanted data in it, using the necessary information
@@ -46,7 +48,8 @@ function [data,params] = CFF_mask_WC_data_CORE(data, fData, iPings, varargin)
 %
 %   Note: estimation of bottom echo to be improved
 %
-%   See also CFF_MASK_WC_DATA, CFF_WC_RADIOMETRIC_CORRECTIONS_CORE,
+%   See also CFF_MASK_WC_DATA, CFF_PROCESS_WC,
+%   CFF_WC_RADIOMETRIC_CORRECTIONS_CORE,
 %   CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE.
 
 %   Copyright 2017-2024 Alexandre Schimel

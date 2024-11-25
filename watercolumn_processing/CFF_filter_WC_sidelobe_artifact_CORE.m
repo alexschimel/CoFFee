@@ -1,6 +1,10 @@
 function [data, params] = CFF_filter_WC_sidelobe_artifact_CORE(data, fData, iPings, varargin)
 %CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE  Filter sidelobe artefact in WCD
 %
+%   Run a variation of the Slant Range Signal Normalization (SRSN)
+%   algorithm (Schimel et al., 2020. DOI: 10.3390/rs12091371) to filter
+%   sidelobe artefacts in water-column data.
+%
 %   DATA = CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE(DATA,FDATA,IPINGS) takes
 %   input DATA (SBP tensor) and filters the sidelobe artefact in it, using
 %   the necessary information in FDATA for the relevant ping indices
@@ -37,9 +41,8 @@ function [data, params] = CFF_filter_WC_sidelobe_artifact_CORE(data, fData, iPin
 %
 %   Note: development notes at the bottom
 %
-%   See also CFF_FILTER_WC_SIDELOBE_ARTIFACT,
-%   CFF_WC_RADIOMETRIC_CORRECTIONS_CORE, CFF_MASK_WC_DATA_CORE,
-%   CFF_PROCESS_WC.
+%   See also CFF_FILTER_WC_SIDELOBE_ARTIFACT, CFF_PROCESS_WC
+%   CFF_WC_RADIOMETRIC_CORRECTIONS_CORE, CFF_MASK_WC_DATA_CORE..
 
 %   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/

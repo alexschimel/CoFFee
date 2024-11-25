@@ -1,8 +1,8 @@
 function [data,params] = CFF_WC_radiometric_corrections_CORE(data, fData, iPings, varargin)
 %CFF_WC_RADIOMETRIC_CORRECTIONS_CORE  Apply radiometric correction to WCD
 %
-%   This function radiometrically corrects specific pings of water-column
-%   data.
+%   Apply physical (aka, not aestethic ones) corrections to the dB level in
+%   water-column data: TVG, dB offset, etc.
 %
 %   DATA = CFF_WC_RADIOMETRIC_CORRECTIONS_CORE(DATA,FDATA,IPINGS) takes
 %   input DATA (SBP tensor) and radiometrically corrects it to the acoustic
@@ -31,10 +31,10 @@ function [data,params] = CFF_WC_radiometric_corrections_CORE(data, fData, iPings
 %
 %   Note: corrections incomplete XXX.
 %
-%   See also CFF_WC_RADIOMETRIC_CORRECTIONS,
+%   See also CFF_WC_RADIOMETRIC_CORRECTIONS, CFF_PROCESS_WC,
 %   CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE, CFF_MASK_WC_DATA_CORE.
 
-%   Copyright 2017-2023 Alexandre Schimel
+%   Copyright 2017-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 

@@ -1,57 +1,35 @@
-function [fData] = CFF_WC_radiometric_corrections(fData)
-%CFF_WC_RADIOMETRIC_CORRECTIONS  One-line description
+function [fData, params] = CFF_WC_radiometric_corrections(fData, varargin)
+%CFF_WC_RADIOMETRIC_CORRECTIONS  Apply WCD radiometric correction algorithm
 %
-%   Apply physical (aka, not aestethic ones) corrections to the dB level in
-%   water-column data: TVG, dB offset, etc.
+%   Apply the function that applies physical (aka, not aestethic ones)
+%   corrections to the dB level in water-column data: TVG, dB offset, etc.
 %
-%   *INPUT VARIABLES*
-%   * |fData|: Required. Structure for the storage of kongsberg EM series
-%   multibeam data in a format more convenient for processing. The data is
-%   recorded as fields coded "a_b_c" where "a" is a code indicating data
-%   origing, "b" is a code indicating data dimensions, and "c" is the data
-%   name. See the help of function CFF_convert_ALLdata_to_fData.m for
-%   description of codes.
+%   FDATA = CFF_WC_RADIOMETRIC_CORRECTIONS(FDATA) applies the WCD
+%   radiometric correction function CFF_WC_RADIOMETRIC_CORRECTIONS_CORE to
+%   the WCD in FDATA. The function returns FDATA with the modified WCD. 
 %
-%   *OUTPUT VARIABLES*
-%   * |fData|: fData structure updated with "X_SBP_WaterColumnProcessed"
-%   now radiometrically corrected
+%   CFF_WC_RADIOMETRIC_CORRECTIONS(FDATA,PARAMS) uses processing parameters
+%   defined as the fields in the PARAMS structure. See
+%   CFF_WC_RADIOMETRIC_CORRECTIONS_CORE for the possible parameters.
 %
-%   *DEVELOPMENT NOTES*
-%   Just started this function to integrate the "transmit power re maximum"
-%   dB offset that is stored in Runtime Parameters (marine mammal
-%   protection modes I think). But ideally develop this function for future
-%   compensations of TVG, pulse length, etc.
+%   CFF_WC_RADIOMETRIC_CORRECTIONS(...,'comms',COMMS) specifies if and how
+%   CFF_WC_RADIOMETRIC_CORRECTIONS_CORE will communicate on its internal
+%   state (progress, info, errors). COMMS can be either a CFF_COMMS object,
+%   or a text string to initiate a new CFF_COMMS object. Options are
+%   'disp', 'textprogressbar', 'waitbar', 'oneline', 'multilines'. By
+%   default, using an empty CFF_COMMS object (i.e. no communication). See
+%   CFF_COMMS for more information. 
+%
+%   [FDATA,PARAMS] = CFF_WC_RADIOMETRIC_CORRECTIONS(...) also outputs the
+%   parameters used in processing.
+%
+%   See also CFF_WC_RADIOMETRIC_CORRECTIONS_CORE, CFF_PROCESS_WC,
+%   CFF_FILTER_WC_SIDELOBE_ARTIFACT, CFF_MASK_WC_DATA.
 
-%   Copyright 2017-2019 Alexandre Schimel
+%   Copyright 2024-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
-% extract info about WCD
-wcdata_Class  = fData.X_1_WaterColumnProcessed_Class; % int8 or int16
-wcdata_Factor = fData.X_1_WaterColumnProcessed_Factor;
-wcdata_Nanval = fData.X_1_WaterColumnProcessed_Nanval;
-
-[nSamples, nBeams, nPings] = CFF_get_WC_size(fData);
-% block processing setup
-[blocks,info] = CFF_setup_optimized_block_processing(...
-    nPings,nSamples*nBeams*4,...
-    'desiredMaxMemFracToUse',0.1);
-
-% block processing
-for iB = 1:size(blocks,1)
-    
-    % list of pings in this block
-    blockPings  = (blocks(iB,1):blocks(iB,2));
-    
-    % grab data in dB
-    data = CFF_get_WC_data(fData,'X_SBP_WaterColumnProcessed','iPing',blockPings,'output_format','true');
-    
-    % core processing
-    data = CFF_WC_radiometric_corrections_CORE(data,fData);
-    
-    % convert modified data back to raw format and store
-    data = data./wcdata_Factor;
-    data(isnan(data)) = wcdata_Nanval;
-    fData.X_SBP_WaterColumnProcessed.Data.val(:,:,blockPings) = cast(data,wcdata_Class);
-    
-end
-
+% Just pass CFF_WC_RADIOMETRIC_CORRECTIONS_CORE as input to CFF_PROCESS_WC. 
+% Pass input arguments as is, and let any errors be raised there
+fun = @CFF_WC_radiometric_corrections_CORE;
+[fData, params] = CFF_process_WC(fData, fun, varargin{:});

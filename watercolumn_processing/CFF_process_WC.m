@@ -49,11 +49,13 @@ p = inputParser;
 addRequired(p,'fData',@(x) CFF_is_fData_version_current(x)); % source fData
 addOptional(p,'processingList', {}, @CFF_mustBeFunctionHandleOrCellVectorOfFunctionHandles); % list of processing functions
 addOptional(p,'processingParams', {}, @CFF_mustBeStructOrCellVectorOfStructsOrEmpty); % list of parameters for each processing function
+addParameter(p,'flagReprocess', 1, @CFF_mustBeBoolean); % reprocess from scratch (1, default) or continue from existing processed data (0)
 addParameter(p,'comms',CFF_Comms()); % information communication (none by default)
 parse(p,fData,varargin{:});
 fData = p.Results.fData;
 processingList = p.Results.processingList;
 processingParams = p.Results.processingParams;
+flagReprocess = p.Results.flagReprocess;
 comms = p.Results.comms;
 clear p
 if ischar(comms)
@@ -66,6 +68,7 @@ if isempty(processingList)
     warning('No processing functions specified. Returning fData unchanged.');
     return
 elseif isa(processingList,'function_handle')
+    % use cell arrays, even if only one processing is requested
     processingList = {processingList};
 end
 
@@ -74,9 +77,11 @@ nProcessesToApply = numel(processingList);
 
 % processingParams checks and edits
 if ~isempty(processingParams) && numel(processingList) ~= numel(processingParams)
-    % return error if processingList and processingParams are not the same
-    % size
+    % processingList and processingParams must be the same size
     error('processingParams must be empty, or the same size as processingList.');
+elseif isstruct(processingParams)
+    % use cell arrays, even if only one processing is requested
+    processingParams = {processingParams};
 elseif isempty(processingParams)
     % if processingParams is empty, make it the same size as processingList
     processingParams = repmat({struct()}, 1, nProcessesToApply);
@@ -89,49 +94,70 @@ end
 comms.start('Processing water-column data');
 
 
-%% Initialize processing if needed
-if CFF_is_WC_processed(fData)
-    warning('For now, this function reprocesses the WC in fData from scratch. Future versions will allow applying processing to data already processed.'); 
-end
-    
-% Specify here the number of bytes to use. Add this as a parameter to
-% the function, eventually XXX
-storing_precision = '1 byte'; % '1 byte' or '2 bytes'
-switch storing_precision
-    case '1 byte'
-        % 1 byte allows storage of 255 difference values, allowing
-        % for example a dynamic range of 25.5 dB at 0.1 dB resolution,
-        % or 127 dB at 0.5 dB resolution.
-        wcdataproc_Class = 'uint8';
-    case '2 bytes'
-        % 2 bytes allow storage of 65535 different values, allowing
-        % for example a dynamic range of 655.35 dB at 0.01 dB
-        % resolution, or 65.535 dB at 0.001 dB resolution.
-        wcdataproc_Class = 'uint16';
+%% (Re)initialize processing, or continue from existing processing
+if ~CFF_is_WC_processed(fData) || flagReprocess
+    flagReprocess = 1;
+else
+    flagReprocess = 0;
 end
 
-% number, dimensions, and pings of memmap files data
-datagramSource = CFF_get_datagramSource(fData);
-[nSamples, nBeams, nPings] = cellfun(@(x) size(x.Data.val),fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)));
-ping_gr_start = fData.(sprintf('%s_n_start',datagramSource));
-ping_gr_end   = fData.(sprintf('%s_n_end',datagramSource));
-nMemMapFiles = numel(ping_gr_start);
-
-% create empty binary files for processed data and memory-map them in fData
-wc_dir = CFF_converted_data_folder(fData.ALLfilename{1});
-newfieldname = 'X_SBP_WaterColumnProcessed';
-fData = CFF_init_memmapfiles(fData,...
-    'field', newfieldname, ...
-    'wc_dir', wc_dir, ...
-    'Class', wcdataproc_Class, ...
-    'Factor', NaN, ... % to be updated later, from data
-    'Nanval', intmin(wcdataproc_Class), ... % nan value is minimum possible value
-    'Offset', NaN, ... % to be updated later, from data
-    'MaxSamples', nSamples, ...
-    'MaxBeams', nanmax(nBeams), ...
-    'ping_group_start', ping_gr_start, ...
-    'ping_group_end', ping_gr_end);
+if flagReprocess
+    % (re)initialize processing
     
+    % Processed data are double precision (8 bytes) or single precision (4
+    % bytes). Storing this data in this format will take a lot of disk
+    % space. To save disk space, we encode that data in a lower precision
+    % format (1 or 2 bytes) although we will lose in precision (e.g.
+    % -23.4283 dB will be stored as -23.5 dB instead).
+    % We define the desired precision of the stored data here:
+    % - 1 byte allows storage of 255 different values, allowing
+    %   for example a dynamic range of 25.5 dB at 0.1 dB resolution,
+    %   or 127 dB at 0.5 dB resolution. Aka largest space saving but
+    %   largest loss of precision.
+    % - 2 bytes allow storage of 65535 different values, allowing
+    %   for example a dynamic range of 655.35 dB at 0.01 dB
+    %   resolution, or 65.535 dB at 0.001 dB resolution. Aka moderate space
+    %   saving for moderate loss of precision 
+    storing_precision = '1 byte'; % '1 byte' or '2 bytes'
+    switch storing_precision
+        case '1 byte'
+            wcdataproc_Class = 'uint8';
+        case '2 bytes'
+            wcdataproc_Class = 'uint16';
+    end
+    
+    % number, dimensions, and pings of memmap files data
+    datagramSource = CFF_get_datagramSource(fData);
+    [nSamples, nBeams, nPings] = cellfun(@(x) size(x.Data.val),fData.(sprintf('%s_SBP_SampleAmplitudes',datagramSource)));
+    ping_gr_start = fData.(sprintf('%s_n_start',datagramSource));
+    ping_gr_end   = fData.(sprintf('%s_n_end',datagramSource));
+    nMemMapFiles = numel(ping_gr_start);
+    
+    % create empty binary files for processed data and memory-map them in
+    % fData
+    wc_dir = CFF_converted_data_folder(fData.ALLfilename{1});
+    newfieldname = 'X_SBP_WaterColumnProcessed';
+    fData = CFF_init_memmapfiles(fData,...
+        'field', newfieldname, ...
+        'wc_dir', wc_dir, ...
+        'Class', wcdataproc_Class, ...
+        'Factor', NaN, ... % to be updated later, from data
+        'Nanval', intmin(wcdataproc_Class), ... % nan value is minimum possible value
+        'Offset', NaN, ... % to be updated later, from data
+        'MaxSamples', nSamples, ...
+        'MaxBeams', nanmax(nBeams), ...
+        'ping_group_start', ping_gr_start, ...
+        'ping_group_end', ping_gr_end);
+    
+else
+    % start from data already processed 
+    [nSamples, nBeams, nPings] = cellfun(@(x) size(x.Data.val),fData.X_SBP_WaterColumnProcessed);
+    ping_gr_start = fData.X_n_start;
+    ping_gr_end   = fData.X_n_end;
+    nMemMapFiles = numel(ping_gr_start);
+    newfieldname = 'X_SBP_WaterColumnProcessed';
+    wcdataproc_Class = fData.X_1_WaterColumnProcessed_Class;
+end
 
 %% Apply requested processings
 for ig = 1:nMemMapFiles
@@ -152,8 +178,8 @@ for ig = 1:nMemMapFiles
     encode_factor_block = nan(1,nBlocks);
     encode_offset_block = nan(1,nBlocks);
     
-    % destination values after encoding are fixed and only
-    % dependent on precision byte chosen
+    % destination values after encoding are fixed and only dependent on
+    % precision byte chosen
     mindest = single(intmin(wcdataproc_Class)+1); % reserve min value for NaN
     maxdest = single(intmax(wcdataproc_Class));
     
@@ -167,9 +193,15 @@ for ig = 1:nMemMapFiles
         % corresponding pings in file
         iPings = iPingsInMemMapfile(blocks(iB,1):blocks(iB,2));
         
-        % grab original data in dB
-        datagramSource = CFF_get_datagramSource(fData);
-        data = CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',datagramSource),'iPing',iPings,'iRange',1:nSamples(ig),'output_format','true');
+        % grab data in dB
+        if flagReprocess
+            % get original data
+            datagramSource = CFF_get_datagramSource(fData);
+            data = CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',datagramSource),'iPing',iPings,'iRange',1:nSamples(ig),'output_format','true');
+        else
+            % get already processed data
+            data = CFF_get_WC_data(fData,'X_SBP_WaterColumnProcessed','iPing',iPings,'iRange',1:nSamples(ig),'output_format','true');
+        end
         
         % apply each process in series. Save the (default) parameters in
         % case input was missing
@@ -234,8 +266,8 @@ for ig = 1:nMemMapFiles
     else
         
         % total dynamic range across all blocks
-        maxsrc = nanmax(maxsrc_block);
         minsrc = nanmin(minsrc_block);
+        maxsrc = nanmax(maxsrc_block);
         
         % optimal final encoding parameters
         encode_factor_final = (maxdest-mindest)./(maxsrc-minsrc);
