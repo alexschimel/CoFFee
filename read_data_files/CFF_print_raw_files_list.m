@@ -7,59 +7,78 @@ function outText = CFF_print_raw_files_list(rawFilesList, varargin)
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % manage inputs
+
+% printing to screen
 printFlag = 1;
 if nargin == 2
     printFlag = varargin{1};
 end
 
+% file list
+if ischar(rawFilesList)
+    rawFilesList = {rawFilesList};
+end
 nFiles = numel(rawFilesList);
+
+% ensure column
+rawFilesList = reshape(rawFilesList,[],1);
 
 % init output text
 outText = {};
 
-if nFiles>0
+% complete output text
+if nFiles == 1 && isempty(rawFilesList{1})
     
-    % expand the list temporarily
-    expandedList = rawFilesList;
+    outText{end+1,1} = sprintf('Empty list.\n');
+    
+else
+    
+    % separate pairs in list of files
+    expandedFilesList = rawFilesList;
     for iFile = 1:nFiles
-        thisFile = expandedList{iFile};
+        thisFile = expandedFilesList{iFile};
         if iscell(thisFile) && numel(thisFile) == 2
             % move paired file to end
-            expandedList{end+1,1} = expandedList{iFile}{2};
+            expandedFilesList{end+1,1} = expandedFilesList{iFile}{2};
             % keep first file
-            expandedList{iFile} = expandedList{iFile}{1};
+            expandedFilesList{iFile} = expandedFilesList{iFile}{1};
         end
     end
-    sort(expandedList);
-
-    % find root folder from expanded list
-    foldersList = fileparts(expandedList);
-    rootFolder = unique(foldersList);
-    while numel(rootFolder)>1
-        foldersList = fileparts(foldersList);
-        rootFolder = unique(foldersList);
-    end
-    rootFolder = [rootFolder{1} filesep];
+    expandedFilesList = sort(expandedFilesList);
+    
+    % find root folder
+    rootFolder = find_root_folder(expandedFilesList);
 
     % write header
-    outText{end+1,1} = sprintf('List of files in %s:\n',rootFolder);
-
+    if ~isempty(rootFolder)
+        rootFolder = strcat(rootFolder,filesep);
+        outText{end+1,1} = sprintf('List of files in %s:\n',rootFolder);
+    else
+        outText{end+1,1} = sprintf('List of files:\n');
+    end
+    
     % then print each file
     for iFile = 1:nFiles
         thisFile = rawFilesList{iFile};
         if iscell(thisFile) && numel(thisFile) == 2
             % pair of files
-            firstRawFileName = extractAfter(thisFile{1},rootFolder);
+            if ~isempty(rootFolder)
+                firstRawFileName = extractAfter(thisFile{1},rootFolder);
+            else
+                firstRawFileName = thisFile{1};
+            end
             secondFileExtension = CFF_file_extension(thisFile{2});
             outText{end+1,1} = sprintf('%i/%i: %s (and %s).\n',iFile,nFiles,firstRawFileName,secondFileExtension);
         else
-            rawFileName = extractAfter(thisFile,rootFolder);
+            if ~isempty(rootFolder)
+                rawFileName = extractAfter(thisFile,rootFolder);
+            else
+                rawFileName = thisFile;
+            end
             outText{end+1,1} = sprintf('%i/%i: %s.\n',iFile,nFiles,rawFileName);
         end
     end
-
-else    
-    outText{end+1,1} = sprintf('Empty list.\n');
+    
 end
 
 % print to screen
@@ -67,4 +86,52 @@ if printFlag
     for iLine = 1:numel(outText)
         fprintf(regexprep(outText{iLine},'\\','\\\'));
     end
+end
+
+end
+
+
+%% subfunctions
+function rootFolder = find_root_folder(expandedFilesList)
+% find root folder of files list
+if numel(expandedFilesList)==1
+    % single file
+    rootFolder = fileparts(expandedFilesList);
+else
+    % multiple files
+    folderList = unique(fileparts(expandedFilesList));
+    if numel(folderList) == 1
+        % all files have same folder
+        rootFolder = folderList{1};
+    else
+        % files with different folders. Some work needed.
+        rootFolder = folderList{1};
+        for i = 2:length(folderList)
+            rootFolder = find_common_folder(rootFolder,folderList{i});
+        end
+    end
+end
+
+end
+
+function commonFolder = find_common_folder(str1, str2)
+% Find the common folder of two folders
+
+% trim strings to same length
+minLength = min(length(str1), length(str2));
+str1 = str1(1:minLength);
+str2 = str2(1:minLength);
+if strcmp(str1,str2)
+    commonFolder = str1;
+    return
+end
+
+% find index of last filesep before first different character
+idxFileSeps = strfind(str1,filesep); % index fileseps in str1
+idxFirstDiffChar = find(str1~=str2,1); % index first different character
+idxLastFileSep = idxFileSeps(find(idxFileSeps<idxFirstDiffChar,1,'last'));
+
+% get common folder
+commonFolder = str1(1:idxLastFileSep-1);
+
 end
