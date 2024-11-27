@@ -92,7 +92,7 @@ end
 
 % start message
 comms.start('Processing water-column data');
-
+comms.progress(0,1);
 
 %% (Re)initialize processing, or continue from existing processing
 if ~CFF_is_WC_processed(fData) || flagReprocess
@@ -206,6 +206,9 @@ for ig = 1:nMemMapFiles
         % apply each process in series. Save the (default) parameters in
         % case input was missing
         for iP = 1:nProcessesToApply
+            if ~isempty(comms.Type)
+                comms.step(sprintf('Memmaped file %i/%i. Data block %i/%i. Applying %s',ig,nMemMapFiles,nBlocks-iB+1,nBlocks,char(processingList{iP})));
+            end
             [data,processingParams{iP}] = feval(processingList{iP}, data, fData, iPings, processingParams{iP});
         end
         
@@ -253,6 +256,11 @@ for ig = 1:nMemMapFiles
         maxsrc_block(iB) = maxsrc;
         encode_factor_block(iB) = encode_factor;
         encode_offset_block(iB) = encode_offset;
+        
+        % update progress
+        if ~isempty(comms.Type)
+            comms.progress( (ig-1)/nMemMapFiles + (1/nMemMapFiles)*(nBlocks-iB+1)/nBlocks ,1);
+        end
         
     end
     

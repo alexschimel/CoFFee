@@ -22,7 +22,7 @@ classdef CFF_Comms < handle
     %   being recorded at all. Eventually, create another mode where there
     %   is NO display BUT messages are recorded.
 
-    %   Copyright 2021-2023 Alexandre Schimel
+    %   Copyright 2021-2024 Alexandre Schimel
     %   Licensed under MIT. Details on
     %   https://github.com/alexschimel/CoFFee/
     
@@ -102,11 +102,12 @@ classdef CFF_Comms < handle
                 case 'oneline'
                     % step message
                     dispstr = [obj.Msgs{end,3} '.'];
-                    if obj.Prog{end,2}>0
+                    if  ~isempty(obj.Prog) && size(obj.Prog,1)>1
                         % estimated time to complete, from prior progress
-                        durationPerStep = cellfun(@minus, obj.Prog(2:end,1), obj.Prog(1:end-1,1));
-                        nRemainingSteps = obj.Prog{end,3} - obj.Prog{end,2};
-                        ETC = median(durationPerStep).*nRemainingSteps;
+                        durationSoFar = obj.Prog{end,1}-obj.Prog{1,1};
+                        progressSoFar = obj.Prog{end,2}-obj.Prog{1,2};
+                        remainingProg = obj.Prog{end,3}-obj.Prog{end,2};
+                        ETC = durationSoFar.*remainingProg./progressSoFar;
                         dispstr = sprintf([dispstr newline 'Estimated time to complete: ' char(string(ETC))]);
                     end
                     % print with dispstat, to be overwritten
@@ -127,11 +128,12 @@ classdef CFF_Comms < handle
                     end
                     % step message
                     dispstr = [obj.Msgs{end,3} '.'];
-                    if obj.Prog{end,2}>0
+                    if  ~isempty(obj.Prog) && size(obj.Prog,1)>1
                         % estimated time to complete, from prior progress
-                        durationPerStep = cellfun(@minus, obj.Prog(2:end,1), obj.Prog(1:end-1,1));
-                        nRemainingSteps = obj.Prog{end,3} - obj.Prog{end,2};
-                        ETC = median(durationPerStep).*nRemainingSteps;
+                        durationSoFar = obj.Prog{end,1}-obj.Prog{1,1};
+                        progressSoFar = obj.Prog{end,2}-obj.Prog{1,2};
+                        remainingProg = obj.Prog{end,3}-obj.Prog{end,2};
+                        ETC = durationSoFar.*remainingProg./progressSoFar;
                         dispstr = sprintf([dispstr newline 'Estimated time to complete: ' char(string(ETC))]);
                     end
                     % print with dispstat, to be overwritten
@@ -169,11 +171,12 @@ classdef CFF_Comms < handle
                     % last step, and new info message
                     idxLastStep = find(matches(string(obj.Msgs(:,2)),'Step'),1,'last');
                     dispstr = [obj.Msgs{idxLastStep,3} '. ' obj.Msgs{end,3}];
-                    if obj.Prog{end,2}>0
+                    if  ~isempty(obj.Prog) && size(obj.Prog,1)>1
                         % estimated time to complete, from prior progress
-                        durationPerStep = cellfun(@minus, obj.Prog(2:end,1), obj.Prog(1:end-1,1));
-                        nRemainingSteps = obj.Prog{end,3} - obj.Prog{end,2};
-                        ETC = median(durationPerStep).*nRemainingSteps;
+                        durationSoFar = obj.Prog{end,1}-obj.Prog{1,1};
+                        progressSoFar = obj.Prog{end,2}-obj.Prog{1,2};
+                        remainingProg = obj.Prog{end,3}-obj.Prog{end,2};
+                        ETC = durationSoFar.*remainingProg./progressSoFar;
                         dispstr = sprintf([dispstr newline 'Estimated time to complete: ' char(string(ETC))]);
                     end
                     % print with dispstat, to be overwritten
@@ -211,11 +214,12 @@ classdef CFF_Comms < handle
                     % last step, and new info message
                     idxLastStep = find(matches(string(obj.Msgs(:,2)),'Step'),1,'last');
                     dispstr = [obj.Msgs{idxLastStep,3} '. ' obj.Msgs{end,3}];
-                    if obj.Prog{end,2}>0
+                    if  ~isempty(obj.Prog) && size(obj.Prog,1)>1
                         % estimated time to complete, from prior progress
-                        durationPerStep = cellfun(@minus, obj.Prog(2:end,1), obj.Prog(1:end-1,1));
-                        nRemainingSteps = obj.Prog{end,3} - obj.Prog{end,2};
-                        ETC = median(durationPerStep).*nRemainingSteps;
+                        durationSoFar = obj.Prog{end,1}-obj.Prog{1,1};
+                        progressSoFar = obj.Prog{end,2}-obj.Prog{1,2};
+                        remainingProg = obj.Prog{end,3}-obj.Prog{end,2};
+                        ETC = durationSoFar.*remainingProg./progressSoFar;
                         dispstr = sprintf([dispstr newline 'Estimated time to complete: ' char(string(ETC))]);
                     end
                     % print with dispstat, to be overwritten
