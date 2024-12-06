@@ -783,7 +783,7 @@ comms.progress(4,5);
 % Jul 2023):
 %  Hi
 %  The MRZ and IIP/IOP are not in sync.
-%  At start of logging (pinging started already) it will log incomming data
+%  At start of logging (pinging started already) it will log incoming data
 %  to file and send a request to the PU for Installation and Runtime
 %  datagrams, then these datagrams are put to the start of the file. The
 %  IIP is valid as this cannot change while pinging, but the Runtime can in
