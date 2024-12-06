@@ -13,25 +13,28 @@ classdef test_tutorials < matlab.unittest.TestCase
         
         function testTutorials(testCase)
 
-            rootFolder = 'C:\Users\Schimel_Alexandre\Code\MATLAB\CoFFee.wiki';
-
             % get list of files in wiki
+            rootFolder = 'C:\Users\Schimel_Alexandre\Code\MATLAB\CoFFee.wiki';
             files = dir(fullfile(rootFolder));
+            
+            % start a new folder to save tutorials as .m files
+            tutorialsFolder = fullfile(pwd,'wiki_tutorials');
+            if isfolder(tutorialsFolder)
+                rmdir(tutorialsFolder,'s');
+            end
+            mkdir(tutorialsFolder);
 
             % for each file
             for i = 1:length(files)
                 if ~files(i).isdir
-                    % read contents
+                    % read tutorial contents
                     file = fullfile(rootFolder,files(i).name);
                     fid = fopen(file);
                     contents = textscan(fid, '%s', 'Delimiter', '\n');
                     fclose(fid);
-                    % start a new matlab .m file to copy code to
-                    tutorialsFolder = fullfile(pwd,'wiki_tutorials');
-                    if ~isfolder(tutorialsFolder)
-                        mkdir(tutorialsFolder);
-                    end
-                    matlabFile = fullfile(tutorialsFolder,'temp_tutorial.m');
+                    % create an open a new .m file to hold tuto contents
+                    validFilename = regexprep(CFF_file_name(file),'[\.\-\‐\s]','_');
+                    matlabFile = fullfile(tutorialsFolder,strcat('tuto_',validFilename,'.m'));
                     fid = fopen(matlabFile, 'w');
                     % for each line in contents, write to matlab file
                     flagCode = 0;
@@ -63,8 +66,7 @@ classdef test_tutorials < matlab.unittest.TestCase
                     clear all
                     close all
                     load(fullfile(pwd,'workspace.mat'));
-                    % delete matlab file and workspace
-                    delete(matlabFile);
+                    % delete workspace
                     delete(fullfile(pwd,'workspace.mat'));
                 end
             end

@@ -1,0 +1,1 @@
+% Valid as of 26 November 2024 (CoFFee [2.0.0-alpha.21](https://github.com/alexschimel/CoFFee/releases/tag/v2.0.0-alpha.21)). Contact [the authors](https://github.com/alexschimel/CoFFee?tab=readme-ov-file#authors-and-contributors) if something is inaccurate or does not work.
