@@ -13,20 +13,32 @@ function [data, params] = CFF_filter_WC_sidelobe_artifact_CORE(data, fData, iPin
 %   CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE(DATA,FDATA,IPINGS,PARAMS) uses
 %   processing parameters defined as the fields in the PARAMS structure.
 %   Possible parameters are: 
-%   'avgCalc': mode of calculation of the average value across beams. Can
-%   be 'mean' (default) or 'median'.
-%   'refType': type of calculation for reference level: 'constant'
-%   (constant value) or 'fromPingData' (calculated from the data, default).
-%   'refCst': (only used if refType is 'constant') set the constant value
-%   here (in dB). Default is -70.
-%   'refArea': (only used if refType is 'fromPingData') set the reference
-%   area for the calculation of the reference level here: 'nadirWC' uses
-%   data from the eleven middle beams before minimum slant range, or
-%   'cleanWC' uses all data before minimum slant range (default).
-%   'refCalc': (only used if refType is 'fromPingData')) set mode of
-%   calculation of the reference value from the reference data here.
-%   Possible values are 'mean', 'median', 'mode', 'perc5', 'perc10',
-%   'perc25' (default).
+%   - 'avgCalc': mode of calculation of the average value across beams.
+%   Possible values are:
+%     - 'mean' (default) 
+%     - 'median'
+%   - 'refType': type of calculation for reference level. Possible values
+%   are:
+%     - 'fromPingData' (default): calculate reference level from data.
+%     Further inform method with parameters 'refArea' and 'refCalc'.
+%     - 'constant': use a constant value in dB. Inform value with parameter
+%     'refCst'.
+%   - 'refArea': reference area for the calculation of the reference level
+%   (only used if refType was 'fromPingData'). Possible values are: 
+%     - 'cleanWC' (default): uses all data before minimum slant range.
+%     - 'nadirWC': uses data from the eleven middle beams before minimum
+%     slant range.
+%   - 'refCalc': mode of calculation of the reference value from the
+%   reference data (only used if refType was 'fromPingData'). Possible
+%   values are:
+%     - 'mean'
+%     - 'median'
+%     - 'perc5': 5th percentile
+%     - 'perc10': 10th percentile
+%     - 'perc25' (default): 25th percentile
+%     - 'mode'
+%   - 'refCst': constant value used in case refType was set to 'constant'.
+%     Default is -70 (dB).
 %
 %   CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE(...,'comms',COMMS) specifies if
 %   and how this function communicates on its internal state (progress,

@@ -14,34 +14,33 @@ function [data,params] = CFF_mask_WC_data_CORE(data, fData, iPings, varargin)
 %   CFF_MASK_WC_DATA_CORE(DATA,FDATA,IPINGS,PARAMS) uses
 %   processing parameters defined as the fields in the PARAMS structure.
 %   Possible parameters are:
-%   'maxAngle': angle (in degrees) from broadside beyond which data are to
-%   be discarded. Typically 50 to 60. Default is inf to KEEP all data.
-%   'minRange': range (in m) from sonar within which data are to be
+%   - 'maxAngle': angle (in degrees) from broadside beyond which data are
+%   to be discarded. Typically 50 to 60. Default is inf to KEEP all data.
+%   - 'minRange': range (in m) from sonar within which data are to be
 %   discarded. Typically 1 to 5. Default is 0 to KEEP all data. 
-%   'maxRangeBelowBottomEcho': range (in m) from the top of the bottom echo
-%   beyond which data are to be discarded. Typically 0 to remove just the
-%   echo, or -1 to -10 to be more conservative. Default is inf to KEEP all
-%   data. 
-%   'withinPolygon': vertices (in Easting and Northing) of the polygon
+%   - 'maxRangeBelowBottomEcho': range (in m) from the top of the bottom
+%   echo beyond which data are to be discarded. Typically 0 to remove just
+%   the echo, or -1 to -10 to be more conservative. Default is inf to KEEP
+%   all data. 
+%   - 'withinPolygon': vertices (in Easting and Northing) of the polygon
 %   outside of which data are to be discarded. Default is [] to KEEP all
 %   data. 
-%   'maxPercentFaultyDetects': proportion (in %) of faulty detects in a
+%   - 'maxPercentFaultyDetects': proportion (in %) of faulty detects in a
 %   ping beyond which the entire ping is to be discarded. Typically ~7 to
 %   remove all but perfect pings, ~ 10 to 20 to allow pings with a few
 %   faulty detects, or >20 to remove only the most severly affected pings.
 %   Default is 100 to KEEP all data. 
-%   'maxRangeBelowMSR': range (in m) from the Minimum Slant Range (MSR)
+%   - 'maxRangeBelowMSR': range (in m) from the Minimum Slant Range (MSR)
 %   beyond which data are to be discarded. Typically 0 to remove all data
 %   past the MSR, or -1 to -10 to be more conservative. Default is inf to
 %   KEEP all data. 
 %
-%   CFF_MASK_WC_DATA_CORE(...,'comms',COMMS) specifies if
-%   and how this function communicates on its internal state (progress,
-%   info, errors). COMMS can be either a CFF_COMMS object, or a text string
-%   to initiate a new CFF_COMMS object. Options are 'disp',
-%   'textprogressbar', 'waitbar', 'oneline', 'multilines'. By default,
-%   using an empty CFF_COMMS object (i.e. no communication). See CFF_COMMS
-%   for more information.
+%   CFF_MASK_WC_DATA_CORE(...,'comms',COMMS) specifies if and how this
+%   function communicates on its internal state (progress, info, errors).
+%   COMMS can be either a CFF_COMMS object, or a text string to initiate a
+%   new CFF_COMMS object. Options are 'disp', 'textprogressbar', 'waitbar',
+%   'oneline', 'multilines'. By default, using an empty CFF_COMMS object
+%   (i.e. no communication). See CFF_COMMS for more information.
 %
 %   [FDATA,PARAMS] = CFF_MASK_WC_DATA_CORE(...) also outputs
 %   the parameters used in processing.
