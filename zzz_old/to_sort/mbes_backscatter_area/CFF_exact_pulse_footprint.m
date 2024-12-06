@@ -3,14 +3,15 @@ function [L, L_lead, L_trail] = CFF_exact_pulse_footprint(R,c,tau,beta)
 %   Copyright 2014-2014 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
-% the common equation for the pulse footprint is a function of sound
-% celerity (c), the pulse duration (tau) and the angle of incidence beta
-% (depression from seafloor normal, in rad)
+% The common approximate for the across-track footprint (aka in m) of a
+% pulse of length tau (m), on a seafloor intercepted with angle of
+% incidence beta (depression from seafloor normal, in rad), considering
+% sound celerity c (m.s^-1) is:
 %
 % L = (c.*tau./2)./sin(beta);
 %
-% but this is considered far away from the source in such way that
-% waves fronts are straight, aka valid for large range
+% but this is an approximation considering we are far away enough from the 
+% source in such way that wave fronts are straight, aka valid for large R.
 %
 % a way to express it, valid in all cases, is a bit complex, it involves
 % two regimes: at high incident angles (grazing), it's a chord of an
