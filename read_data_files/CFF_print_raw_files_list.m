@@ -27,7 +27,7 @@ rawFilesList = reshape(rawFilesList,[],1);
 outText = {};
 
 % complete output text
-if nFiles == 1 && isempty(rawFilesList{1})
+if nFiles == 0 || ( nFiles == 1 && isempty(rawFilesList{1}))
     
     outText{end+1,1} = sprintf('Empty list.\n');
     
