@@ -366,8 +366,8 @@ for iF = 1:nFiles
                         dtgsAllRequired = {'#IIP',... % Installation Parameters
                             '#SPO',...                % Position        
                             '#IOP',...                % Runtime Parameters
-                            '#MWC'};                  % Water-column Data 
-                        % USED TO ALSO HAVE '#MRZ',... % Bathy and BS
+                            '#MWC',...                % Water-column Data 
+                        	'#MRZ'};                  % Bathy and BS - NEEDED FOR SOME RUNTIME PARAMETERS NOT IN #IOP
                         dtgs = sort(unique(dtgsAllRequired));
                     case 'seafloorOrWCD'
                         dtgsAllRequired = {'#IIP',...  % Installation Parameters
