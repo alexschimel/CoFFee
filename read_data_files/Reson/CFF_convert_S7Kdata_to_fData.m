@@ -96,8 +96,124 @@ if isfield(S7Kdata,'R7000_SonarSettings')
     fData.Ru_1D_Date                            = S7Kdata.R7000_SonarSettings.Date;
     fData.Ru_1D_TimeSinceMidnightInMilliseconds = S7Kdata.R7000_SonarSettings.TimeSinceMidnightInMilliseconds;
     fData.Ru_1D_PingCounter                     = S7Kdata.R7000_SonarSettings.PingNumber;
-    fData.Ru_1D_TransmitPowerReMaximum          = pow2db(S7Kdata.R7000_SonarSettings.PowerSelection);
     fData.Ru_1D_ReceiveBeamwidth                = S7Kdata.R7000_SonarSettings.ReceiveBeamWidthRad/pi*180;
+    
+    % EDIT -- Alex 29/11/2024 ---------------------------------------------
+    % In the Kongsberg *.all format on which CoFFee fData format is based,
+    % the only parameter that informs the power transmitted is the
+    % "Transmit power re maximum in dB" in the "Runtime Parameters"
+    % datagram. This parameter records a setting that the use can modify in
+    % SIS and informs some decrease in power for "marine mammal
+    % protection". The values are 0 (default) and increments of -10 dB:
+    % -10, -20, -30, etc. In fData, this parameter is recorded as
+    % fData.Ru_1D_TransmitPowerReMaximum and the only place it is used is
+    % in radiometric correction of WCD, which is implemented in Espresso.
+    %
+    % When we came to code Espresso support for s7k, we needed to reuse
+    % that fData field to transcribe power setting from s7k.
+    %
+    % According to s7k format documentation, there are two fields in R7000
+    % record "Sonar Settings" that inform power transmitted. These are:
+    %  - "Power selection" described as "Power selection in dB re 1
+    %  microPascal"
+    %  - "Gain selection" described as "Gain Selection in dB"
+    %
+    % At today's date, I (alex) have no more information than that. I am
+    % not even sure that "Gain selection" refers to a gain in transmission,
+    % or in reception. 
+    %
+    % But when Yoann coded s7k support, what he coded was the following: 
+    %
+    % fData.Ru_1D_TransmitPowerReMaximum = pow2db(S7Kdata.R7000_SonarSettings.PowerSelection);
+    %
+    % This just takes the "Power selection" and applies the MATLAB function
+    % pow2db to it. "Gain selection" is ignored.
+    %
+    % But another thing that bugs me is that the s7k documentation says
+    % that "Power selection" is already in dB, so you should not have to
+    % turn it to dB.
+    %
+    % Even worse: the documentation says "Power selection in dB re 1
+    % MICROPASCAL" when it should have said 1 WATT if it is supposed to be
+    % power. "dB re 1 microPascal" is a dB unit of PRESSURE.
+    %
+    % Last detail, the pow2dB function is basically 10*log10() so it is
+    % used to turn power (W) or intensity (W.m^-2) from natural values into
+    % dB using a reference of 1 (1 W or 1 W.m^-2). If we wanted to turn
+    % pressure to dB, we should use 20*log10().
+    %
+    % In other words, Yoann assumed that the description of this field was
+    % wrong and that this parameter is actually "Power selection IN WATTS".
+    %
+    % So why Yoann did this. He may have information from the manufaturer,
+    % but there are other clues. 
+    %
+    % First, the values in the files are way too high to actually be a
+    % power in dB value. My example file has a value of "227". A P_dB of
+    % 227 dB re 1 W would mean a power P = 10.^(P_dB/10) = 5.01^22 W. A
+    % nuclear power plant produces ~4^9 W.
+    % Assuming that we actually have P = 227 W is a more realistic amount,
+    % corresponding to a power in dB of P_dB = 10*log10(P/1) = 23.56 dB re
+    % 1 W.
+    %
+    % Now, the assumption that the manufacturers should have written "power
+    % selection in Watts" instead of "power selection in dB re 1 microPa"
+    % is good but there is another interpretation. What if they had meant
+    % "PRESSURE selection in dB re 1 microPa". The pressure p_dB in "dB re
+    % 1 microPa" of a pressure p in microPascals would be p_dB =
+    % 10*log10(p/1microPa). And it just  happens that there is an easy
+    % conversion from "pressure in dB re 1 microPa" to "intensity in dB re
+    % 1 W.m^-2, given by Lurton (2002) (equation 2.15):
+    %
+    %   I_dB = 10*log10(I/1W.m^2) = 20*log10(p/1microPa) - 184.8
+    %                             = p_dB - 184.8
+    %
+    % With the intensity being the power for a unit surface of 1m2. 
+    %
+    % Now if the value in the file is effectively pressure in dB re 1
+    % microPa, then p_dB = 227 corresponds to I_dB = 42.2 dB re 1 W.m^-2,
+    % which correspond to a power per unit surface of P = 10.^(I_dB/10) =
+    % 5.01^22 W = ~16.6 kW... which is a bit much, but more reasonable.
+    %
+    % Using this interpretation would mean saving this field as:
+    %
+    % fData.Ru_1D_TransmitPowerReMaximum = S7Kdata.R7000_SonarSettings.PowerSelection - 184.8;
+    %
+    % Then there is the "Gain selection" field that is still forgotten
+    % here. The value I have in my example file is "-23", and will call
+    % it G now.
+    %
+    % If Yoann's interpretation is correct and "227" is the power in watts
+    % so that P_dB = 23.56 dB re 1 W. Then applying the gain to this leads
+    % to an effective power transmitted of P_dB - G = 0.56 dB, which
+    % correspond to 10.^(0.56/10) = ~1.13 Watts. We would write: 
+    %
+    % fData.Ru_1D_TransmitPowerReMaximum = pow2db(S7Kdata.R7000_SonarSettings.PowerSelection) + S7Kdata.R7000_SonarSettings.GainSelection;
+    %
+    % If my alternative interpretation is correct an "227" is the pressure
+    % in dB so that the power in dB P_dB is effectively 42.2 dB re 1
+    % W.m^-2, then the effective power transmitted is P_dB - G = 19.2 dB,
+    % which correspond to 10.^(19.2/10) = ~83.2 Watts. We would write: 
+    %
+    % fData.Ru_1D_TransmitPowerReMaximum = S7Kdata.R7000_SonarSettings.PowerSelection - 184.8 + S7Kdata.R7000_SonarSettings.GainSelection;
+    %
+    %
+    % For now, let's keep the original code by Yoann, but ask
+    % Teledyne/Reson and Norbit for more information
+    approach = 'Yoann, power only';
+    switch approach
+        case 'Yoann, power only'
+            fData.Ru_1D_TransmitPowerReMaximum = pow2db(S7Kdata.R7000_SonarSettings.PowerSelection);
+        case 'Yoann, power plus gain'
+            fData.Ru_1D_TransmitPowerReMaximum = pow2db(S7Kdata.R7000_SonarSettings.PowerSelection) + S7Kdata.R7000_SonarSettings.GainSelection;
+        case 'alternative, power only'
+            fData.Ru_1D_TransmitPowerReMaximum = S7Kdata.R7000_SonarSettings.PowerSelection - 184.8;
+        case 'alternative, power plus gain'
+            fData.Ru_1D_TransmitPowerReMaximum = S7Kdata.R7000_SonarSettings.PowerSelection - 184.8 + S7Kdata.R7000_SonarSettings.GainSelection;
+    end
+    %
+    % END OF EDIT ---------------------------------------------------------
+    
 end
 
 comms.progress(1,6);
@@ -296,8 +412,8 @@ if all(isfield(S7Kdata,{'R7018_BeamformedData','R7000_SonarSettings','R7004_Beam
     fData.AP_1P_SoundSpeed                      = S7Kdata.R7000_SonarSettings.SoundVelocity(ipR7000);
     fData.AP_1P_SamplingFrequencyHz             = S7Kdata.R7000_SonarSettings.SampleRate(ipR7000); % in Hz
     fData.AP_1P_TXTimeHeave                     = NaN; % unused anyway
-    fData.AP_1P_TVGFunctionApplied              = nan(size(pingNumber)); % dummy values. to find XXX1
-    fData.AP_1P_TVGOffset                       = zeros(size(pingNumber)); % dummy values. to find XXX1
+    fData.AP_1P_TVGFunctionApplied              = 30.*ones(size(pingNumber)); % No TVG information in s7k . Assuming a TVG of 30log10(R)
+    fData.AP_1P_TVGOffset                       = zeros(size(pingNumber)); % No TVG information in s7k . Assuming a TVG of 30log10(R)
     fData.AP_1P_ScanningInfo                    = NaN; % unused anyway
     
     % initialize data per transmit sector and ping
@@ -504,8 +620,8 @@ if all(isfield(S7Kdata,{'R7042_CompressedWaterColumnData','R7000_SonarSettings',
     fData.AP_1P_SoundSpeed                      = S7Kdata.R7000_SonarSettings.SoundVelocity(ipR7000);
     fData.AP_1P_SamplingFrequencyHz             = S7Kdata.R7042_CompressedWaterColumnData.SampleRate(ipR7042); % in Hz
     fData.AP_1P_TXTimeHeave                     = nan(ones(size(pingNumber)));
-    fData.AP_1P_TVGFunctionApplied              = nan(size(pingNumber));
-    fData.AP_1P_TVGOffset                       = zeros(size(pingNumber));
+    fData.AP_1P_TVGFunctionApplied              = 30.*ones(size(pingNumber)); % No TVG information in s7k . Assuming a TVG of 30log10(R)
+    fData.AP_1P_TVGOffset                       = zeros(size(pingNumber)); % No TVG information in s7k . Assuming a TVG of 30log10(R)
     fData.AP_1P_ScanningInfo                    = nan(size(pingNumber));
     % DEV NOTE ------------------------------------------------------------
     % R7042 records contains a "Sample Rate" field, described in

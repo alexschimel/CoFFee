@@ -25,6 +25,12 @@ function [fData, processingParams] = CFF_process_WC(fData, varargin)
 %   array of structure with processing parameters for each function in
 %   FUNCS, uses those parameters in processing.
 %
+%   CFF_PROCESS_WC(...,'flagReprocess',FLAG) where FLAG is a boolean (i.e.
+%   0, 1, false, true) indicates whether to apply the processing to the raw
+%   WCD data in FDATA (FLAG = 1, or FLAG = true, default), or to the
+%   already-previously-processed WCD data in FDATA, if any (FLAG = 0, or
+%   FLAG = false).
+%
 %   CFF_PROCESS_WC(...,'comms',COMMS) specifies if and how this function
 %   communicates on its internal state (progress, info, errors). COMMS can
 %   be either a CFF_COMMS object, or a text string to initiate a new
@@ -33,7 +39,8 @@ function [fData, processingParams] = CFF_process_WC(fData, varargin)
 %   (i.e. no communication). See CFF_COMMS for more information.
 %
 %   [FDATA,PARAMS] = CFF_process_WC(...) also output the processing
-%   parameter structures PARAMS used in processing.
+%   parameter structure (or cell array of structures) PARAMS used in
+%   processing. 
 %
 %   See also CFF_WC_RADIOMETRIC_CORRECTIONS_CORE,
 %   CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE, CFF_MASK_WC_DATA_CORE,
@@ -109,6 +116,7 @@ if flagReprocess
     % space. To save disk space, we encode that data in a lower precision
     % format (1 or 2 bytes) although we will lose in precision (e.g.
     % -23.4283 dB will be stored as -23.5 dB instead).
+    %
     % We define the desired precision of the stored data here:
     % - 1 byte allows storage of 255 different values, allowing
     %   for example a dynamic range of 25.5 dB at 0.1 dB resolution,
@@ -118,6 +126,8 @@ if flagReprocess
     %   for example a dynamic range of 655.35 dB at 0.01 dB
     %   resolution, or 65.535 dB at 0.001 dB resolution. Aka moderate space
     %   saving for moderate loss of precision 
+    %
+    % For now hard-coding this, but eventually make it a parameter XXX
     storing_precision = '1 byte'; % '1 byte' or '2 bytes'
     switch storing_precision
         case '1 byte'
