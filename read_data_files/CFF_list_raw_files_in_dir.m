@@ -186,6 +186,13 @@ switch fileSelectMethod
         rawFilesList = rawFilesList(iSel);
 end
 
+
+%% Finalize
+% if empty, force the output of a 0x0 empty cell array
+if isempty(rawFilesList)
+    rawFilesList = {};
+end
+
 end
 
 
