@@ -12,11 +12,13 @@ function [data,params] = CFF_WC_radiometric_corrections_CORE(data, fData, iPings
 %   CFF_WC_RADIOMETRIC_CORRECTIONS_CORE(DATA,FDATA,IPINGS,PARAMS) uses
 %   processing parameters defined as the fields in the PARAMS structure.
 %   Possible parameters are: 
-%   'outVal': string for the acoustic quantity desired in output. Possible
-%   values are 'Sv' (Volume backscattering strength, in dB re 1 m-1,
-%   default), 'Sa' (Area backscattering strength, in dB re 1(m2 m-2)), and
-%   'TS' (Target strength, in dB re 1 m2). For more information see,
-%   MacLennan et al. (2002) (DOI: 10.1006/jmsc.2001.1158). 
+%   - 'outVal': string for the acoustic quantity desired in output.
+%   Possible values are:  
+%     - 'Sv' (default): Volume backscattering strength, in dB re 1 m-1.
+%     - 'Sa': Area backscattering strength, in dB re 1(m2 m-2)
+%     - 'TS': Target strength, in dB re 1 m2
+%   For more information see, MacLennan et al. (2002)
+%   (DOI: 10.1006/jmsc.2001.1158). 
 %
 %   CFF_WC_RADIOMETRIC_CORRECTIONS_CORE(...,'comms',COMMS) specifies if and
 %   how this function communicates on its internal state (progress, info,
@@ -29,7 +31,7 @@ function [data,params] = CFF_WC_radiometric_corrections_CORE(data, fData, iPings
 %   [FDATA,PARAMS] = CFF_WC_RADIOMETRIC_CORRECTIONS_CORE(...) also outputs
 %   the parameters used in processing.
 %
-%   Note: corrections incomplete XXX.
+%   Note: development notes at the bottom
 %
 %   See also CFF_WC_RADIOMETRIC_CORRECTIONS, CFF_PROCESS_WC,
 %   CFF_FILTER_WC_SIDELOBE_ARTIFACT_CORE, CFF_MASK_WC_DATA_CORE.
@@ -60,125 +62,28 @@ end
 comms.start('Applying radiometric corrections');
 
 
-% We are reusing mostly here the reasoning and equations of Urban et al.
-% (2017) (DOI: 10.1002/lom3.10138), which match a previous
-% paper Gurshin et al. (2009) (DOI: 10.1093/icesjms/fsp052). The equation
-% of Urban et al. (2017) was reused in Nau et al. (2022) (DOI:
-% 10.3389/frsen.2022.839417)
-%
-% The received echo level for volume backscattering is:
-%       EL = SL - TL + Sv + 10*log(V)                                   (1)
-% , where TL is the transmission loss: 
-%       TL = 40*log(R) + 2*alpha*R                                      (2)
-% , V is the sampling volume typically approximated as:
-%       V ~ 0.5*c*tau*psi*(R^2)                                         (3)
-% (SL is the Source Level, Sv is the volume backscattering strength, R is
-% the range from the sounder, alpha is the attenuation coefficient, c is
-% the sound speed, tau is the pulse length. NOTE: Urban et al (2017)
-% uses "the sampling time (t)" instead of the pulse length (tau), which is
-% not correct.
-%
-% Putting equations (1) to (3) together, we get:
-%       EL = SL + Sv - 20*log(R) -2*alpha*R + 10*log(0.5*c*tau*psi)     (4)
-%
-% The log dependence in "-20*log(R)" is typical of getting to Sv. For
-% surface backscattering (Sa/BS), it is in "-30*log(R)", and for target
-% strength (TS), it is in "-40*log(R)".
-%
-% Continuing with the reasoning of Urban et al. (2017), the issue is that
-% the level recorded in the raw data files is not EL, but rather:
-%       A_WCI = EL + TVG + CF                                           (5)
-% , where TVG is the system's TVG function, specified in the Kongsberg
-% documentation as:
-%       TVG = X*log(R) + 2*alpha*R + OFS + C                            (6)
-% , CF is some assumed constant factor representing aspects out of the
-% control of the system (i.e. an offset due to component aging, biofouling,
-% etc.)
-% As specified in the Kongsberg documentation, X is the "TVG function
-% applied" (in fact a recorded parameter that can be set to 10, 20, 30 or
-% 40 - I think), C is the "TVG offset in dB" (another recorded parameter),
-% and OFS is a "gain offset to compensate for TX Source Level, Received
-% sensitivity, etc." but that is not recorded.
-%
-% Note that Konsberg data also includes in Runtime Parameters a "Transmit
-% Power Re. Maximum" parameter which is a "mammal protection setting" and
-% that is reported in the data, but not in equation (6) above. So instead
-% of using equation (6), we would rather use:
-%       TVG = X*log(R) + 2*alpha*R + OFS + C + TPRM                     (7)
-%
-% Putting equations (4), (5) and (7) together, we get:
-%   Sv = A_WCI - (X-20)*log(R) - 10*log(0.5*c*tau) - 10*log(psi) - TPRM ...
-%        - OFS - C - CF - SL                                            (8)
-%
-% So this is the full equation to obtain Sv from the recorded level A_WCI.
-% Problem is that a lot of those terms are unknown. Let's look at them in
-% turn: 
-%   (X-20)*log(R) is known and must be corrected otherwise the level is not
-% consistent down the range.
-%   10*log(0.5*c*tau) is known (sort-of.. we should use effective pulse
-% length instead of pulse length). Not sure if it needs correcting since
-% those terms are constant. Well, sound speed c might vary along the line.
-% All papers cited above chose to correct for this term. But what if this
-% term is already a part of the unknown OFS? At least the magnitude of this
-% term should be somehow reduced. Considering a sound speed of 1500 m/s and
-% typical pulse lengths (0.0001-0.001 m), this term should be around -11 to
-% -1 dB.
-%   10*log(psi) can also be approximated since we know the beamwidths in Tx
-% and Rx. Yet none of the papers cited above chose to correct it. That's
-% probably because its magnitude is large. Considering a cone with apex
-% angle theta (i.e. approx the beamwidth, say theta=0.5deg), the equation
-% for the solid angle psi is psi = 2*pi*(1-cos(0.5*theta)), aka 10*log(psi)
-% here would be -42 dB!!!!
-%   TPRM is recorded in the files, but ignored in the previous papers. It
-% should probably be corrected though, since this parameter can be changed
-% while recording the data!
-%   OFS is not recorded. We can assume it is a constant value throughout a
-% file, but we have no evidence. 
-%   C is recorded... but ignored in the papers cited.
-%   CF is unknown by definition, but considered constant.
-%   SL is unknown, but supposedly corrected by OFS, along with other
-%   constant terms ignored in this entire reasoning (i.e. transducer
-%   sensitivity, etc.)
-%
-% So what do we do?
-%   Gurshin et al. (2009) and Urban et al. (2017) corrected the recorded
-%   level as:
-%       A_WCI - (X-20)*log(R) - 10*log(0.5*c*tau)
-%   Nau et al. (2022) corrected the recorded level as:
-%       A_WCI - (X-20)*log(R) - 10*log(0.5*c*tau) - C
-%   What I had been doing so far is correcting the recorded level as:
-%       A_WCI + (20-X)*log(R) + TPRM 
-%   (notice I add TPRM here while in the equations above, it was
-%   subtracted. That's because I don't even know how Kongsberg applies it,
-%   or whether it compensates for it in OFS) 
-
-
-
 %% Transmit Power level reduction
-% This is the "mammal protection" setting, which is recorded in Runtime
-% Parameters datagram
-if isfield(fData,'Ru_1D_TransmitPowerReMaximum')
-    TPRM = fData.Ru_1D_TransmitPowerReMaximum;
-else
-    comms.info('Transmit Power (Ru_1D_TransmitPowerReMaximum) level not stored in the file. We will use 1kW...');
-    TPRM = 1000*ones(size(data));
+% Originally, this fData field was made for the "Transmit power re maximum
+% in dB" field in Kongsberg data, which is an attenuation of power
+% transmitted for "mammal protection". It is recorded in Runtime Parameters
+% datagrams in the .all format, and in the #MRZ datagrams in the .kmall
+% format. In converted s7k data, we use it to store the "Power Selection"
+% (maybe minus the "Gain selection") from "R7000 Sonar Settings" records.
+TPRM = fData.Ru_1D_TransmitPowerReMaximum;
+
+% Now, we need a value per ping, and that's a problem.
+% In Kongsberg .all format, there are not as many Runtime Parameters
+% datagrams as pings. In Kongsberg .kmall format and in .s7k, there is one
+% value per ping... of seabed data not WCD. So here we just take the first
+% value available and hope it applies to all data. If the value changes, we
+% raise a warning that we'll fix this eventually... XXX
+if numel(unique(TPRM)) > 1
+    comms.info('Transmit Power level reduction not constant within the file. Radiometric correction inappropriate');
 end
 
-if numel(unique(TPRM)) == 1
-    % This value does not change in the file
-    TPRM = TPRM(1).*ones(size(data));
-else
-    % dB offset changed within the file. 
-    % Would need to check when runtime parameters are being issued. Whether
-    % they are triggered with any change for example. Will likely need to
-    % extract and compare the time of Ru and WC datagrams to find which db
-    % offset applies to which pings.
-    % ... TO DO XXX1
-    % for now we will just take the first value and apply to everything
-    % so that processing can continue...
-    comms.info('Transmit Power level reduction not constant within the file. Radiometric correction inappropriate');
-    TPRM = TPRM(1).*ones(size(data));
-end
+% Take first value for all pings
+TPRM = TPRM(1).*ones(size(iPings));
+TPRM = permute(TPRM,[3,1,2]);
 
 
 %% TVG applied in reception
@@ -187,14 +92,17 @@ end
 % "The TVG function applied to the data is X logR + 2 Alpha R + OFS + C.
 % The parameters X and C is documented in this datagram. OFS is gain offset
 % to compensate for TX Source Level, Receiver sensitivity etc."
+% X and C are known but not OFS.
+%
+% For s7k there is no information on TVG but we encoded X = 30 and C = 0
+% in CFF_convert_s7k_to_fdata. To modify if we ever get more information
+% XXX
 datagramSource = CFF_get_datagramSource(fData);
-
 X = fData.(sprintf('%s_1P_TVGFunctionApplied',datagramSource))(iPings);
 C = fData.(sprintf('%s_1P_TVGOffset',datagramSource))(iPings);
 
-% Assuming 30log R if nothing has been specified
-X(isnan(X)) = 30;
-C(isnan(C)) = 0;
+X = permute(X,[3,1,2]);
+C = permute(C,[3,1,2]); 
 
 % X is a parameter in TVG because it defines the output quantity (not
 % taking into account constant factors) as follow: 
@@ -214,13 +122,12 @@ outVal = params.outVal;
 % get Xcorr
 switch outVal
     case 'Sv'
-        Xcorr = 20-X;
+        Xcorr = X-20;
     case 'Sa'
-        Xcorr = 30-X;
+        Xcorr = X-30;
     case 'TS'
-        Xcorr = 40-X;
+        Xcorr = X-40;
 end
-Xcorr = permute(Xcorr,[3,1,2]);
 
 
 %% Full correction
@@ -232,11 +139,139 @@ datagramSource = fData.MET_datagramSource;
 ranges = CFF_get_samples_range( (1:nSamples)', fData.(sprintf('%s_BP_StartRangeSampleNumber',datagramSource))(:,iPings), interSamplesDistance);
 
 % apply to data
-data = data + Xcorr.*log10(ranges) + TPRM;
-
-% Still need to correct for C, but probably need to do all constant terms
-% then. XXX1
+data = data - Xcorr.*log10(ranges) - C; % used to also do - TPRM. See notes
 
 
 %% end message
 comms.finish('Done');
+
+
+%% DVPT NOTES
+%
+% Making my own reasoning here, from Urick (1983), Lurton (2002), MacLennan
+% et al. (2002), Gurshin et al. (2009) (DOI: 10.1093/icesjms/fsp052), Urban
+% et al. (2017) (DOI: 10.1002/lom3.10138), and Nau et al. (2022) (DOI:
+% 10.3389/frsen.2022.839417) 
+%
+% The intensity of the received echo (Echo Level) is written as (Urick,
+% Lurton): 
+%       EL = SL - 2*TL + TS                                             (1)
+% , where SL is the Source Level, TL is the (one-way) Transmission Loss,
+% and TS is the Target Strength.
+%
+% The one-way transmission loss TL is (Lurton): 
+%       TL = 20*log(R) + alpha*R                                        (2)
+% , where R is the range from the sounder (unit?), and alpha is the
+% attenuation coefficient (unit?).
+%
+% For volume backscattering, TS is written as (Urick, Urban, MacLennan):
+%       TS = Sv + 10*log(V)                                             (3)
+% , where Sv is the volume backscattering strength and V is the scattering
+% volume, approximated as (Urick, Lurton):
+%       V ~ 0.5*c*tau*psi*(R^2)                                         (4)
+% , where c is the sound speed (unit?), tau is the pulse length (unit?),
+% and psi is the equivalent aperture of the source/receiver system (solid
+% angle, in steradians). NOTE: Urban incorrectly calls V the "sampling
+% volume" and uses "the sampling time (t)" instead of the pulse length
+% (tau) in this equation.
+%
+% Putting equations (1) to (4) together, we get:
+%       EL = SL + Sv - 20*log(R) - 2*alpha*R + 10*log(0.5*c*tau*psi)    (5)
+%
+% Now the level recorded in the raw data files is not the Echo Level. The
+% Recorded Level (RL) may be written as (my own terminology):
+%       RL = EL + RG - UL                                               (6)
+% , where RG is the gain introduced by the system in reception (receiver
+% Gain), which is usually in the form of one constant term and one
+% range-varying term known as Time Varying Gain, and UL is a (assumed
+% constant) Unknown Loss due to factors outside the system's control
+% (biofouling, aging components, etc.).
+%
+% Similarly, the Source Level may be controlled by user-set or
+% system-controlled parameters, such that: 
+%       SL = NSL + TG,                                                  (7)
+% , where NSL is the Nominal Source Level and TG (Transmit Gain) is a
+% parameterizable, fixed gain (or attenuation) in transmission.
+%
+% In Kongsberg systems using the .all format:
+% - There is a TVG in reception, described in the documentation as: 
+%       TVG = X*log(R) + 2*alpha*R + OFS + C                            (8)
+% , where X is the "TVG function applied" (in fact a recorded parameter
+% that can be set to 10, 20, 30 or 40 - I think), C is the "TVG offset in
+% dB" (another recorded parameter), and OFS is a "gain offset to compensate
+% for Tx Source Level, Received sensitivity, etc." but that does not appear
+% to be recorded. We assume that this is the only gain in reception such
+% that, for this data type, the Receive Gain is just this TVG: 
+%       RG = TVG = X*log(R) + 2*alpha*R + OFS + C                       (9)
+% - There is "mammal protection setting" to reduce power transmitted. It is
+% recorded in Runtime Parameters as "Transmit Power Re. Maximum" (TPRM).
+% From experience, it is usually 0 or negative and in dB (e.g. TPRM = -20
+% dB). We assume that this is the only gain in transmission such that, for
+% this data type:
+%       TG = TPRM                                                      (10)
+%
+% Putting equations 5 to 9 together, we get Sv from the recorded level RL
+% with the equation:
+%       Sv = RL - (X-20)*log(R) - 10*log(0.5*c*tau) - C - TPRM  
+%            - NSL - 10*log(psi) - OFS + UL                            (11)
+%
+% A few comments at this stage: 
+%   In practice, we may want to do corrections in steps. For example, in
+% equation above, there is no more 2*alpha*R component, because the one in
+% the TVG compensates the one from the transmission loss. But in practice,
+% you may want to correct them separately, for example if the alpha used in
+% TVG was wrong. 
+%   (X-20)*log(R) is known and must be corrected otherwise the level is not
+% consistent down the range.
+%   10*log(0.5*c*tau) is known... sort-of. We would need to make sure to
+% use effective pulse length for tau instead of pulse length, and use the
+% appropriate sound speed, ideally at the depth where the scattering volume
+% was approximated. Considering a sound speed of 1500 m/s and typical pulse
+% lengths (0.000014-0.00032 s for the EM 204 Mk II), this term should be
+% around -20 to -5 dB. If  we are working with data acquired with a
+% constant pulse length, and considering constant sound speed, this term is
+% constant and perhaps can be lumped with the other uncompensated constant
+% terms. 
+%   10*log(psi) can also be approximated since the beamwidths in Tx and Rx
+% should be known. Note that its magnitude is quite large. Considering a
+% cone with apex angle theta (i.e. approx the beamwidth, say theta=0.5deg),
+% the equation for the solid angle psi is psi = 2*pi*(1-cos(0.5*theta)),
+% aka 10*log(psi) here would be -42 to -35 dB! Like the previous term, we may
+% assume that beamwidths are constant, and so consider this term constant,
+% and lump it with the other uncompensated constant terms, but beamwidths
+% DO change with steering angle.
+%   C and TPRM are known (they are reported in the files) so can be
+% corrected, and probably should, in case their values change in a dataset,
+% But it is unclear whether the (unknown) TVG term OFS already compensates
+% for TPRM. Since OFS and C come from the same TVG equation, it can be
+% safely assumed that OFS does not compensate for C. 
+%   NSL and OFS are unknown, but supposedly OFS compensates for NSL (and
+% maybe also TPRM?) among others.
+%   UL is by definition unknown. 
+%
+% How it's done in the literature:
+%   Gurshin and Nau call the recorded level A_WC, while Urban calls it
+% A_WCI. Gurshin and Urban get Sv from RL with: 
+%       Sv = RL - (X-20)*log(R) - 10*log(0.5*c*tau)                    (12)
+%   Nau get Sv from RL with:
+%       Sv = RL - (X-20)*log(R) - 10*log(0.5*c*tau) - C                (13)
+%
+% So:
+% 1. All three papers ignore the unknown constant terms NSL, OFS and UL.
+% 2. All three papers ignore the known 10*log(psi) and TPRM.
+% 3. Against the two others, Nau account for the known C.
+%
+% So what do we implement? For now, we will ignore 10*log(psi) and the
+% unknown terms like the three cited papers, but we will compensate for all
+% known terms, including C and TPRM, under the assumption that OFS does not
+% already compensates for them. This should be verified with Kongsberg and
+% with data where those terms change. We therefore implements the following
+% equation to get, not Sv proper, but Sv with an assumed constant offset:
+%       ~Sv = RL - (X-20)*log(R) - 10*log(0.5*c*tau) - C - TPRM        (14)
+%
+% Now for TS and Sa:
+%
+% For TS, we just reuse equation 1, and come to:
+% ...
+
+
