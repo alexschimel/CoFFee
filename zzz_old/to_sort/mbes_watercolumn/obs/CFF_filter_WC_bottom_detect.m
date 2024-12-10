@@ -249,7 +249,7 @@ switch p.Results.interpolate
     
     case 'yes'
         
-        b1 = round(CFF_inpaint_nans(b1));
+        b1 = round(inpaint_nans(b1));
         
         % safeguard against inpaint_nans occasionally yielding numbers
         % below zeros in areas where there are a lot of nans:

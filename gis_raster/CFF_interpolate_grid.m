@@ -84,7 +84,7 @@ for ii = 1:size(fine,1)
         indexrow = [b(1):b(end)];
 
         temp = patch(indexrow,indexcol); % remove empty boundaries in patch
-        InterpPatch = CFF_inpaint_nans(temp,4); % interpolate that, use method specified
+        InterpPatch = inpaint_nans(temp,4); % interpolate that, use method specified
         temp = -999.*ones(size(patch));
         temp(indexrow,indexcol) = InterpPatch;
         InterpPatch = temp; % reintroduce the empty boundaries              
