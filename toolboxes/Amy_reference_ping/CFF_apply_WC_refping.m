@@ -68,9 +68,9 @@ for iB = 1:nBlocks
     
     % Set up bottom samples
     X_BP_bottomRange = fData.X_BP_bottomRange(:,blockPings);
-    X_BP_bottomRange = CFF_inpaint_nans(X_BP_bottomRange,4);
+    X_BP_bottomRange = inpaint_nans(X_BP_bottomRange,4);
     X_BP_bottomSample_WC = fData.X_BP_bottomSample_WC(:,blockPings);
-    X_BP_bottomSample_WC = CFF_inpaint_nans(X_BP_bottomSample_WC,4);
+    X_BP_bottomSample_WC = inpaint_nans(X_BP_bottomSample_WC,4);
     
     % Init WCD
     blockWCD = double(blockWCD);
@@ -176,7 +176,7 @@ for iB = 1:nBlocks
             amps = stbd_sort(ii,2);
             a(s) = amps;
         end
-        a = CFF_inpaint_nans(a,4);
+        a = inpaint_nans(a,4);
         
         sb_maxamp_stbd = repmat(a,1,nB/2);
       
@@ -195,7 +195,7 @@ for iB = 1:nBlocks
             b(p) = ampp;
         end
         
-        b = CFF_inpaint_nans(b,4);
+        b = inpaint_nans(b,4);
         sb_maxamp_port = repmat(b,1,nB/2);
         
         sb_maxamp_port(1:MSS-1,:) = 1; %((maxdB-mindB)/maxdB);

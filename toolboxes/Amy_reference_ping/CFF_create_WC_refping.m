@@ -58,11 +58,11 @@ reference_ping = CFF_nanstat3(procWCD,3);
 
 % Get corresponding bottom range and sample values for the subset of pings
 X_BP_bottomRange = fData.X_BP_bottomRange(:,params.startPing: params.endPing);
-X_BP_bottomRange = CFF_inpaint_nans(X_BP_bottomRange,4);
+X_BP_bottomRange = inpaint_nans(X_BP_bottomRange,4);
 X_BP_bottomSample_WC = fData.X_BP_bottomSample_WC(:,params.startPing: params.endPing);
 
 % Infill bottom values to remove nans
-X_BP_bottomSample_WC = CFF_inpaint_nans(X_BP_bottomSample_WC,4);
+X_BP_bottomSample_WC = inpaint_nans(X_BP_bottomSample_WC,4);
 
 %Number of samples for bottom detection buffer
 bd_buff = 10;
@@ -190,7 +190,7 @@ for ii = 1:length(stbd_sort)
 end
 
 % Interpolate missing values
-a = CFF_inpaint_nans(a,4);
+a = inpaint_nans(a,4);
 
 % Apply to all stbd beams
 sb_maxamp_stbd = repmat(a,1,nBeams/2);
@@ -211,14 +211,14 @@ for ii = 1:length(port_sort)
 end
 
 % Interpolate missing values
-b = CFF_inpaint_nans(b,4);
+b = inpaint_nans(b,4);
 
 % Apply to all beams on port side
 sb_maxamp_port = repmat(b,1,nBeams/2);
 sb_maxamp_port(sb_maxamp_port<0) = nan;
 sb_maxamp = [sb_maxamp_stbd sb_maxamp_port];
 
-b = CFF_inpaint_nans(b,4);
+b = inpaint_nans(b,4);
 
 sb_maxamp_port = repmat(b,1,nB/2);
 
