@@ -119,9 +119,6 @@ if ischar(comms)
     comms = CFF_Comms(comms);
 end
 
-
-%% Prep
-
 % if single procFun, params, and procMsg in input, turn to cell
 if ~iscell(procFun), procFun = {procFun}; end
 if ~iscell(params), params = {params}; end
@@ -152,6 +149,9 @@ else
         error('Number of procFun, params, and procMsg in input must match');
     end
 end
+
+
+%% Prep
 
 % start message
 if nFun == 1
