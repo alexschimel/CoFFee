@@ -13,7 +13,7 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
             coffeeFolder = 'C:\Users\Schimel_Alexandre\Code\MATLAB\CoFFee';
             addpath(genpath(coffeeFolder));
             
-            testCase.rawFiles = CFF_test_raw_files.get('one_small_file_with_wcd_per_format');
+            testCase.rawFiles = CFF_test_raw_files.get('range_small_files_with_wcd_per_format');
             CFF_print_raw_files_list(testCase.rawFiles);
             
             % pre-process data
@@ -42,7 +42,59 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
     methods (Test)
         % Test methods
         
-        function only_sidelobe_filtering_no_params(testCase)
+        % test inputs
+        function test_inputs(testCase)
+            
+            % missing required input fData
+            verifyError(testCase,@() CFF_process_WC(), 'MATLAB:minrhs');
+            
+            % invalid fData
+            verifyError(testCase,@() CFF_process_WC(1), 'MATLAB:InputParser:ArgumentFailedValidation');
+            
+            % missing input func. Should return fData input with warning 
+            % verify with single fData
+            verifyWarning(testCase,@() CFF_process_WC(testCase.fData{1}),'');
+            % verify with multiple fData
+            if numel(testCase.fData)>1
+                verifyWarning(testCase,@() CFF_process_WC(testCase.fData),'');
+            end
+            
+            % check with dummy processing function that just returns input
+            dummyWcProcFun = @(data,fData,iPings,params) deal(data,params);
+            % single fData
+            try
+                CFF_process_WC(testCase.fData{1},dummyWcProcFun,{},'resumeProcess',1);
+                pass = true;
+            catch ME
+                pass = false;
+            end
+            verifyTrue(testCase, pass,'error');
+            % multiple fData
+            if numel(testCase.fData)>1
+                CFF_process_WC(testCase.fData,dummyWcProcFun,{},'resumeProcess',1);
+            end
+            
+            % check comms on one file
+            CFF_process_WC(testCase.fData{1},dummyWcProcFun,'comms','');
+            CFF_process_WC(testCase.fData{1},dummyWcProcFun,'comms','disp');
+            CFF_process_WC(testCase.fData{1},dummyWcProcFun,'comms','textprogressbar');
+            CFF_process_WC(testCase.fData{1},dummyWcProcFun,'comms','waitbar');
+            CFF_process_WC(testCase.fData{1},dummyWcProcFun,'comms','oneline');
+            CFF_process_WC(testCase.fData{1},dummyWcProcFun,'comms','multilines');
+            
+            % check comms on multiple files
+            if numel(testCase.fData)>1
+                CFF_process_WC(testCase.fData,dummyWcProcFun,'comms','');
+                CFF_process_WC(testCase.fData,dummyWcProcFun,'comms','disp');
+                CFF_process_WC(testCase.fData,dummyWcProcFun,'comms','textprogressbar');
+                CFF_process_WC(testCase.fData,dummyWcProcFun,'comms','waitbar');
+                CFF_process_WC(testCase.fData,dummyWcProcFun,'comms','oneline');
+                CFF_process_WC(testCase.fData,dummyWcProcFun,'comms','multilines');
+            end
+
+        end
+        
+        function only_sidelobe_filtering_no_params_FILE_PER_FILE(testCase)
             for ii = 1:numel(testCase.rawFiles)
                 fData = CFF_process_WC(testCase.fData{ii},...
                     @CFF_filter_WC_sidelobe_artifact_CORE,...
@@ -66,12 +118,37 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
             end
         end
         
+        function only_sidelobe_filtering_no_params(testCase)
+            fData = CFF_process_WC(testCase.fData,...
+                @CFF_filter_WC_sidelobe_artifact_CORE,...
+                'comms','multilines');
+            iPing = 1;
+            for ii = 1:numel(fData)
+                WCD_raw = CFF_get_WC_data(fData{ii},sprintf('%s_SBP_SampleAmplitudes',CFF_get_datagramSource(fData{ii})),'iPing',iPing);
+                WCD_proc = CFF_get_WC_data(fData{ii},'X_SBP_WaterColumnProcessed','iPing',iPing);
+                cmin = CFF_invpercentile(double([WCD_raw(:);WCD_proc(:)]),1);
+                cmax = CFF_invpercentile(double([WCD_raw(:);WCD_proc(:)]),99);
+                figure;
+                t = tiledlayout('flow');
+                nexttile(); imagesc(WCD_raw);
+                grid on; colorbar; colormap jet; caxis([cmin,cmax]);
+                xlabel('beam number'); ylabel('sample number'); title('raw WCD');
+                nexttile(); imagesc(WCD_proc);
+                grid on; colorbar; colormap jet; caxis([cmin,cmax]);
+                xlabel('beam number'); ylabel('sample number'); title('processed WCD');
+                titleStr = sprintf('%s\nwater-column (dB), ping %i',char(CFF_onerawfileonly(fData{ii}.ALLfilename)),iPing);
+                title(t,titleStr,'Interpreter','none','fontSize',10);
+                drawnow;
+            end
+        end
+        
         function only_masking_no_params(testCase)
+            fDataGroup = CFF_process_WC(testCase.fData,...
+                @CFF_mask_WC_data_CORE,...
+                'comms','multilines');
+            iPing = 1;
             for ii = 1:numel(testCase.rawFiles)
-                fData = CFF_process_WC(testCase.fData{ii},...
-                    @CFF_mask_WC_data_CORE,...
-                    'comms','multilines');
-                iPing = 1;
+                fData = fDataGroup{ii};
                 WCD_raw = CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',CFF_get_datagramSource(fData)),'iPing',iPing);
                 WCD_proc = CFF_get_WC_data(fData,'X_SBP_WaterColumnProcessed','iPing',iPing);
                 cmin = CFF_invpercentile(double([WCD_raw(:);WCD_proc(:)]),1);
@@ -91,11 +168,12 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
         end
         
         function only_radiometric_correction_no_params(testCase)
-             for ii = 1:numel(testCase.rawFiles)
-                fData = CFF_process_WC(testCase.fData{ii},...
-                    @CFF_WC_radiometric_corrections_CORE,...
-                    'comms','multilines');
-                iPing = 1;
+            fDataGroup = CFF_process_WC(testCase.fData,...
+                @CFF_WC_radiometric_corrections_CORE,...
+                'comms','multilines');
+            iPing = 1;
+            for ii = 1:numel(testCase.rawFiles)
+                fData = fDataGroup{ii};
                 dS = CFF_get_datagramSource(fData);
                 WCD_raw = CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',dS),'iPing',iPing);
                 WCD_proc = CFF_get_WC_data(fData,'X_SBP_WaterColumnProcessed','iPing',iPing);
@@ -227,11 +305,12 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
         end
         
         function rad_and_filt_no_params(testCase)
+            fDataGroup = CFF_process_WC(testCase.fData,...
+                {@CFF_WC_radiometric_corrections_CORE,@CFF_filter_WC_sidelobe_artifact_CORE},...
+                'comms','multilines');
+            iPing = 1;
             for ii = 1:numel(testCase.rawFiles)
-                fData = CFF_process_WC(testCase.fData{ii},...
-                    {@CFF_WC_radiometric_corrections_CORE,@CFF_filter_WC_sidelobe_artifact_CORE},...
-                    'comms','multilines');
-                iPing = 1;
+                fData = fDataGroup{ii};
                 WCD_raw = CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',CFF_get_datagramSource(fData)),'iPing',iPing);
                 WCD_proc = CFF_get_WC_data(fData,'X_SBP_WaterColumnProcessed','iPing',iPing);
                 figure;
@@ -254,12 +333,13 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
             maskParams.maxAngle = 45;
             maskParams.minRange = 2;
             maskParams.maxRangeBelowBottomEcho = 0;
+            fDataGroup = CFF_process_WC(testCase.fData,...
+                {@CFF_filter_WC_sidelobe_artifact_CORE,@CFF_mask_WC_data_CORE},...
+                {filtParams,maskParams},...
+                'comms','multilines');
+            iPing = 1;
             for ii = 1:numel(testCase.rawFiles)
-                fData = CFF_process_WC(testCase.fData{ii},...
-                    {@CFF_filter_WC_sidelobe_artifact_CORE,@CFF_mask_WC_data_CORE},...
-                    {filtParams,maskParams},...
-                    'comms','multilines');
-                iPing = 1;
+                fData = fDataGroup{ii};
                 WCD_raw = CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',CFF_get_datagramSource(fData)),'iPing',iPing);
                 WCD_proc = CFF_get_WC_data(fData,'X_SBP_WaterColumnProcessed','iPing',iPing);
                 cmin = CFF_invpercentile(double([WCD_raw(:);WCD_proc(:)]),1);
@@ -284,12 +364,13 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
             maskParams.maxAngle = 45;
             maskParams.minRange = 2;
             maskParams.maxRangeBelowBottomEcho = 0;
+            fDataGroup = CFF_process_WC(testCase.fData,...
+                {@CFF_WC_radiometric_corrections_CORE,@CFF_mask_WC_data_CORE},...
+                {radParams,maskParams},...
+                'comms','multilines');
+            iPing = 1;
             for ii = 1:numel(testCase.rawFiles)
-                fData = CFF_process_WC(testCase.fData{ii},...
-                    {@CFF_WC_radiometric_corrections_CORE,@CFF_mask_WC_data_CORE},...
-                    {radParams,maskParams},...
-                    'comms','multilines');
-                iPing = 1;
+                fData = fDataGroup{ii};
                 WCD_raw = CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',CFF_get_datagramSource(fData)),'iPing',iPing);
                 WCD_proc = CFF_get_WC_data(fData,'X_SBP_WaterColumnProcessed','iPing',iPing);
                 figure;
@@ -313,12 +394,13 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
             maskParams.maxAngle = 45;
             maskParams.minRange = 2;
             maskParams.maxRangeBelowBottomEcho = 0;
+            fDataGroup = CFF_process_WC(testCase.fData,...
+                {@CFF_WC_radiometric_corrections_CORE,@CFF_filter_WC_sidelobe_artifact_CORE,@CFF_mask_WC_data_CORE},...
+                {radParams,filtParams,maskParams},...
+                'comms','multilines');
+            iPing = 1;
             for ii = 1:numel(testCase.rawFiles)
-                fData = CFF_process_WC(testCase.fData{ii},...
-                    {@CFF_WC_radiometric_corrections_CORE,@CFF_filter_WC_sidelobe_artifact_CORE,@CFF_mask_WC_data_CORE},...
-                    {radParams,filtParams,maskParams},...
-                    'comms','multilines');
-                iPing = 1;
+                fData = fDataGroup{ii};
                 WCD_raw = CFF_get_WC_data(fData,sprintf('%s_SBP_SampleAmplitudes',CFF_get_datagramSource(fData)),'iPing',iPing);
                 WCD_proc = CFF_get_WC_data(fData,'X_SBP_WaterColumnProcessed','iPing',iPing);
                 figure;
@@ -395,8 +477,8 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
                 % approximations
                 tic
                 fData = CFF_WC_radiometric_corrections(testCase.fData{ii},radParams,'comms','multilines');
-                fData = CFF_filter_WC_sidelobe_artifact(fData,filtParams,'flagReprocess',0,'comms','multilines');
-                fData = CFF_mask_WC_data(fData,maskParams,'flagReprocess',0,'comms','multilines');
+                fData = CFF_filter_WC_sidelobe_artifact(fData,filtParams,'resumeProcess',1,'comms','multilines');
+                fData = CFF_mask_WC_data(fData,maskParams,'resumeProcess',1,'comms','multilines');
                 t2 = toc;
                 
                 % save data
