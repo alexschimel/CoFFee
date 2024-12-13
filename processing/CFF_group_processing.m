@@ -1,4 +1,4 @@
-function [fDataGroup,params] = CFF_group_processing(procFun,fDataGroup,varargin)
+function [fDataGroup,params] = CFF_group_processing(fDataGroup,procFun,varargin)
 %CFF_GROUP_PROCESSING  Apply fData processing function(s) to array of fData
 %
 %   CoFFee processing functions are normally operating with a single fData
@@ -13,38 +13,40 @@ function [fDataGroup,params] = CFF_group_processing(procFun,fDataGroup,varargin)
 %   CFF_FILTER_BOTTOM_DETECT_V2 work this way and can be used with
 %   CFF_GROUP_PROCESSING.
 %
-%   FDATAGROUP = CFF_GROUP_PROCESSING(PROCFUN,FDATAGROUP), with PROCFUN
-%   being a suitable CFF processing function handle (e.g.
-%   @CFF_my_function_name), applies the PROCFUN function (with default
-%   parameters) to the cell array of fData structures FDATAGROUP, and
-%   returns the cell array of processed fData structures. 
+%   FDATAGROUP = CFF_GROUP_PROCESSING(FDATAGROUP,PROCFUN), where FDATAGROUP
+%   is a fData structure and PROCFUN is a suitable CFF processing function
+%   handle (e.g. @CFF_my_function_name), applies the function with default
+%   parameters to the fData structure, and returns the processed fData
+%   structure. 
+%   FDATAGROUP can also be a cell array of fData structures, in which case
+%   the function is applied to each cell element, and the cell array of
+%   processed fData structures is returned. If the cell array FDATAGROUP
+%   contains a single fData structure, the processed fData is returned as a
+%   struct, not a cell array.%
+%   PROCFUN can also be a cell array of suitable function handles, in which
+%   case each function is applied (with default parameters) in series, over
+%   each fData structure in FDATAGROUP in turn. The functions are the inner
+%   loop, and the fData structures are the outer loop. Aka, it starts with
+%   the first function in PROCFUN being applied to the first fData in
+%   FDATAGROUP. Then, it takes the output and applies the second PROCFUN
+%   function to it, then it takes that output and applies the third PROCFUN
+%   function to it, etc. until all PROCFUN functions have been applied to
+%   that first fData. Then it repeats the process on the second fData, then
+%   again to the third, etc. until all fData have been processed.
 %
-%   FDATAGROUP = CFF_GROUP_PROCESSING(PROCFUN,FDATAGROUP), with PROCFUN
-%   being a cell array of suitable function handles, applies all PROCFUN
-%   functions (with default parameters) in series, over each fData
-%   structure in FDATAGROUP in turn. The functions are the inner loop, and
-%   the fData structures are the outer loop. Aka, it starts with the first
-%   PROCFUN function being applied to the first fData. Then, it takes the
-%   output and applies the second PROCFUN function to it, then it takes
-%   that output and applies the third PROCFUN function to it, etc. until
-%   all PROCFUN functions have been applied to that first fData. Then it
-%   repeats the process on the second fData, then again to the third, etc.
-%   until all fData have been processed.
-%
-%   CFF_GROUP_PROCESSING(PROCFUN,FDATAGROUP,PARAMS) does the above, but
-%   with passing the structure of parameters PARAMS in input to PROCFUN. If
-%   PROCFUN is a cell array of functions, CFF_GROUP_PROCESSING expects a
-%   matching array of cell parameter structures as PARAMS. Note that PARAMS
-%   gets updated with each application of PROCFUN to a fData, as in
-%   [FDATA,PARAMS]=PROCFUN(FDATA,PARAMS), implying that subsequent 
-%   iterations may use a different PARAMS than earlier ones. For example,
-%   it is typical to pass an empty PARAMS to the function
-%   CFF_COMPUTE_PING_NAVIGATION_V2 in order to request default parameters,
-%   which are then output by that function. As a result, for the next
-%   fData, the function will use those defined parameters.
+%   CFF_GROUP_PROCESSING(FDATAGROUP,PROCFUN,PARAMS) does the same as above,
+%   but with passing the structure of parameters PARAMS in input to
+%   PROCFUN. If PROCFUN is a cell array of functions, CFF_GROUP_PROCESSING
+%   expects a matching array of cell parameter structures as PARAMS. The
+%   input parameters are used for all fData in FDATAGROUP, without
+%   parameter piping. See the optional parameter 'pipeParams' to modify
+%   this behaviour, and for more information. 
 %
 %   [FDATAGROUP,PARAMS] = CFF_GROUP_PROCESSING(...) also outputs the
-%   parameters PARAMS in output of the last iteration of PROCFUN.
+%   parameters PARAMS in output of the last iteration of PROCFUN, if
+%   parametes were piped (see the optional parameter 'pipeParams' for more
+%   information). If parameters were not piped, this output PARAMS is the
+%   same as the input PARAMS.
 %
 %   CFF_GROUP_PROCESSING(...,'procMsg',MSG) uses the string of characters
 %   MSG as a communication message. If a single processing function is
@@ -55,13 +57,43 @@ function [fDataGroup,params] = CFF_group_processing(procFun,fDataGroup,varargin)
 %   default (or specifying MSG = 'default'), the message is 'Applying
 %   PROCFUN'.
 %
-%   CFF_GROUP_PROCESSING(...,'saveFDataToDrive',FLAG) with FLAG = 1 will
+%   CFF_GROUP_PROCESSING(...,'saveFDataToDrive',FLAG) with FLAG=1 will
 %   force a re-write of fData on the disk after the data are processed. By
-%   default (FLAG = 0), fData on the disk are not re-written.
+%   default (FLAG=0), fData on the disk are not re-written.
 %
-%   CFF_GROUP_PROCESSING(...,'abortOnError',FLAG) with FLAG = 1 will
-%   interrupt processing if an error is encountered. By default (FLAG = 0),
-%   the error is logged and processing continues to the next fData. 
+%   CFF_GROUP_PROCESSING(...,'pipeParams',FLAG) with FLAG=1 will pipe
+%   parameters from a processing of a fData to the next. By default
+%   (FLAG=0) forces the use of the input parameters for all fData.
+%   More info: a CoFFee processing function can take input parameters, as
+%   in FDATA=PROCFUN(FDATA,PARAMS). But if some, or all, of the input
+%   parameters are missing, then the function uses default parameters. To
+%   keep a record of the processing applied, the processing function
+%   usually also allows the output of the parameters effectively used, as
+%   in [FDATA,PARAMS_OUT]=PROCFUN(FDATA,PARAMS_IN). So if multiple FDATA
+%   are to be processed, it is possible to reuse the exact same parameters
+%   from one FDATA to the next. This is piping the parameters. 
+%   For example, you can call CFF_COMPUTE_PING_NAVIGATION_V2 without input
+%   params on a first FDATA with
+%   [FDATA,PARAMS]=CFF_COMPUTE_PING_NAVIGATION_V2(FDATA) in order to
+%   request that the function automatically finds from the input data 
+%   appropriate values for the ellipsoid (PARAMS.ellips) and projection
+%   (PARAMS.tmprj) parameters, and use them in processing. Then, with
+%   FLAG=1, you can pass those parameters in input to the next FDATA to
+%   ensure it is processed with the same projection parameters.
+%   Doing so, however, comes with some risk. For example, without input
+%   parameters, the processing of the first FDATA may automatically finds
+%   'WC' as the datagram source to use (PARAMS.datagramSource), and pipe
+%   that parameter to the next FDATA. But if the next FDATA cannot use this
+%   datagram source (e.g. you are processing a mix of Kongsberg files,
+%   which use 'WC' and Reson-Teledyne s7k files, which use 'AP'), then you
+%   will get an error.
+%
+%   CFF_GROUP_PROCESSING(...,'continueOnError',FLAG) with FLAG=1 will allow
+%   to continue processing if an error is encountered with one fData. The
+%   function will log the error and resume processing with the next fData.
+%   By default (FLAG=0), any error is immediately thrown, which interupts
+%   the process. The FLAG=1 option is useful when processing a large number
+%   of files overnight, to not let one error interrupt the entire job.
 %
 %   CFF_GROUP_PROCESSING(...,'comms',COMMS) specifies if and how this
 %   function communicates on its internal state (progress, info, errors). 
@@ -71,7 +103,8 @@ function [fDataGroup,params] = CFF_group_processing(procFun,fDataGroup,varargin)
 %   (i.e. no communication). See CFF_COMMS for more information.
 %
 %   See also CFF_COMPUTE_PING_NAVIGATION_V2,
-%   CFF_GEOREFERENCE_BOTTOM_DETECT, CFF_FILTER_BOTTOM_DETECT_V2. 
+%   CFF_GEOREFERENCE_BOTTOM_DETECT, CFF_FILTER_BOTTOM_DETECT_V2,
+%   CFF_PROCESS_WC. 
 
 %   Copyright 2022-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
@@ -79,13 +112,13 @@ function [fDataGroup,params] = CFF_group_processing(procFun,fDataGroup,varargin)
 %% Input arguments management
 p = inputParser;
 
+% fData structure or cell array of fData structures
+addRequired(p,'fDataGroup',@(x) all(CFF_is_fData_version_current(x)));
+
 % fData processing function (or cell array of functions)
 OneProcFunCheck = @(x) isa(x,'function_handle');
 MultProcFunCheck = @(x) iscell(x) && all(cellfun(OneProcFunCheck,x));
 addRequired(p,'procFun',@(x) OneProcFunCheck(x) || MultProcFunCheck(x));
-
-% array of fData structures
-addRequired(p,'fDataGroup',@(x) iscell(x) && all(cellfun(@CFF_is_fData_version_current,x)));
 
 % function parameters (or cell array of parameters)
 OneParamsCheck = @(x) isstruct(x);
@@ -101,23 +134,35 @@ addParameter(p,'procMsg','default',@(x) OneProcMsgCheck(x) || MultProcMsgCheck(x
 % save fData to hard-drive? 0: no (default), 1: yes
 addParameter(p,'saveFDataToDrive',0,@(x) mustBeMember(x,[0,1]));
 
-% what if error during conversion? 0: to next file (default), 1: abort
-addParameter(p,'abortOnError',0,@(x) mustBeMember(x,[0,1]));
+% pipe parameters from one fdata to the next? 0: no (default), 1: yes
+addParameter(p,'pipeParams',0,@(x) mustBeMember(x,[0,1]));
+
+% what if error occurs? 0: throw error (default), 1: log error and go to next file
+addParameter(p,'continueOnError',0,@(x) mustBeMember(x,[0,1]));
 
 % information communication (none by default)
 addParameter(p,'comms',CFF_Comms()); 
 
 % parse and clean up
-parse(p,procFun,fDataGroup,varargin{:});
+parse(p,fDataGroup,procFun,varargin{:});
 params = p.Results.params;
 procMsg = p.Results.procMsg;
 saveFDataToDrive = p.Results.saveFDataToDrive;
-abortOnError = p.Results.abortOnError;
+pipeParams = p.Results.pipeParams;
+continueOnError = p.Results.continueOnError;
 comms = p.Results.comms;
 clear p
 if ischar(comms)
     comms = CFF_Comms(comms);
 end
+
+% fDataGroup checks and edits
+if isstruct(fDataGroup)
+    fDataGroup = {fDataGroup};
+end
+
+% number of fData to process
+nFData = numel(fDataGroup);
 
 % if single procFun, params, and procMsg in input, turn to cell
 if ~iscell(procFun), procFun = {procFun}; end
@@ -170,9 +215,6 @@ else
 end
 comms.start(startMsg);
 
-% number of fData to process
-nFData = numel(fDataGroup);
-
 % start progress
 comms.progress(0,nFData);
 
@@ -180,17 +222,18 @@ comms.progress(0,nFData);
 %% Processing
 for iFD = 1:nFData
     
-    % try-catch sequence to allow continuing to next file if one fails
+    % get fData
+    fData = fDataGroup{iFD};
+    
+    % display for this line
+    filename = CFF_file_name(fData.ALLfilename{1});
+    comms.step(sprintf('%i/%i: fData line %s',iFD,nFData,filename));
+    
+    % processing using a try-catch so that processing left overnight can
+    % continue even if one file fails.
     try
         
-        % get fData
-        fData = fDataGroup{iFD};
-        
-        % display for this line
-        filename = CFF_file_name(fData.ALLfilename{1});
-        comms.step(sprintf('%i/%i: fData line %s',iFD,nFData,filename));
-        
-        % apply each processing function in turn
+        % apply each processing function in turn to this fData
         for iFun = 1:nFun
             
             % if applying multiple processing functions, use each
@@ -222,17 +265,24 @@ for iFD = 1:nFData
                     % processing function has at least one extra output
                     % argument (nargout>=2) or a varargout (nargout<0). In
                     % any case, assume the first is output parameters
-                    [fData,params{iFun}] = feval(procFun{iFun},fData,params{iFun});
+                    if pipeParams
+                        % if we want to pipe parameters from one fData to
+                        % the next, save output parameters back as input
+                        % parameters
+                        [fData,params{iFun}] = feval(procFun{iFun},fData,params{iFun});
+                    else
+                        % otherwise, just discard that output
+                        [fData,~] = feval(procFun{iFun},fData,params{iFun});
+                    end
                 end
                 
             end
         end
         
-        % save fData to drive
+        % save the updated fData on the drive
         if saveFDataToDrive
-            % get output folder and create it if necessary
-            wc_dir = CFF_converted_data_folder(fData.ALLfilename);
-            mat_fdata_file = fullfile(wc_dir, 'fData.mat');
+            folder_for_converted_data = CFF_converted_data_folder(fData.ALLfilename);
+            mat_fdata_file = fullfile(folder_for_converted_data,'fData.mat');
             comms.info('Saving...');
             save(mat_fdata_file,'-struct','fData','-v7.3');
         end
@@ -240,24 +290,24 @@ for iFD = 1:nFData
         % save fData
         fDataGroup{iFD} = fData;
         
-        % successful end of this iteration
+        % communicate progress
         comms.info('Done.');
+        comms.progress(iFD,nFData);
         
+        % error catching
     catch err
-        if abortOnError
-            % just rethrow error to terminate execution
-            rethrow(err);
-        else
+        if continueOnError
             % log the error and continue
             errorFile = CFF_file_name(err.stack(1).file,1);
             errorLine = err.stack(1).line;
-            errrorFullMsg = sprintf('%s (error in %s, line %i)',err.message,errorFile,errorLine);
+            errrorFullMsg = sprintf('%s Error in %s (line %i)',err.message,errorFile,errorLine);
             comms.error(errrorFullMsg);
+            comms.progress(iFD,nFData);
+        else
+            % just rethrow error to terminate execution
+            rethrow(err);
         end
     end
-    
-    % communicate progress
-    comms.progress(iFD,nFData);
     
 end
 
@@ -270,6 +320,10 @@ if nFun == 1
     params = params{1};
 end
 
+% output fDataGroup as struct if there was only one fData
+if nFData==1
+    fDataGroup = fDataGroup{1};
+end
 
 %% end message
 comms.finish('Done');
