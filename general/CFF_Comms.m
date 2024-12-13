@@ -208,7 +208,8 @@ classdef CFF_Comms < handle
                         stepStr = obj.Msgs{idx,3};
                     end
                     % set waitbar title
-                    set(obj.FigObj.Children.Title,'String',sprintf('%s\n%s',stepStr,obj.Msgs{end,3}));
+                    dispstr = sprintf('%s\n%s',stepStr,obj.Msgs{end,3});
+                    set(obj.FigObj.Children.Title,'String',dispstr);
                     drawnow;
                 case {'oneline','multilines'}
                     % last step, and new info message
