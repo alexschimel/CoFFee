@@ -13,24 +13,21 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
             coffeeFolder = 'C:\Users\Schimel_Alexandre\Code\MATLAB\CoFFee';
             addpath(genpath(coffeeFolder));
             
-            testCase.rawFiles = CFF_test_raw_files.get('range_small_files_with_wcd_per_format');
+            testCase.rawFiles = CFF_test_raw_files.get('one_small_file_with_wcd_per_format');
             CFF_print_raw_files_list(testCase.rawFiles);
             
+            % convert data
+            testCase.fData = CFF_convert_raw_files(testCase.rawFiles,...
+                'conversionType','WCD',...
+                'forceReconvert',0,...
+                'abortOnError',1,...
+                'comms','multilines');
+            
             % pre-process data
-            for i = 1:numel(testCase.rawFiles)
-                % convert
-                fData = CFF_convert_raw_files(testCase.rawFiles(i),...
-                    'conversionType','WCD',...
-                    'forceReconvert',0,...
-                    'abortOnError',1,...
-                    'comms','multilines');
-                % navigation processing
-                fData = CFF_compute_ping_navigation_v2(fData);
-                % georeference WC bottom detect
-                fData = CFF_georeference_bottom_detect(fData);
-                % bottom filtering
-                testCase.fData{i} = CFF_filter_bottom_detect_v2(fData);
-            end
+            testCase.fData = CFF_group_processing(testCase.fData,...
+                {@CFF_compute_ping_navigation_v2, @CFF_georeference_bottom_detect, @CFF_filter_bottom_detect_v2},...
+                'continueOnError',0,...
+                'comms','multilines');
             
         end
     end
@@ -51,7 +48,7 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
             % invalid fData
             verifyError(testCase,@() CFF_process_WC(1), 'MATLAB:InputParser:ArgumentFailedValidation');
             
-            % missing input func. Should return fData input with warning 
+            % missing input func. Should return fData input with warning
             % verify with single fData
             verifyWarning(testCase,@() CFF_process_WC(testCase.fData{1}),'');
             % verify with multiple fData
@@ -72,6 +69,23 @@ classdef test_CFF_process_WC < matlab.unittest.TestCase
             % multiple fData
             if numel(testCase.fData)>1
                 CFF_process_WC(testCase.fData,dummyWcProcFun,{},'resumeProcess',1);
+            end
+            
+            % check aborting options
+            if numel(testCase.fData)>1
+                % create a test set of several fData, with the first one
+                % having an error
+                fDataTest = testCase.fData;
+                datagramSource = CFF_get_datagramSource(fDataTest{1});
+                fDataTest{1} = rmfield(fDataTest{1},sprintf('%s_SBP_SampleAmplitudes',datagramSource));
+                
+                % process without continue on error. This should throw the
+                % error
+                verifyError(testCase,@() CFF_process_WC(fDataTest,dummyWcProcFun,{}), 'MATLAB:nonExistentField');
+                
+                % process with continuing on error. This should log the
+                % error in comms and move on to the next file
+                CFF_process_WC(fDataTest,dummyWcProcFun,{},'continueOnError',1,'Comms','multilines');
             end
             
             % check comms on one file
