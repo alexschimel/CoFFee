@@ -6,13 +6,22 @@ classdef test_tutorials < matlab.unittest.TestCase
     
     methods (TestMethodSetup)
         % Setup for each test
+        
+        function init(testCase)
+            
+            % set location of CoFFee code root folder and add to path
+            restoredefaultpath();
+            coffeeFolder = 'C:\Users\Schimel_Alexandre\Code\MATLAB\CoFFee';
+            addpath(genpath(coffeeFolder));
+            
+        end
     end
     
     methods (Test)
         % Test methods
         
         function testTutorials(testCase)
-
+            
             % get list of files in wiki
             rootFolder = 'C:\Users\Schimel_Alexandre\Code\MATLAB\CoFFee.wiki';
             files = dir(fullfile(rootFolder));
@@ -23,7 +32,7 @@ classdef test_tutorials < matlab.unittest.TestCase
                 rmdir(tutorialsFolder,'s');
             end
             mkdir(tutorialsFolder);
-
+            
             % for each file
             for i = 1:length(files)
                 if ~files(i).isdir
@@ -70,7 +79,7 @@ classdef test_tutorials < matlab.unittest.TestCase
                     delete(fullfile(pwd,'workspace.mat'));
                 end
             end
-
+            
         end
     end
 end
