@@ -72,9 +72,12 @@ function [fDataGroup,comms] = CFF_convert_raw_files(rawFilesList,varargin)
 %   hard-drive.
 %   'outputFData': 1 (default) will conserve fData and return it.
 %
-%   'abortOnError': 1 will interrupt processing if an error is encountered.
-%   'abortOnError': 0 (default) will log the error message and move onto
-%   the next file.
+%   'continueOnError': 1 will allow to continue converting if an error is
+%   encountered with one fData. The function will log the error and resume
+%   processing with the next fData. By default (=0), any error is
+%   immediately thrown, which interupts the process. The =1 option is
+%   useful when processing a large number of files overnight, to not let
+%   one error interrupt the entire job.
 %
 %   'convertEvenIfDtgrmsMissing': 1 will continue the conversion of a file
 %   even in the event that one or more datagram types required by
@@ -143,8 +146,8 @@ addParameter(p,'forceReconvert',0,@(x) mustBeMember(x,[0,1]));
 % Unecessary in apps, but useful in scripts
 addParameter(p,'outputFData',1,@(x) mustBeMember(x,[0,1]));
 
-% what if error during conversion? 0: to next file (default), 1: abort
-addParameter(p,'abortOnError',0,@(x) mustBeMember(x,[0,1]));
+% what if error occurs? 0: throw error (default), 1: log error and go to next file
+addParameter(p,'continueOnError',0,@(x) mustBeMember(x,[0,1]));
 
 % what if missing required dtgrms? 0: to next file (def), 1: convert anyway
 addParameter(p,'convertEvenIfDtgrmsMissing',0,@(x) mustBeMember(x,[0,1]));
@@ -162,7 +165,7 @@ parse(p,rawFilesList,varargin{:});
 % and get results
 rawFilesList = p.Results.rawFilesList;
 forceReconvert = p.Results.forceReconvert;
-abortOnError = p.Results.abortOnError;
+continueOnError = p.Results.continueOnError;
 convertEvenIfDtgrmsMissing = p.Results.convertEvenIfDtgrmsMissing;
 conversionType = p.Results.conversionType;
 dr_sub = p.Results.dr_sub;
@@ -554,23 +557,24 @@ for iF = 1:nFiles
         
         % successful end of this iteration
         comms.info('Done.');
+        comms.progress(iF,nFiles);
         
+        % error catching
     catch err
-        if abortOnError
-            % just rethrow error to terminate execution
-            rethrow(err);
-        else
+        
+        if continueOnError
             % log the error and continue
             errorFile = CFF_file_name(err.stack(1).file,1);
             errorLine = err.stack(1).line;
-            errrorFullMsg = sprintf('%s (error in %s, line %i)',err.message,errorFile,errorLine);
+            errrorFullMsg = sprintf('%s Error in %s (line %i)',err.message,errorFile,errorLine);
             comms.error(errrorFullMsg);
+            comms.progress(iF,nFiles);
+        else
+            % just rethrow error to terminate execution
+            rethrow(err);
         end
     end
-    
-    % communicate progress
-    comms.progress(iF,nFiles);
-    
+
 end
 
 if outputFData

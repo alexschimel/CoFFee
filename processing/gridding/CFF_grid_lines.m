@@ -2,7 +2,7 @@ function fDataGroup = CFF_grid_lines(fDataGroup,varargin)
 %CFF_GRID_LINES  Create Easting-Northing grids of data in a set of lines
 %
 %   FDATAGROUP = CFF_GRID_LINES(FDATAGROUP) creates Easting-Northing grids
-%   of bathymetry and bacskcatter data from a set of fData structures. The
+%   of bathymetry and backscatter data from a set of fData structures. The
 %   grid size is 1m. The gridded data and the metadata are saved back into
 %   the corresponding fData structure.
 % 
@@ -11,9 +11,12 @@ function fDataGroup = CFF_grid_lines(fDataGroup,varargin)
 %   CFF_GRID_LINES(...,'saveFDataToDrive',VALUE) to specify whether to save
 %   the fData on the hard-drive (VALUE=1) or not (VALUE=0, default). 
 %
-%   CFF_GRID_LINES(...,'abortOnError',VALUE) to specify whether the process
-%   is to be aborted upon encountering an error in a file (VALUE=1) or
-%   simply continuing to the next file (VALUE=0, default).
+%   CFF_GRID_LINES(...,'continueOnError',FLAG) with FLAG=1 will allow to
+%   continue gridding if an error is encountered with one fData. 
+%   The function will log the error and resume gridding the next file. 
+%   By default (FLAG=0), any error is immediately thrown, which interupts
+%   the process. The FLAG=1 option is useful when gridding a large number
+%   of files, to not let one error interrupt the entire job.
 %
 %   CFF_GRID_LINES(...,'comms',VALUE) to provide a CFF_Comms() object,
 %   initiate a new one (possible values 'disp', 'textprogressbar',
@@ -22,20 +25,20 @@ function fDataGroup = CFF_grid_lines(fDataGroup,varargin)
 %
 %   See also CFF_INIT_GRID, CFF_GRID_DATA
 
-%   Copyright 2021-2022 Alexandre Schimel
+%   Copyright 2021-2024 Alexandre Schimel
 %   Licensed under MIT. Details on https://github.com/alexschimel/CoFFee/
 
 % input parser
 p = inputParser;
-addRequired(p, 'fDataGroup',                   @(x) all(CFF_is_fData_version_current(x)));
-addParameter(p,'res',             1,           @mustBePositive);
-addParameter(p,'saveFDataToDrive',0,           @(x) mustBeMember(x,[0,1]));
-addParameter(p,'abortOnError',    0,           @(x) mustBeMember(x,[0,1]));
-addParameter(p,'comms',           CFF_Comms());
+addRequired(p, 'fDataGroup', @(x) all(CFF_is_fData_version_current(x)));
+addParameter(p,'res', 1, @mustBePositive);
+addParameter(p,'saveFDataToDrive', 0, @(x) mustBeMember(x,[0,1]));
+addParameter(p,'continueOnError', 0, @CFF_mustBeBoolean); % if error encountered with a file, throw error and abort (0, default), or log error and continue to next file (1)
+addParameter(p,'comms', CFF_Comms());
 parse(p,fDataGroup,varargin{:});
 res = p.Results.res;
 saveFDataToDrive = p.Results.saveFDataToDrive;
-abortOnError = p.Results.abortOnError;
+continueOnError = p.Results.continueOnError;
 comms = p.Results.comms;
 clear p;
 if ischar(comms)
@@ -195,26 +198,29 @@ for ii = 1:nLines
             fDataGroup = fData;
         end
         
-        % successful end of this iteration
+        % communicate progress
         comms.info('Done');
+        comms.progress(ii,nLines);
         
+        % error catching
     catch err
-        if abortOnError
-            % just rethrow error to terminate execution
-            rethrow(err);
-        else
+        if continueOnError
             % log the error and continue
             errorFile = CFF_file_name(err.stack(1).file,1);
             errorLine = err.stack(1).line;
-            errrorFullMsg = sprintf('%s (error in %s, line %i)',err.message,errorFile,errorLine);
+            errrorFullMsg = sprintf('%s Error in %s (line %i)',err.message,errorFile,errorLine);
             comms.error(errrorFullMsg);
+            comms.progress(ii,nLines);
+        else
+            % just rethrow error to terminate execution
+            rethrow(err);
         end
     end
     
-    % communicate progress
-    comms.progress(ii,nLines);
-    
 end
+
+
+%% finalize
 
 % output fDataGroup as single struct if that was the input
 if isstruct(fDataGroup)

@@ -70,7 +70,7 @@ addRequired(p,'fDataGroup',@(x) all(CFF_is_fData_version_current(x))); % source 
 addOptional(p,'processingList', {}, @CFF_mustBeFunctionHandleOrCellVectorOfFunctionHandles); % list of processing functions
 addOptional(p,'processingParams', {}, @CFF_mustBeStructOrCellVectorOfStructsOrEmpty); % list of parameters for each processing function
 addParameter(p,'resumeProcess', 0, @CFF_mustBeBoolean); % (re)process from scratch (0, default), or continue from existing processed data (1)
-addParameter(p,'continueOnError', 0, @CFF_mustBeBoolean); % if error encountered, throw error and abort processing (0, default), or log error and continue to next file (1)
+addParameter(p,'continueOnError', 0, @CFF_mustBeBoolean); % if error encountered with a file, throw error and abort (0, default), or log error and continue to next file (1)
 addParameter(p,'comms',CFF_Comms()); % information communication (none by default)
 
 % parse and clean up

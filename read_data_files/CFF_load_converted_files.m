@@ -13,9 +13,12 @@ function fDataGroup = CFF_load_converted_files(rawFilesList, varargin)
 %   fData on the disk (recommended, unless you have specific reasons to not
 %   want to update fData on the disk).
 %
-%   CFF_LOAD_CONVERTED_FILES(...,'abortOnError',FLAG) with FLAG = 1 will
-%   interrupt processing if an error is encountered. By default (FLAG = 0),
-%   the error is logged and processing continues to the next file. 
+%   CFF_LOAD_CONVERTED_FILES(...,'continueOnError',FLAG) with FLAG=1 will
+%   allow to continue loading if an error is encountered with one fData.
+%   The function will log the error and resume loading the next file. 
+%   By default (FLAG=0), any error is immediately thrown, which interupts
+%   the process. The FLAG=1 option is useful when loading a large number
+%   of files, to not let one error interrupt the entire job.
 %
 %   CFF_LOAD_CONVERTED_FILES(...,'comms',COMMS) specifies if and how this
 %   function communicates on its internal state (progress, info, errors).
@@ -34,11 +37,11 @@ function fDataGroup = CFF_load_converted_files(rawFilesList, varargin)
 p = inputParser;
 addRequired(p,'rawFilesList',@(x) ~isempty(x)&&(ischar(x)||iscell(x))); % list of files (or pairs of files) to load
 addParameter(p,'fixPaths',0,@(x) mustBeMember(x,[0,1])); % 1: check paths are correct, fix them, and re-write fData on the disk
-addParameter(p,'abortOnError',0,@(x) mustBeMember(x,[0,1])); % what if error during conversion? 0: to next file (default), 1: abort
+addParameter(p,'continueOnError', 0, @CFF_mustBeBoolean); % if error encountered with a file, throw error and abort (0, default), or log error and continue to next file (1)
 addParameter(p,'comms',CFF_Comms()); % information communication (none by default)
 parse(p,rawFilesList,varargin{:});
 fixPaths = p.Results.fixPaths;
-abortOnError = p.Results.abortOnError;
+continueOnError = p.Results.continueOnError;
 comms = p.Results.comms;
 clear p
 if ischar(comms)
@@ -105,24 +108,24 @@ for iF = 1:nFiles
         % sort fields by name
         fDataGroup{iF} = orderfields(fDataGroup{iF});
         
-        % successful end of this iteration
+        % communicate progress
         comms.info('Done.');
+        comms.progress(iF,nFiles);
         
+        % error catching
     catch err
-        if abortOnError
-            % just rethrow error to terminate execution
-            rethrow(err);
-        else
+        if continueOnError
             % log the error and continue
             errorFile = CFF_file_name(err.stack(1).file,1);
             errorLine = err.stack(1).line;
-            errrorFullMsg = sprintf('%s (error in %s, line %i)',err.message,errorFile,errorLine);
+            errrorFullMsg = sprintf('%s Error in %s (line %i)',err.message,errorFile,errorLine);
             comms.error(errrorFullMsg);
+            comms.progress(iF,nFiles);
+        else
+            % just rethrow error to terminate execution
+            rethrow(err);
         end
     end
-    
-    % communicate progress
-    comms.progress(iF,nFiles);
 
 end
 
