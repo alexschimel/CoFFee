@@ -56,19 +56,19 @@
 
 % # 4. Error management
 
-% `fData = CFF_convert_raw_files(...,'abortOnError',Value)` controls behaviour in case exceptions (errors) occur.
+% `fData = CFF_convert_raw_files(...,'continueOnError',Value)` controls behaviour in case exceptions (errors) occur.
 
 % | Value | Description |
 % | ------------ | ------ | 
-% | `0` (default) | Exception catch execution. The error message will be logged and execution continues (to the next file).  | 
-% | `1` | Normal execution. Execution will be interrupted if an error is encountered. | 
+% | `0` (default) | Normal execution. Execution will be interrupted if an error is encountered. | 
+% | `1` | Exception-catch execution. If an error occurs, the error message is logged and execution continues (to the next file). | 
 
 % `fData = CFF_convert_raw_files(...,'convertEvenIfDtgrmsMissing',Value)` controls behaviour in case some required datagrams are missing.
 
 % | Value | Description |
 % | ------------ | ------ | 
-% | `0` (default) | Stop conversion and throw error (to be eventually caught if `abortOnError` is set to `0`).  | 
-% | `1` | Continue conversion. | 
+% | `0` (default) | Stop conversion and throw error (to be eventually caught if `continueOnError` is set to `1`).  | 
+% | `1` | Continue conversion. Since a required datagram is missing, you may later get an error. | 
 
 % # 5. Water-column decimation
 
