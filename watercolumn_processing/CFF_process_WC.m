@@ -424,12 +424,6 @@ if nProcessesToApply == 1
     processingParams = processingParams{1};
 end
 
-% output fDataGroup as struct if there was only one fData
-if nFData==1
-    fDataGroup = fDataGroup{1};
-end
-
-
 %% end message
 comms.finish('Done');
 
