@@ -51,15 +51,15 @@ If you want to receive notifications of future releases (recommended), you may c
 
 ## Authors and contributors
 
-* Alexandre Schimel ([The Geological Survey of Norway](https://www.ngu.no), alexandre.schimel@ngu.no)
+* Alexandre Schimel (alex.schimel@proton.me)
 * Yoann Ladroit (Kongsberg Discovery)
 * Amy Nau (CSIRO)
 * Shyam Chand (The Geological Survey of Norway)
 
 ### Copyright
 
-2007-2024
-* Alexandre Schimel (The Geological Survey of Norway)
+2007-2025
+* Alexandre Schimel
 
 ### License
 
