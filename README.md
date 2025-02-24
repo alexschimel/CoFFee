@@ -78,6 +78,7 @@ If you want to receive notifications of future releases (recommended), you may c
 
 Articles using or about *CoFFee*, or apps based on *CoFFee*:
 
+* Nau, A. W., Lucieer, V., Schimel, A. C. G., Kunnath, H., Ladroit, Y., & Martin, T. (2025). Advanced Detection and Classification of Kelp Habitats Using Multibeam Echosounder Water Column Point Cloud Data. Remote Sensing, 17(3), 449. https://doi.org/10.3390/rs17030449
 * Schimel, A., Ladroit, Y., & Watson, S. (2024). Espresso: An Open-Source Software Tool for Visualizing and Analysing Multibeam Water-Column Data. EGU General Assembly 2024, Vienna, Austria, 14–19 Apr 2024, EGU24-11043. https://doi.org/10.5194/egusphere-egu24-11043 
 * Lucieer, V., Flukes, E., Keane, J. P., Ling, S. D., Nau, A. W., & Shelamoff, V. (2023). Mapping warming reefs — An application of multibeam acoustic water column analysis to define threatened abalone habitat. Frontiers in Remote Sensing, 4(April), 1–15. https://doi.org/10.3389/frsen.2023.1149900
 * Turco, F., Ladroit, Y., Watson, S. J., Seabrook, S., Law, C. S., Crutchley, G. J., Mountjoy, J., Pecher, I. A., Hillman, J. I. T., Woelz, S., & Gorman, A. R. (2022). Estimates of Methane Release From Gas Seeps at the Southern Hikurangi Margin, New Zealand. Frontiers in Earth Science, 10(March), 1–20. https://doi.org/10.3389/feart.2022.834047
