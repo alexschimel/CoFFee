@@ -18,11 +18,12 @@ Matlab toolbox for multibeam sonar data processing.
 
 * [MATLAB](https://au.mathworks.com/products/get-matlab.html). We are currently using R2020b, but it may work on other versions.
 * Some MATLAB toolboxes (not all functions require them):
-  * Signal Processing Toolbox
+  * Image Processing Toolbox
   * Mapping Toolbox
-  * Statistics and Machine Learning Toolbox
   * Parallel Computing Toolbox
-
+  * Signal Processing Toolbox
+  * Statistics and Machine Learning Toolbox
+  
 ### Installing and using
 
 * Clone or download the repository.
