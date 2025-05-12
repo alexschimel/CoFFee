@@ -4,11 +4,11 @@
 
 Matlab toolbox for multibeam sonar data processing.
 
-## Description
+### Description
 
 *CoFFee* is a free and open-source MATLAB toolbox (i.e., a libary of functions) for reading multibeam sonar raw data files, visualizing their contents, and applying various processsing algorithms. It serves as the engine for several apps/GUIs designed for specific applications.
 
-## Disclaimer
+### Disclaimer
 
 *CoFFee* is the (messy) repository of functions written and edited over the authors' career, which started before they used git. As a result, many functions are obsolete, or don't work with newer functions, or even work at all. This is why this toolbox is noted as in pre-release and will remain so until the authors can clean it all up. Expect headaches if you try to use the less commonly-used functions!
 
@@ -41,38 +41,38 @@ If you have any issues, please first check the project's [issues](https://github
 
 For more information, contact the [authors](#authors).
 
-## Past versions and updates
+### Past versions and updates
 
 See the [releases](https://github.com/alexschimel/CoFFee/releases) page for past released versions. 
 
 If you want to receive notifications of future releases (recommended), you may create a github account, and on this repository click on 'Watch', then 'Custom', and choose 'Releases'. Verify in your GitHub settings that you are set to receive 'Watching' notifications.
 
-## Authors and contributors
+## About
+
+### Authors and contributors
 
 * Alexandre Schimel (alex.schimel@proton.me)
 * Yoann Ladroit (Kongsberg Discovery)
 * Amy Nau (CSIRO)
 * Shyam Chand (The Geological Survey of Norway)
 
-### Copyright
+#### Copyright
 
 2007-2025
 * Alexandre Schimel
 
-## License
+### License
 
 *CoFFee* is distributed under the MIT License. See `LICENSE` file for details.
 
 *CoFFee* uses several pieces of third-party code, each being distributed under its own license. Each piece of code is contained in a separate sub-folder of the 'toolboxes' folder and includes the corresponding license file.
 
-## Support This Project 💖
+### Support This Project 💖
 
-If you use *CoFFee* or its companion apps ([*Espresso*](https://github.com/alexschimel/Espresso), [*Iskaffe*](https://github.com/alexschimel/Iskaffe), [*Grounds*](https://github.com/alexschimel/Grounds)) in your research, teaching, or professional work, please consider supporting ongoing development:
+If you use *CoFFee* in your research, teaching, or professional work, please consider supporting ongoing development. Your support helps cover development time, MATLAB license costs, and ensures continued availability of free, open-source tools for multibeam sonar data analysis.
 
 [![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/alexschimel)
 [![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa.svg)](https://github.com/sponsors/alexschimel)
-
-Your support helps cover development time, MATLAB license costs, and ensures continued availability of free, open-source tools for multibeam sonar data analysis.
 
 ## See Also
 
