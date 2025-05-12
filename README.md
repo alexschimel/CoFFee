@@ -37,7 +37,7 @@ addpath(genpath(coffeeFolder));
 
 Head over to the [wiki](https://github.com/alexschimel/CoFFee/wiki) for documentation (in progress).
 
-If you have any issues, first check the project's [Issues](https://github.com/alexschimel/CoFFee/issues) to search for a fix. Otherwise, let the authors know by [creating a new issue](https://github.com/alexschimel/CoFFee/issues/new).
+If you have any issues, please first check the project's [issues](https://github.com/alexschimel/CoFFee/issues) section to search for a fix. Otherwise, let the authors know by [creating a new issue](https://github.com/alexschimel/CoFFee/issues/new).
 
 For more information, contact the [authors](#authors).
 
@@ -46,8 +46,6 @@ For more information, contact the [authors](#authors).
 See the [releases](https://github.com/alexschimel/CoFFee/releases) page for past released versions. 
 
 If you want to receive notifications of future releases (recommended), you may create a github account, and on this repository click on 'Watch', then 'Custom', and choose 'Releases'. Verify in your GitHub settings that you are set to receive 'Watching' notifications.
-
-## License
 
 ## Authors and contributors
 
@@ -61,18 +59,27 @@ If you want to receive notifications of future releases (recommended), you may c
 2007-2025
 * Alexandre Schimel
 
-### License
+## License
 
 *CoFFee* is distributed under the MIT License. See `LICENSE` file for details.
 
 *CoFFee* uses several pieces of third-party code, each being distributed under its own license. Each piece of code is contained in a separate sub-folder of the 'toolboxes' folder and includes the corresponding license file.
 
+## Support This Project 💖
+
+If you use *CoFFee* or its companion apps ([*Espresso*](https://github.com/alexschimel/Espresso), [*Iskaffe*](https://github.com/alexschimel/Iskaffe), [*Grounds*](https://github.com/alexschimel/Grounds)) in your research, teaching, or professional work, please consider supporting ongoing development:
+
+[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/alexschimel)
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa.svg)](https://github.com/sponsors/alexschimel)
+
+Your support helps cover development time, MATLAB license costs, and ensures continued availability of free, open-source tools for multibeam sonar data analysis.
+
 ## See Also
 
 ### Apps based on CoFFee
-* [*Grounds*](https://github.com/alexschimel/Grounds): Elevation Change Analysis
 * [*Espresso*](https://github.com/alexschimel/Espresso): Multibeam water-column data visualization and processing
 * [*Iskaffe*](https://github.com/alexschimel/Iskaffe): Multibeam backscatter quality control
+* [*Grounds*](https://github.com/alexschimel/Grounds): Elevation Change Analysis
 
 ### References
 
