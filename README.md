@@ -4,6 +4,15 @@
 
 Matlab toolbox for multibeam sonar data processing.
 
+[![Language](https://img.shields.io/badge/MATLAB-R2020b-orange)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/alexschimel/CoFFee)](https://github.com/alexschimel/CoFFee/releases)
+[![Last Commit](https://img.shields.io/github/last-commit/alexschimel/CoFFee)](https://github.com/alexschimel/CoFFee/commits/main)
+[![Docs](https://img.shields.io/badge/Docs-Wiki-blue)](https://github.com/alexschimel/CoFFee/wiki)
+
+[![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa.svg)](https://github.com/sponsors/alexschimel)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/alexschimel)
+
 ### Description
 
 *CoFFee* is a free and open-source MATLAB toolbox (i.e., a libary of functions) for reading multibeam sonar raw data files, visualizing their contents, and applying various processsing algorithms. It serves as the engine for several apps/GUIs designed for specific applications.
@@ -72,9 +81,6 @@ If you want to receive notifications of future releases (recommended), you may c
 If you use *CoFFee* in your research, teaching, or professional work, please consider supporting its development. Your support helps cover development time, MATLAB license costs, and ensures continued availability of free, open-source tools for multibeam sonar data analysis.
 
 For **monthly support**, consider [sponsoring on GitHub](https://github.com/sponsors/alexschimel). For **one-time donations**, you can use [PayPal](https://paypal.me/alexschimel).
-
-[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa.svg)](https://github.com/sponsors/alexschimel)
-[![Donate via PayPal](https://img.shields.io/badge/Donate-PayPal-blue.svg)](https://paypal.me/alexschimel)
 
 ## See Also
 
