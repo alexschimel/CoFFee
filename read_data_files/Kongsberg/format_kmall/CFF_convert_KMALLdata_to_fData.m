@@ -181,6 +181,10 @@ if isfield(KMALLdata,'EMdgmIIP')
         IP_ASCIIparameters.S1H = IP_ASCIIparameters.TRAI_HD1.H;
     end
     
+    % HOTFIX for NIOZ - Alex 13 June 2025 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    IP_ASCIIparameters.S1H = 0;
+    % end of HOTFIX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
     % finally store in fData
     fData.IP_ASCIIparameters = IP_ASCIIparameters;
     
