@@ -94,6 +94,7 @@ For **monthly support**, consider [sponsoring on GitHub](https://github.com/spon
 Articles using or about *CoFFee*, or apps based on *CoFFee*:
 
 * Zainal, M. Z., Hasan, R. C., Husain, M. K. A., Schimel, A. C. G., Zaki, N. A. M., & Zakariya, R. (2026). Improving the Mapping of Coral Reefs with Multibeam Echosounder Water Column Data. Estuarine, Coastal and Shelf Science. https://doi.org/10.1016/j.ecss.2026.109744
+* Berry, J., & Nanlal, C. (2025). Assessment of the application of each multibeam echosounder data product for monitoring of Laminaria digitata in the UK. Frontiers in Remote Sensing, 6. https://doi.org/10.3389/frsen.2025.1521958
 * Nau, A. W., Lucieer, V., Schimel, A. C. G., Kunnath, H., Ladroit, Y., & Martin, T. (2025). Advanced Detection and Classification of Kelp Habitats Using Multibeam Echosounder Water Column Point Cloud Data. Remote Sensing, 17(3), 449. https://doi.org/10.3390/rs17030449
 * Schimel, A., Ladroit, Y., & Watson, S. (2024). Espresso: An Open-Source Software Tool for Visualizing and Analysing Multibeam Water-Column Data. EGU General Assembly 2024, Vienna, Austria, 14–19 Apr 2024, EGU24-11043. https://doi.org/10.5194/egusphere-egu24-11043 
 * Lucieer, V., Flukes, E., Keane, J. P., Ling, S. D., Nau, A. W., & Shelamoff, V. (2023). Mapping warming reefs — An application of multibeam acoustic water column analysis to define threatened abalone habitat. Frontiers in Remote Sensing, 4(April), 1–15. https://doi.org/10.3389/frsen.2023.1149900
